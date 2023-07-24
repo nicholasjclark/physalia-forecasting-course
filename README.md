@@ -22,6 +22,54 @@ Participants should be familiar with RStudio and have some fluency in programmin
 3.    Understand how to critique, visualize and compare fitted dynamic models
 4.    Know how to produce forecasts from dynamic models and evaluate their accuracies using probabilistic scoring rules
 
+## COURSE PREPARATION
+
+Please be sure to have at least version 4.1 &mdash; *and preferably version 4.2* &mdash; of `R` installed. Note that `R` and `RStudio` are two different things: it is not sufficient to just update `RStudio`, you also need to update `R` by installing new versions as they are released.
+
+To download `R` go to the [CRAN Download](https://cran.r-project.org/) page and follow the links to download `R` for your operating system:
+
+* [Windows](https://cran.r-project.org/bin/windows/)
+* [MacOS X](https://cran.r-project.org/bin/macosx/)
+* [Linux](https://cran.r-project.org/bin/linux/)
+
+To check what version of `R` you have installed, you can run
+
+```r
+version
+```
+
+in `R` and look at the `version.string` entry (or the `major` and `minor` entries).
+
+We will make use of several `R` packages that you'll need to have installed. Prior to the start of the course, please run the following code to update your installed packages and then install the required packages:
+
+```r
+# update any installed R packages
+update.packages(ask = FALSE, checkBuilt = TRUE)
+
+# packages to install
+pkgs <- c("brms", "dplyr", "gratia", "ggplot2",
+          "marginaleffects", "zoo", "remotes")
+
+# install those packages by setting Ncpus to number of CPU cores you have available
+install.packages(pkgs, Ncpus = 4)
+```
+
+For both `mvgam` and `brms`, *it is highly recommended that you use the `Cmdstan` backend*, with the `cmdstanr` interface, rather than using `rstan`. To install `Cmdstan` and the relevant interface, first install `cmdstanr` using the following:
+
+```r
+install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
+```
+
+And then [follow instructions provided by the `Stan` development team here](https://mc-stan.org/cmdstanr/articles/cmdstanr.html) to ensure the backend is installed and the toolchain is setup properly
+
+
+Finally, we will make use of the development version of the `mvgam` package as it is not quite ready for CRAN. You can install this package using the following:
+
+```r
+# Download and install mvgam
+remotes::install_github('nicholasjclark/mvgam', force = TRUE)
+```
+
 ## PROGRAM
 09:00 - 12:00 (Berlin time): live lectures and introduction to / review of the practicals
 
