@@ -84,7 +84,7 @@ remotes::install_github('nicholasjclark/mvgam', force = TRUE)
 * Temporal random effects and temporal residual correlation structures
 
 
-## Tuesday (day 2)
+## Tuesday (day 2) [Tutorial](https://nicholasjclark.github.io/physalia-forecasting-course/day2/tutorial_2_physalia)
 * Dynamic GLMs and Dynamic GAMs
 * Autoregressive dynamic processes
 * Gaussian Processes
@@ -108,4 +108,3 @@ remotes::install_github('nicholasjclark/mvgam', force = TRUE)
 ## Friday (day 5)
 * Extended practical examples using {mvgam}
 * Review and open discussion
-
