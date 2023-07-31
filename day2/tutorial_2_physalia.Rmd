@@ -76,6 +76,10 @@ a:hover {
 }
 ```
 
+```{r klippy, echo=FALSE, include=TRUE}
+klippy::klippy(position = c('top', 'right'), color = 'darkred')
+```
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   echo = TRUE,   
@@ -85,7 +89,6 @@ knitr::opts_chunk$set(
   out.width = "60%",
   fig.align = "center",
   class.source='klippy')
-klippy::klippy(position = c('top', 'right'), color = 'darkred')
 ```
 
 ## Exercises and associated data
@@ -140,11 +143,7 @@ library(tidybayes)
 library(ggplot2)
 ```
 
-We will begin by continuing our work with time series of rodent captures from the Portal Project, [a long-term monitoring study based near the town of Portal, Arizona](https://portal.weecology.org/){target="_blank"}, with particular focus on the time series of captures for the Desert Pocket Mouse *Chaetodipus penicillatus*.
-
-![Our study species, the Desert Pocket Mouse (*Chaetodipus penicillatus*); photo by SKM Ernest](resources/pp_image.jpg)
-
-Data manipulations will proceed in a similar way as in *Tutorial 1*, except that we now use a lagged version of `ndvi` (at a lag of 12 lunar months) instead of using the current values of `ndvi` (see `?dplyr::lag` for details) to give you a sense of how you can create and use lagged predictors in time series models
+We will begin by continuing our work with time series of rodent captures from the Portal Project, [a long-term monitoring study based near the town of Portal, Arizona](https://portal.weecology.org/){target="_blank"}, with particular focus on the time series of captures for the Desert Pocket Mouse *Chaetodipus penicillatus*. Data manipulations will proceed in a similar way as in *Tutorial 1*, except that we now use a lagged version of `ndvi` (at a lag of 12 lunar months) instead of using the current values of `ndvi` (see `?dplyr::lag` for details) to give you a sense of how you can create and use lagged predictors in time series models
 ```{r Access time series data}
 data("portal_data")
 ```
@@ -480,7 +479,7 @@ stancode(model2)
 <br>
 
 ### Autocorrelated error GLM in `mvgam`
-If you have a look at the time indices that are used for estimating the residual AR1 process (hint, look at `standata(model2)`), you will see that this model is estimating autocorrelated errors for the full time period, even though some of these time points have missing observations. This is useful for getting more realistic estimates of the residual autocorrelation parameters. `mvgam` does the same when using a latent trend AR1 model, though it is considerably faster to fit because it does not rely on the latent multivariate normal parameterization. Before inspecting the model further, we will now fit an equivalent model using `mvgam` to see what syntax is needed:
+If you have a look at the time indices that are used for estimating the residual AR1 process (hint, look at `standata(model2)`), you will see that this model is estimating autocorrelated errors for the full time period, even though some of these time points have missing observations. This is useful for getting more realistic estimates of the residual autocorrelation parameters. `mvgam` does the same when using a latent trend AR1 model, though it is considerably faster to fit because it does not rely on the latent multivariate normal parameterization. Before inspecting the model further, we will now fit an equivalent model using `mvgam` to see what syntax is needed (note that only 250 posterior samples per chain are taken to reduce the size of the model, which will make it easier to download for completing the exercises):
 ```{r model3, include=FALSE}
 model3 <- xfun::cache_rds(mvgam(count ~ 
                   s(ndvi_lag12, k = 9) +
@@ -488,6 +487,7 @@ model3 <- xfun::cache_rds(mvgam(count ~
                 family = poisson(),
                 data = data_train,
                 newdata = data_test,
+                samples = 250,
                 trend_model = 'AR1'))
 ```
 
@@ -498,6 +498,7 @@ model3 <- mvgam(count ~
                 family = poisson(),
                 data = data_train,
                 newdata = data_test,
+                samples = 250,
                 trend_model = 'AR1')
 ```
 
@@ -1019,7 +1020,7 @@ priors$prior[3] <- 'rho_gp ~ normal(28, 2);'
 priors
 ```
 
-Now that we have updated the prior for $\rho$, let's see if this makes any impact on our inferences by re-running the model and supplying the `priors` object to the model (use `?set_prior` for advice on how to do the same in `brms`)
+Now that we have updated the prior for $\rho$, let's see if this makes any impact on our inferences by re-running the model and supplying the `priors` object to the model (use `?set_prior` for advice on how to do the same in `brms`). Again we use only 250 posterior samples per chain to reduce the model's size for working with exercises
 ```{r model6, include=FALSE}
 model6 <- xfun::cache_rds(mvgam(count ~ 
                   s(ndvi_lag12, k = 9) +
@@ -1030,6 +1031,7 @@ model6 <- xfun::cache_rds(mvgam(count ~
                 # include the priors dataframe to 
                 # update or rho_gp prior
                 priors = priors,
+                samples = 250,
                 trend_model = 'GP'))
 ```
 
@@ -1043,6 +1045,7 @@ model6 <- mvgam(count ~
                 # include the priors dataframe to 
                 # update or rho_gp prior
                 priors = priors,
+                samples = 250,
                 trend_model = 'GP')
 ```
 
