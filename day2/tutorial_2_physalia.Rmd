@@ -143,7 +143,7 @@ library(tidybayes)
 library(ggplot2)
 ```
 
-We will begin by continuing our work with time series of rodent captures from the Portal Project, [a long-term monitoring study based near the town of Portal, Arizona](https://portal.weecology.org/){target="_blank"}, with particular focus on the time series of captures for the Desert Pocket Mouse *Chaetodipus penicillatus*. Data manipulations will proceed in a similar way as in *Tutorial 1*, except that we now use a lagged version of `ndvi` (at a lag of 12 lunar months) instead of using the current values of `ndvi` (see `?dplyr::lag` for details) to give you a sense of how you can create and use lagged predictors in time series models
+We will begin by continuing our work with time series of rodent captures from the Portal Project, [a long-term monitoring study based near the town of Portal, Arizona](https://portal.weecology.org/){target="_blank"}, with particular focus on the time series of captures for the Desert Pocket Mouse *Chaetodipus penicillatus*. Data manipulations will proceed in a similar way as in [Tutorial 1](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia){target="_blank"}, except that we now use a lagged version of `ndvi` (at a lag of 12 lunar months) instead of using the current values of `ndvi` (see `?dplyr::lag` for details) to give you a sense of how you can create and use lagged predictors in time series models
 ```{r Access time series data}
 data("portal_data")
 ```
@@ -232,7 +232,7 @@ model_data_trimmed %>%
 ```
 
 ## Forecasting with temporal smooths
-Our last tutorial ended with us fitting an `mvgam` model with a smooth function of `time` to capture temporal variation. The lectures have illustrated why this might be a bad idea if one of our goals is to produce useful forecasts. We will produce forecasts from this model to show why this can be problematic. Start by refitting the model from *Tutorial 1*, including the `data_test` object as `newdata` to ensure the model automatically produces conditional Bayesian forecasts.
+Our last tutorial ended with us fitting an `mvgam` model with a smooth function of `time` to capture temporal variation. The lectures have illustrated why this might be a bad idea if one of our goals is to produce useful forecasts. We will produce forecasts from this model to show why this can be problematic. Start by refitting the model from [Tutorial 1](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia){target="_blank"}, including the `data_test` object as `newdata` to ensure the model automatically produces conditional Bayesian forecasts.
 ```{r model0, include = FALSE}
 model0 <- xfun::cache_rds(mvgam(count ~ s(time, bs = 'bs', k = 15) + 
                   ndvi_lag12 + 
@@ -329,7 +329,7 @@ model0 <- mvgam(count ~ s(time, bs = 'bs', k = 15,
 Another useful blog post by Gavin Simpson on [strategies for fitting nonlinear interactive effects with GAMs to model changing seasonal patterns in time series](https://fromthebottomoftheheap.net/2015/11/21/climate-change-and-spline-interactions/){target="_blank"} addresses the possibility of fitting models that explicitly allow for autocorrelated errors. If our model's residuals are autocorrelated, our estimates of uncertainty around other regression parameters (such as the $\beta$ coefficients) can be biased and misleading. Failing to address this problem may lead to false inferences and perhaps to poor forecasts. Fortunately there are ways we can tackle this by explicitly modelling the autocorrelation in our model's errors. This can be done using `mgcv` functionality, as Gavin explains in his blog post above. But we will use `brms` here as it is more flexible and provides an interface that is more consistent with `mvgam`. 
 
 ### A standard Poisson GLM in `brms`
-First, we will fit a similar model to those used in *Tutorial 1* so to see how the `brms` interface works. You will notice that the interface is very familiar, relying on the usual `R` formula syntax (see `?brmsformula` for more details and examples). But there are some key differences between `brms` and `mvgam`. For example, `brms` offers more options for setting prior distributions (see `?get_prior` and `?set_prior` for details) and can handle a much larger diversity of response distributions (see `?brmsfamily` for details). But for now, we will stick with the Poisson distribution and use the same predictors as previously (a nonlinear function of `ndvi_lag12` and a parametric, linear function of `mintemp`):
+First, we will fit a similar model to those used in [Tutorial 1](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia){target="_blank"} so to see how the `brms` interface works. You will notice that the interface is very familiar, relying on the usual `R` formula syntax (see `?brmsformula` for more details and examples). But there are some key differences between `brms` and `mvgam`. For example, `brms` offers more options for setting prior distributions (see `?get_prior` and `?set_prior` for details) and can handle a much larger diversity of response distributions (see `?brmsfamily` for details). But for now, we will stick with the Poisson distribution and use the same predictors as previously (a nonlinear function of `ndvi_lag12` and a parametric, linear function of `mintemp`):
 ```{r model1, include = FALSE}
 model1 <- xfun::cache_rds(brm(count ~ 
                 s(ndvi_lag12, k = 9) +
@@ -761,7 +761,7 @@ As you can see, it takes some work to compute both hindcasts and forecasts from 
 1. Compare estimates for the latent residual error terms ($\sigma_{error}$) from each model. In `mvgam`, this parameter is called `sigma[1]`, while in `brms`, it is called `sderr`
 2. Compare estimates for the parametric effect of minimum temperature ($\beta_{mintemp}$) from each model. In `mvgam`, this parameter is called `mintemp`, while in `brms`, it is called `b_mintemp`
 3. Look at the Dunn-Smyth residuals for model 3 and provide a few comments describing what you see (use `plot.mvgam` with `type = residuals`). Does this model seem to capture the relevant features of the autocorrelated observed data?
-4. Inspect posterior hindcasts and forecasts from model 3 using the steps we carried out in *Tutorial 1*
+4. Inspect posterior hindcasts and forecasts from model 3 using the steps we carried out in [Tutorial 1](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia){target="_blank"}
 
 ## Gaussian Processes
 Another way we can simultaneously capture dynamic errors in ecological time series is by using a squared exponential Gaussian Process to model the latent temporal dynamics: 
@@ -976,7 +976,7 @@ The estimated temporal functions can be visualized by plotting the `trend` compo
 plot(model5, type = 'trend', newdata = data_test)
 ```
 
-As we saw in *Tutorial 1*, it can also be useful to understand first derivatives of smooth functions to get a sense of when (in history) they were increasing or decreasing. We can view the first derivative estimates for this model's smooth trend using the following command:
+As we saw in [Tutorial 1](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia){target="_blank"}, it can also be useful to understand first derivatives of smooth functions to get a sense of when (in history) they were increasing or decreasing. We can view the first derivative estimates for this model's smooth trend using the following command:
 ```{r fig.asp = 1.2}
 plot(model5, type = 'trend', derivatives = TRUE)
 ```
