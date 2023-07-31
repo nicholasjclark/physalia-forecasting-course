@@ -398,17 +398,19 @@ dplyr::glimpse(model_data)
 levels(model_data$year)
 ```
 
-We are now ready for our first `mvgam` model. The syntax will be familiar to users who have previously built models with `mgcv`. But for a refresher, see `?formula.gam` and the examples in `?gam`. Random effects can be specified using the `s` wrapper with the `re` basis. Note that we can also suppress the primary intercept using the usual `R` formula syntax `- 1`. `mvgam` has a number of possible observation families that can be used, see `?mvgam_families` for more information. We will use `Stan` as the fitting engine, which deploys Hamiltonian Monte Carlo (HMC) for full Bayesian inference. By default, 4 HMC chains will be run using a warmup of 500 iterations and collecting 500 posterior samples from each chain. Interested users should consult the [`Stan` user's guide](https://mc-stan.org/docs/stan-users-guide/index.html){target="_blank"} for more information about the software and the enormous variety of models that can be tackled with HMC.
+We are now ready for our first `mvgam` model. The syntax will be familiar to users who have previously built models with `mgcv`. But for a refresher, see `?formula.gam` and the examples in `?gam`. Random effects can be specified using the `s` wrapper with the `re` basis. Note that we can also suppress the primary intercept using the usual `R` formula syntax `- 1`. `mvgam` has a number of possible observation families that can be used, see `?mvgam_families` for more information. We will use `Stan` as the fitting engine, which deploys Hamiltonian Monte Carlo (HMC) for full Bayesian inference. By default, 4 HMC chains will be run using a warmup of 500 iterations and collecting 250 posterior samples from each chain. Ordinarily we would take more posterior samples per chain but 250 give us an object that will be easier to download for completing the exercises. Interested users should consult the [`Stan` user's guide](https://mc-stan.org/docs/stan-users-guide/index.html){target="_blank"} for more information about the software and the enormous variety of models that can be tackled with HMC.
 ```{r model1, include=FALSE}
 model1 <- xfun::cache_rds(mvgam(count ~ s(year, bs = 're') - 1,
                 family = poisson(),
-                data = model_data))
+                data = model_data, 
+                samples = 250))
 ```
 
 ```{r eval=FALSE}
 model1 <- mvgam(count ~ s(year, bs = 're') - 1,
                 family = poisson(),
-                data = model_data)
+                data = model_data,
+                samples = 250)
 ```
 
 Once the model has finished, the first step is to inspect the `summary` to ensure no major diagnostic warnings have been produced and to quickly summarise posterior distributions for key parameters
