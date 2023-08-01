@@ -1,6 +1,6 @@
 ---
 title: "Ecological forecasting in R"
-subtitle: "Lecture 1: Introduction"
+subtitle: "Lecture 1: Introduction to time series models"
 institute: "School of Veterinary Science, University of Queensland"
 author: "Nicholas Clark"
 date: "0900&ndash;1200 CET Monday 4th September, 2023"
