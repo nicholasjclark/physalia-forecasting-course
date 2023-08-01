@@ -523,7 +523,7 @@ class: inverse middle center big-subsection
 
 ---
 
-## Detecting lagged effects: 
+## Detecting lagged effects
 [Lag plots](https://otexts.com/fpp3/lag-plots.html)
 
 Autocorrelation functions ([ACFs](https://otexts.com/fpp3/acf.html))
