@@ -77,7 +77,7 @@ remotes::install_github('nicholasjclark/mvgam', force = TRUE)
 
  
 
-## Monday (day 1) [Tutorial](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia)
+## Monday (day 1) [Slides](https://nicholasjclark.github.io/physalia-forecasting-course/day1/lecture_1_slidedeck) | [Tutorial](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia)
 * Introduction to time series and time series visualization
 * Some traditional time series models and their assumptions
 * GLMs and GAMs for ecological modelling
