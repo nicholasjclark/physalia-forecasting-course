@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Ecological forecasting in R</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Nicholas Clark" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/panelset/panelset.css" rel="stylesheet" />
+    <script src="libs/panelset/panelset.js"></script>
+    <link href="libs/animate.css/animate.xaringan.css" rel="stylesheet" />
+    <script src="libs/fabric/fabric.min.js"></script>
+    <link href="libs/xaringanExtra-scribble/scribble.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-scribble/scribble.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#FF0000"],"pen_size":3,"eraser_size":30,"palette":[]}) })</script>
+    <script src="libs/clipboard/clipboard.min.js"></script>
+    <link href="libs/xaringanExtra-clipboard/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-clipboard/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"Copy Code","success":"Copied!","error":"Press Ctrl+C to Copy"})</script>
+    <link href="libs/tile-view/tile-view.css" rel="stylesheet" />
+    <script src="libs/tile-view/tile-view.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="slides.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: inverse, middle, left, my-title-slide, title-slide
+
+.title[
+# Ecological forecasting in R
+]
+.subtitle[
+## Lecture 1: Introduction
+]
+.author[
+### Nicholas Clark
+]
+.institute[
+### School of Veterinary Science, University of Queensland
+]
+.date[
+### 0900–1200 CET Monday 4th September, 2023
+]
+
+---
+
+class: inverse middle center big-subsection
+
+
+
+<style>.panelset{--panel-tab-foreground: #8F2727;--panel-tab-inactive-opacity: 0.8;}</style>
+
+
+
+
+
+
+
+
+
+
+
+# Welcome
+
+???
+
+---
+
+## Workflow
+
+Access the [tutorial html here](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia)
+- Download the data objects and exercise `R` script from the html file
+- Complete exercises and use Slack to ask questions
+
+Relevant open-source materials include:
+- [Forecasting Principles and Practice](https://otexts.com/fpp3/)
+- [Applied Time Series Analysis for Fisheries and Environmental Sciences](https://atsa-es.github.io/atsa-labs/)
+- [Ecological Forecasting &amp; Dynamics Course](https://course.naturecast.org/)
+- [Ecological Forecasting Initiative's Youtube channel](https://www.youtube.com/@ecoforecast)
+
+---
+
+## This lecture's topics
+
+Why forecast?
+
+Why are time series difficult?
+
+Visualizing time series
+
+Common time series models
+
+Why they fail in ecology
+
+---
+class: inverse middle center big-subsection
+
+# Why forecast? 
+
+---
+class: middle center
+###“Because all decision making is based on what will happen in the future, either under the status quo or different decision alternatives, decision making ultimately depends on forecasts”
+  
+[Dietze et al. 2018](https://ecoforecast.org/about/)
+
+---
+
+background-image: url('./resources/fc_cycle.png')
+background-size: contain
+
+---
+
+background-image: url('./resources/big_data.gif')
+background-size: contain
+background-color: #F2F2F2
+
+---
+
+## Where is forecasting used?
+Fisheries stocks, landings and bycatch risks
+
+Coral bleaching and algal bloom risks
+
+Carbon stocks
+
+Wildlife population dynamics
+
+[Many other examples](https://ecoforecast.org/member-forecasting-profiles/)
+
+---
+
+class: full-size
+
+## [NOAA Coastwatch's `EcoCast`](https://coastwatch.pfeg.noaa.gov/ecocast/)
+.pull-right[![Ecocast system](resources/Ecocast.jpg)]
+Tell fishers where to avoid bycatch
+
+Harnesses up-to-date information for ecological models:
+- Fisheries bycatch data
+- Satellite observations
+- Oceanography products
+
+Builds distribution models and dynamically updates maps
+
+---
+
+
+background-image: url('./resources/ecocast_screen.png')
+background-size: contain
+
+---
+
+class: full-size
+
+## [Portal Project's `Portalcast`](https://portal.naturecast.org/)
+.pull-right[&lt;br&gt;![Portalcast system](resources/pp_image.jpg)]
+
+Predict rodent abundance up to one year ahead
+
+Harnesses up-to-date information for ecological models:
+- Rodent captures from baited traps
+- Satellite observations
+
+Builds time series models and dynamically update forecasts
+
+---
+
+background-image: url('./resources/portal_forecast.png')
+background-size: contain
+
+---
+
+class: inverse middle center big-subsection
+
+# Why are time series difficult?
+
+---
+
+## Some challenges of time series 
+Temporal autocorrelation 
+
+Lagged effects
+
+Non-Gaussian data and missing observations 
+
+Measurement error
+
+Time-varying effects
+
+Nonlinearities
+
+Multi-series clustering
+
+---
+
+## Let's focus on these for now 
+.emphasize[Temporal autocorrelation] 
+
+
+.emphasize[Lagged effects]
+
+.grey[
+Non-Gaussian data and missing observations 
+
+Measurement error
+
+Time-varying effects
+
+Nonlinearities
+
+Multi-series clustering]
+
+---
+
+## What is temporal autocorrelation?
+Values at current time .emphasize[correlated with past values]
+
+`$$Cor({Y}_{t}, {Y}_{t-lag})\neq0$$`
+
+---
+## Refresher: what is correlation?
+
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-1-1.svg" style="display: block; margin: auto;" /&gt;
+
+Correlation assumes a .emphasize[linear] relationship among two variables
+
+---
+
+## What is temporal autocorrelation?
+Values at current time .emphasize[correlated with past values]
+
+`$$Cor({Y}_{t}, {Y}_{t-lag})\neq0$$`
+
+We can estimate the correlation `\((\beta)\)` with linear regression
+
+`$$\boldsymbol{Y}_{t}\sim \text{Normal}(\alpha + \color{darkred}{\beta} * \boldsymbol{Y}_{t-lag},\sigma)$$`
+
+---
+
+## What is temporal autocorrelation?
+Values at current time .emphasize[correlated with past values]
+
+`$$Cor({Y}_{t}, {Y}_{t-lag})\neq0$$`
+
+We can estimate the correlation `\((\beta)\)` with linear regression
+
+`$$\boldsymbol{Y}_{t}\sim \text{Normal}(\alpha + \color{darkred}{\beta} * \boldsymbol{Y}_{t-lag},\sigma)$$`
+
+Generalize to state that current value of a series (at time `\(t\)`) is .emphasize[a function] of it's own past values (at time `\(t-lag\)`)
+
+`$$\boldsymbol{Y}_{t}\sim \text{f}( \boldsymbol{Y}_{t-lag})$$`
+
+---
+## A *positively* autocorrelated series
+.panelset[
+.panel[.panel-name[AR(1) series]
+
+
+```r
+# set seed for reproducibility
+set.seed(1111)
+
+# number of timepoints
+T &lt;- 100
+
+# use arima.sim to simulate from an AR(1) model
+series &lt;- arima.sim(model = list(ar = 0.8), n = T, sd = 1)
+
+# plot the time series as a line
+plot(series, type = 'l', bty = 'l', lwd = 2, 
+     col = 'darkred', ylab = 'Y', xlab = 'Time')
+```
+]
+
+.panel[.panel-name[The implicit model]
+`$$\boldsymbol{Y}_{t}\sim \text{Normal}(\color{darkred}{0.8} * \boldsymbol{Y}_{t-1},\color{darkred}{1})$$`
+]
+
+.panel[.panel-name[View the series]
+.center[![](lecture_1_slidedeck_files/figure-html/ar_sim-1.svg)]
+
+]
+]
+
+---
+
+## A *negatively* autocorrelated series
+.panelset[
+.panel[.panel-name[AR(1) series]
+
+
+```r
+# set seed for reproducibility
+set.seed(1111)
+
+# number of timepoints
+T &lt;- 100
+
+# use arima.sim to simulate from an AR(1) model
+series &lt;- arima.sim(model = list(ar = -0.8), n = T, sd = 1)
+
+# plot the time series as a line
+plot(series, type = 'l', bty = 'l', lwd = 2, 
+     col = 'darkred', ylab = 'Y', xlab = 'Time')
+```
+]
+
+.panel[.panel-name[The implicit model]
+`$$\boldsymbol{Y}_{t}\sim \text{Normal}(\color{darkred}{-0.8} * \boldsymbol{Y}_{t-1},\color{darkred}{1})$$`
+]
+
+.panel[.panel-name[View the series]
+.center[![](lecture_1_slidedeck_files/figure-html/ar_simneg-1.svg)]
+
+]
+]
+
+---
+## Correlations can occur *over &gt;1 lag*
+.panelset[
+.panel[.panel-name[AR(3) series]
+
+
+```r
+# set seed for reproducibility
+set.seed(1111)
+
+# number of timepoints
+T &lt;- 100
+
+# use arima.sim to simulate from an AR(3) model
+series &lt;- arima.sim(model = list(ar = c(0.8, 0.35, -0.25)), n = T, sd = 1)
+
+# plot the time series as a line
+plot(series, type = 'l', bty = 'l', lwd = 2, 
+     col = 'darkred', ylab = 'Y', xlab = 'Time')
+```
+]
+
+.panel[.panel-name[The implicit model]
+`$$\boldsymbol{Y}_{t}\sim \text{Normal}(\color{darkred}{0.8} * \boldsymbol{Y}_{t-1} \color{darkred}{+0.35} * \boldsymbol{Y}_{t-2} \color{darkred}{-0.25} * \boldsymbol{Y}_{t-3},\color{darkred}{1})$$`
+]
+
+.panel[.panel-name[View the series]
+.center[![](lecture_1_slidedeck_files/figure-html/ar3_sim-1.svg)]
+
+]
+]
+
+---
+
+## Lagged effects of predictors
+
+External conditions (eg temperature, humidity, landcover) often influence what happens to a series .emphasize[at later timepoints]
+
+&lt;br&gt;
+
+`$$\boldsymbol{Y}_{t}\sim \text{f}( \boldsymbol{Y}_{t-lag}, \color{darkred}{\boldsymbol{X}_{t-lag}})$$`
+
+---
+
+
+class: middle center
+## Many series show complex correlation structures; they can also show other temporal patterns
+
+---
+
+class: full-size
+
+## Seasonal patterns
+.pull-right-bigger[![Lynx](resources/canada-lynx-gary-pritts.jpg)]
+
+
+Many time series show .emphasize[repeated temporal cycles]
+- Breeding seasons
+- Migration
+- Green-ups / green-downs
+- Lunar cycles
+- Predator / prey dynamics
+
+Often change slowly over time
+
+---
+
+## Example seasonal series
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-2-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: inverse middle center big-subsection
+
+# Visualizing time series 
+
+---
+
+## Detecting lagged effects: 
+[Lag plots](https://otexts.com/fpp3/lag-plots.html)
+
+Autocorrelation functions ([ACFs](https://otexts.com/fpp3/acf.html))
+
+Partial autocorrelation functions ([pACFs](https://online.stat.psu.edu/stat510/lesson/2/2.2#:~:text=In%20general%2C%20a%20partial%20correlation,some%20other%20set%20of%20variables.)) 
+
+Cross-correlation functions ([CCFs](https://online.stat.psu.edu/stat510/lesson/8/8.2))
+
+---
+
+## ACF: *independent* correlations
+.panelset[
+.panel[.panel-name[AR(1) ACF]
+
+
+```r
+# set seed for reproducibility
+set.seed(1111)
+
+# number of timepoints
+T &lt;- 100
+
+# use arima.sim to simulate from an AR(1) model
+series &lt;- arima.sim(model = list(ar = c(0.8)), n = T, sd = 1)
+
+# plot the empirical ACF
+acf(series, lwd = 2, bty = 'l',
+    ci.col = 'darkred', main = '')
+```
+]
+
+.panel[.panel-name[View the ACF]
+.center[![](lecture_1_slidedeck_files/figure-html/ar1_acf-1.svg)]
+
+]
+]
+
+---
+
+## pACF: *conditional* correlations
+.panelset[
+.panel[.panel-name[AR(1) pACF]
+
+
+```r
+# set seed for reproducibility
+set.seed(1111)
+
+# number of timepoints
+T &lt;- 100
+
+# use arima.sim to simulate from an AR(1) model
+series &lt;- arima.sim(model = list(ar = c(0.8)), n = T, sd = 1)
+
+# plot the empirical pACF
+pacf(series, lwd = 2, bty = 'l',
+    ci.col = 'darkred', main = '')
+```
+]
+
+.panel[.panel-name[View the pACF]
+.center[![](lecture_1_slidedeck_files/figure-html/ar1_pacf-1.svg)]
+
+]
+]
+
+---
+
+## CCF: *independent* cross-correlations
+.panelset[
+.panel[.panel-name[Lung disease CCF]
+
+
+```r
+# compute a CCF of the built-in lung cancer dataset
+ccf(as.vector(mdeaths), 
+    as.vector(fdeaths), 
+    # compute cross-correlations at each lag
+    type = 'correlation',
+    bty = 'l',
+    lwd = 2,
+    ci.col = 'darkred',
+    # add an informative title
+    main = expression(paste(italic(Cor),
+                            "(", Female~deaths,
+                            ",", Male~deaths, ")")),
+    ylab = "cross-correlation")
+```
+]
+
+.panel[.panel-name[View the CCF]
+.center[![](lecture_1_slidedeck_files/figure-html/death_ccf-1.svg)]
+
+]
+]
+---
+
+## ACFs can often detect seasonality
+.panelset[
+.panel[.panel-name[gas ACF]
+
+
+```r
+# load the 'gas' dataset from the forecast library
+library(forecast)
+data(gas)
+
+# subset to the final 100 observations
+gas &lt;- gas[377:476]
+
+# plot the empirical ACF over 48 lags
+acf(gas, lag.max = 48, lwd = 2, bty = 'l',
+    ci.col = 'darkred', main = '')
+```
+]
+
+.panel[.panel-name[View the ACF]
+.center[![](lecture_1_slidedeck_files/figure-html/gas_acf-1.svg)]
+
+]
+]
+
+---
+## But why did we subset?
+
+
+```r
+# load the 'gas' dataset from the forecast library
+library(forecast)
+data(gas)
+
+# subset to the final 100 observations
+*gas &lt;- gas[377:476]
+
+# plot the empirical ACF over 48 lags
+acf(gas, lag.max = 48, lwd = 2, bty = 'l',
+    ci.col = 'darkred', main = '')
+```
+
+---
+
+## Because `gas` looks like this ...
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## ... and has a clear nonlinear *trend*
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-5-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+## Raw ACF is therefore misleading
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-6-1.svg" style="display: block; margin: auto;" /&gt;
+---
+
+## Decompositions
+Often it is helpful to split (i.e. [decompose](https://otexts.com/fpp3/decomposition.html)) a time series into several sub-components
+- Long-term trends
+- Repeated seasonal patterns
+- Remaining non-temporal variation
+
+These components can be summed to give the original series
+
+---
+## Example: a complex series
+
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-7-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Decomposed: trend + seasonality
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-8-1.svg" style="display: block; margin: auto;" /&gt;
+---
+
+## Under the hood
+
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-9-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: middle center
+## Modelling these multiple components, either additively or multiplicatively, is a major goal of most time series analysis procedures
+
+---
+
+class: inverse middle center big-subsection
+
+# Common time series models 
+
+---
+
+## Common time series models
+Random Walk ([RW](https://atsa-es.github.io/atsa-labs/sec-tslab-random-walks-rw.html))
+
+Autoregressive ([AR](https://atsa-es.github.io/atsa-labs/sec-tslab-autoregressive-ar-models.html)) 
+
+Autoregressive Integrated Moving Average ([ARIMA](https://otexts.com/fpp3/arima.html); require [stationarity](https://otexts.com/fpp3/stationarity.html))
+
+Exponential Smoothing ([ETS](https://otexts.com/fpp3/expsmooth.html))
+
+[Regression with ARIMA errors](https://otexts.com/fpp3/regarima.html)
+
+---
+
+## *Very* easy to apply in `R` 
+
+&lt;img src="resources/fc_logo.png" style="position:fixed; right:8%; top:4%; width:100px; height:117px; border:none;" /&gt;
+
+
+
+Hyndman’s tools in the [`forecast` library](https://pkg.robjhyndman.com/forecast/) are hugely popular and accessible for time series analysis / forecasting 
+  
+ETS handles many types of seasonality and nonlinear trends 
+  
+(S)ARIMAX includes additive fixed effects of predictors while capturing trends and seasonality
+
+*Some* of these algorithms can handle missing data
+
+*All* are extremely fast to fit and forecast
+
+---
+
+
+## Great! But what about these? 
+.grey[Temporal autocorrelation
+
+
+Lagged effects]
+
+
+.emphasize[Non-Gaussian data and missing observations
+
+Measurement error
+
+Time-varying effects
+
+Nonlinearities
+
+Multi-series clustering]
+
+---
+
+class: inverse middle center big-subsection
+
+# Time series models fail in ecology
+
+---
+
+## Ecological time series include
+Counts of multiple species over time
+
+Presence-absence of species
+
+Repeated captures in multiple plots
+
+Censored measures (OTUs / pollutants with limits of detection) 
+
+Phenology records
+
+Tree rings
+
+etc...
+
+---
+
+## Example ecological time series
+&lt;/br&gt;
+.pull-left[
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-10-1.svg" style="display: block; margin: auto;" /&gt;
+]
+.pull-right[
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-11-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Another ecological time series
+&lt;/br&gt;
+.pull-left[
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-12-1.svg" style="display: block; margin: auto;" /&gt;
+]
+.pull-right[
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-13-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Yet another ecological time series
+
+&lt;/br&gt;
+.pull-left[
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-14-1.svg" style="display: block; margin: auto;" /&gt;
+]
+.pull-right[
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-15-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Collections of ecological series
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-16-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Measurement error is *everywhere*
+&lt;/br&gt;
+&lt;img align="center" width="1200" height="300" src="resources/auger.jpg"&gt;
+
+
+.small[[Auger-Methe *et al* 2021](https://esajournals.onlinelibrary.wiley.com/doi/10.1002/ecm.1470)]
+
+---
+
+&lt;body&gt;&lt;div id="pan"&gt;&lt;/div&gt;&lt;/body&gt;
+
+---
+class: animated fadeIn slower inverse middle center big-subsection
+
+# We can (and should) do better
+
+---
+
+## In the next lecture, we will cover
+
+Useful probability distributions for ecologists
+
+Generalized Linear and Additive Models
+
+Temporal random effects 
+
+Temporal residual correlation structures
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
