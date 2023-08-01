@@ -1,0 +1,305 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:ital,wght@0,400;0,700;0,800;1,400;1,700;1,800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab+Condensed:ital,wght@0,400;0,700;0,800;1,400;1,700;1,800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --purple-color: #51247A;
+    --neutral-color: #f0f0f0;
+    --red-color: #A25050;
+    --blue-color: #025196;
+    --black-color: #000000;
+}
+
+/* figure placements */
+.center-fig {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+.remark-slide-content.full-size{
+  padding-right: 0px;
+  margin-right: 0;
+  width 100px;
+}
+
+.pull-right-bigger {
+  float: right;
+  width: 58%;
+  margin: 0; !important
+  padding: 0; !important
+  border: 0; !important
+  top: 0px; !important
+  right: 0px; !important
+  bottom: 0px; !important
+  left: 0px; !important
+}
+
+
+@keyframes panno {
+  from {
+    background-position: 0% 0%;
+  }
+  to {
+    background-position: 100% 100%;
+  }
+}
+
+#pan {
+  color: white;
+  text-align: center;
+  width: 1800px;
+  height:100vh;
+  position:absolute;
+  top:0px;
+  right:0px;
+  bottom:0px;
+  left:0px;
+  background-image: url('./resources/curves.png');
+  background-size: 2382px 952.5px;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background-repeat: repeat;
+  animation: panno linear 25s infinite  
+}
+
+/* backgrounds */
+.inverse {
+    background-color: var(--purple-color);
+}
+
+.black-inverse {
+    background-color: var(--black-color);
+}
+
+ul {
+  list-style: none; /* Remove default bullets */
+}
+
+ul li::before {
+  content: "\2022";  /* Add content: \2022 is the CSS Code/unicode for a bullet */
+  color: white; /* Change the color */
+  display: inline-block; /* Needed to add space between the bullet and the text */
+  width: 1em; /* Also needed for space (tweak if needed) */
+  margin-left: -1.5em;
+}
+
+/* body text modifications */
+body {
+    font-family: 'Roboto Slab';
+    font-weight: 500;
+    margin: 0px;
+  height: 100%;
+}
+
+/* line spacing */
+p {
+    line-height: 36px;
+    margin-top: 42px;
+    margin-bottom: 40px;
+}
+
+p + ul {
+    margin-top: -30px;
+}
+
+.remark-slide-content {
+    font-size: 30px;
+    font-weight: 500;
+}
+
+/* header modifications */
+h1 {
+    font-family: 'Roboto Slab Condensed';
+    font-weight: 600;
+    color: var(--purple-color);
+}
+
+.massive-subsection h1 {
+    font-size: 400px;
+    color: var(--neutral-color);
+}
+
+.huge-subsection h1 {
+    font-size: 250px;
+    color: var(--neutral-color);
+}
+
+.big-subsection h1 {
+    font-size: 150px;
+    color: var(--neutral-color);
+}
+
+.large-subsection h1 {
+    font-size: 135px;
+    color: var(--neutral-color);
+}
+
+.subsection h1 {
+    font-size: 75px;
+    color: var(--neutral-color);
+}
+
+h2,h3 {
+    font-family: 'Roboto Slab Condensed';
+    font-weight: 600;
+    color: var(--purple-color);
+    margin-left: -0.4em;
+    margin-bottom: 0.5em;
+}
+
+.remark-slide-content h2 { 
+  font-size: 2.1em; 
+}
+
+/* title slide modifications */
+.my-title-slide {
+    background-position: bottom;
+    background-size: cover;
+}
+
+.my-title-slide h1 {
+    color: var(--neutral-color);
+    font-size: 80px;
+    margin-left: -0.25em;
+    margin-bottom: 0.2em;
+}
+
+.my-title-slide h2 {
+    margin-bottom: 1.5em;
+    margin-top: 0.5em;
+    margin-left: -0.25em;
+    margin-bottom: 0.5em;
+    font-size: 48px;
+}
+
+.my-title-slide .remark-slide-number {
+  display: none;
+}
+
+/* code modifications */
+.remark-code, .remark-inline-code {
+    font-family: 'Fira Code';
+    font-weight: 400;
+    color: var(--blue-color);
+}
+
+.remark-code {
+    font-size: 20px;
+}
+
+.small .remark-code-line,
+.small .remark-code-line  {
+    font-size: 16px;
+}
+
+.smaller .remark-code-line,
+.smaller .remark-code-line  {
+    font-size: 13px;
+}
+
+/* hyperlink modifications */
+a {
+    color: var(--red-color);
+}
+
+a:hover {
+    color: var(--purple-color);
+}
+
+a:focus {
+    color: var(--red-color);
+}
+
+a:visited {
+    color: var(--red-color);
+}
+
+/* footnotes, refs, slide numbers */
+.footnote {
+    bottom: -0.75em;
+    left: 0.2em;
+    font-size: 0.75em;
+}
+
+.references {
+    position: absolute;
+    padding-right: 4em;
+    bottom: 0.5em;
+    left: 3em;
+    font-size: 0.75em;
+}
+
+.remark-slide-number {
+    color: var(--purple-color);
+    font-size: 0.4em;
+}
+
+b, strong {
+    font-weight: 600;
+    colour: var(--purple-color);
+}
+
+.small .mjx-chtml {
+    font-size: 115% !important;
+}
+
+.mjx-chtml{
+    font-size: 110% !important;
+}
+
+.large-subsection .mjx-chtml{
+    font-size: 150% !important;
+}
+
+.big .mjx-chtml{
+    font-size: 150% !important;
+}
+
+.bigger .mjx-chtml{
+    font-size: 175% !important;
+}
+
+.emphasize {
+  color:#8F2727;
+  font-weight: 600;
+}
+
+.grey {
+  color:#d3d3d3;
+}
+
+.alpha {
+    background-color: rgba(0,0,0,0.6);
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.smallcaps {
+    font-variant: small-caps;
+}
+
+.small {
+    font-size: 0.75em;
+}
+
+.smaller {
+    font-size: 0.5em;
+}
+
+.big {
+    font-size: 1.5em;
+}
+
+.bigger {
+    font-size: 2em;
+}
+
+.text-highlight {
+    color: var(--purple-color);
+}
