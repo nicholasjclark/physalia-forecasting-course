@@ -9,10 +9,6 @@
     <link href="libs/panelset/panelset.css" rel="stylesheet" />
     <script src="libs/panelset/panelset.js"></script>
     <link href="libs/animate.css/animate.xaringan.css" rel="stylesheet" />
-    <script src="libs/fabric/fabric.min.js"></script>
-    <link href="libs/xaringanExtra-scribble/scribble.css" rel="stylesheet" />
-    <script src="libs/xaringanExtra-scribble/scribble.js"></script>
-    <script>document.addEventListener('DOMContentLoaded', function() { window.xeScribble = new Scribble({"pen_color":["#FF0000"],"pen_size":3,"eraser_size":30,"palette":[]}) })</script>
     <script src="libs/clipboard/clipboard.min.js"></script>
     <link href="libs/xaringanExtra-clipboard/xaringanExtra-clipboard.css" rel="stylesheet" />
     <script src="libs/xaringanExtra-clipboard/xaringanExtra-clipboard.js"></script>
@@ -49,8 +45,6 @@ class: inverse middle center big-subsection
 
 
 <style>.panelset{--panel-tab-foreground: #8F2727;--panel-tab-inactive-opacity: 0.8;}</style>
-
-
 
 
 
@@ -317,35 +311,12 @@ plot(series, type = 'l', bty = 'l', lwd = 2,
 
 ---
 ## Correlations can occur *over &gt;1 lag*
-.panelset[
-.panel[.panel-name[AR(3) series]
 
+Can include multiple lags of the same predictor variable (the response in this case)
 
-```r
-# set seed for reproducibility
-set.seed(1111)
+&lt;br/&gt;
 
-# number of timepoints
-T &lt;- 100
-
-# use arima.sim to simulate from an AR(3) model
-series &lt;- arima.sim(model = list(ar = c(0.8, 0.35, -0.25)), n = T, sd = 1)
-
-# plot the time series as a line
-plot(series, type = 'l', bty = 'l', lwd = 2, 
-     col = 'darkred', ylab = 'Y', xlab = 'Time')
-```
-]
-
-.panel[.panel-name[The implicit model]
 `$$\boldsymbol{Y}_{t}\sim \text{Normal}(\color{darkred}{0.8} * \boldsymbol{Y}_{t-1} \color{darkred}{+0.35} * \boldsymbol{Y}_{t-2} \color{darkred}{-0.25} * \boldsymbol{Y}_{t-3},\color{darkred}{1})$$`
-]
-
-.panel[.panel-name[View the series]
-.center[![](lecture_1_slidedeck_files/figure-html/ar3_sim-1.svg)]
-
-]
-]
 
 ---
 
@@ -371,7 +342,7 @@ class: full-size
 .pull-right-bigger[![Lynx](resources/canada-lynx-gary-pritts.jpg)]
 
 
-Many time series show .emphasize[repeated temporal cycles]
+Many time series show .emphasize[repeated periodic cycles]
 - Breeding seasons
 - Migration
 - Green-ups / green-downs
@@ -469,13 +440,10 @@ pacf(series, lwd = 2, bty = 'l',
 
 ```r
 # compute a CCF of the built-in lung cancer dataset
-ccf(as.vector(mdeaths), 
-    as.vector(fdeaths), 
+ccf(as.vector(mdeaths), as.vector(fdeaths), 
     # compute cross-correlations at each lag
     type = 'correlation',
-    bty = 'l',
-    lwd = 2,
-    ci.col = 'darkred',
+    bty = 'l', lwd = 2, ci.col = 'darkred',
     # add an informative title
     main = expression(paste(italic(Cor),
                             "(", Female~deaths,
@@ -705,11 +673,6 @@ etc...
 .small[[Auger-Methe *et al* 2021](https://esajournals.onlinelibrary.wiley.com/doi/10.1002/ecm.1470)]
 
 ---
-
-&lt;body&gt;&lt;div id="pan"&gt;&lt;/div&gt;&lt;/body&gt;
-
----
-class: animated fadeIn slower inverse middle center big-subsection
 
 # Can we do better?
 
