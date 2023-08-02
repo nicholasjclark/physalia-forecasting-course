@@ -38,10 +38,6 @@ xaringanExtra::style_panelset_tabs(foreground = '#8F2727',
 xaringanExtra::use_animate_css()
 ```
 
-```{r xaringan-scribble, echo=FALSE}
-xaringanExtra::use_scribble()
-```
-
 ```{r xaringanExtra-clipboard, echo=FALSE}
 xaringanExtra::use_clipboard()
 ```
@@ -444,34 +440,12 @@ $$\boldsymbol{Y}_{t}\sim \text{Normal}(\color{darkred}{-0.8} * \boldsymbol{Y}_{t
 
 ---
 ## Correlations can occur *over >1 lag*
-.panelset[
-.panel[.panel-name[AR(3) series]
 
-```{r ar3_sim, fig.show='hide', fig.height=4, fig.width=1.9*4}
-# set seed for reproducibility
-set.seed(1111)
+Can include multiple lags of the same predictor variable (the response in this case)
 
-# number of timepoints
-T <- 100
+<br/>
 
-# use arima.sim to simulate from an AR(3) model
-series <- arima.sim(model = list(ar = c(0.8, 0.35, -0.25)), n = T, sd = 1)
-
-# plot the time series as a line
-plot(series, type = 'l', bty = 'l', lwd = 2, 
-     col = 'darkred', ylab = 'Y', xlab = 'Time')
-```
-]
-
-.panel[.panel-name[The implicit model]
 $$\boldsymbol{Y}_{t}\sim \text{Normal}(\color{darkred}{0.8} * \boldsymbol{Y}_{t-1} \color{darkred}{+0.35} * \boldsymbol{Y}_{t-2} \color{darkred}{-0.25} * \boldsymbol{Y}_{t-3},\color{darkred}{1})$$
-]
-
-.panel[.panel-name[View the series]
-.center[![](lecture_1_slidedeck_files/figure-html/ar3_sim-1.svg)]
-
-]
-]
 
 ---
 
@@ -497,7 +471,7 @@ class: full-size
 .pull-right-bigger[![Lynx](resources/canada-lynx-gary-pritts.jpg)]
 
 
-Many time series show .emphasize[repeated temporal cycles]
+Many time series show .emphasize[repeated periodic cycles]
 - Breeding seasons
 - Migration
 - Green-ups / green-downs
@@ -596,13 +570,10 @@ pacf(series, lwd = 2, bty = 'l',
 
 ```{r death_ccf, fig.show='hide', fig.height=4, fig.width=1.9*4}
 # compute a CCF of the built-in lung cancer dataset
-ccf(as.vector(mdeaths), 
-    as.vector(fdeaths), 
+ccf(as.vector(mdeaths), as.vector(fdeaths), 
     # compute cross-correlations at each lag
     type = 'correlation',
-    bty = 'l',
-    lwd = 2,
-    ci.col = 'darkred',
+    bty = 'l', lwd = 2, ci.col = 'darkred',
     # add an informative title
     main = expression(paste(italic(Cor),
                             "(", Female~deaths,
@@ -968,11 +939,6 @@ mvgam::plot_mvgam_series(data = beta_temp$data_train, series = 'all',
 .small[[Auger-Methe *et al* 2021](https://esajournals.onlinelibrary.wiley.com/doi/10.1002/ecm.1470)]
 
 ---
-
-<body><div id="pan"></div></body>
-
----
-class: animated fadeIn slower inverse middle center big-subsection
 
 # Can we do better?
 
