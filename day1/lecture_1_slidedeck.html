@@ -310,24 +310,26 @@ plot(series, type = 'l', bty = 'l', lwd = 2,
 ]
 
 ---
-## Correlations can occur *over &gt;1 lag*
+## Correlations *over &gt;1 lag*
 
 Can include multiple lags of the same predictor variable (the response in this case)
 
 &lt;br/&gt;
 
-`$$\boldsymbol{Y}_{t}\sim \text{Normal}(\color{darkred}{0.8} * \boldsymbol{Y}_{t-1} \color{darkred}{+0.35} * \boldsymbol{Y}_{t-2} \color{darkred}{-0.25} * \boldsymbol{Y}_{t-3},\color{darkred}{1})$$`
+`$$\boldsymbol{Y}_{t}\sim \text{f}(\boldsymbol{Y}_{t-1},\boldsymbol{Y}_{t-2},\boldsymbol{Y}_{t-3})$$`
 
 ---
 
 ## Lagged effects of predictors
 
-External conditions (eg temperature, humidity, landcover) often influence what happens to a series .emphasize[at later timepoints]
+External conditions (eg temperature, humidity, landcover) can also influence what happens to a series at later timepoints
 
 &lt;br&gt;
 
 `$$\boldsymbol{Y}_{t}\sim \text{f}( \boldsymbol{Y}_{t-lag}, \color{darkred}{\boldsymbol{X}_{t-lag}})$$`
-
+&lt;br&gt;
+Where: 
+- `\(\boldsymbol{X}_{t}\)` is the matrix of predictor values at time `\(t\)`
 ---
 
 
@@ -338,7 +340,7 @@ class: middle center
 
 class: full-size
 
-## Seasonal patterns
+## Seasonality
 .pull-right-bigger[![Lynx](resources/canada-lynx-gary-pritts.jpg)]
 
 
@@ -356,6 +358,9 @@ Often change slowly over time
 ## Example seasonal series
 &lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-2-1.svg" style="display: block; margin: auto;" /&gt;
 
+---
+## Another seasonal series
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-3-1.svg" style="display: block; margin: auto;" /&gt;
 ---
 
 class: inverse middle center big-subsection
@@ -375,7 +380,7 @@ Cross-correlation functions ([CCFs](https://online.stat.psu.edu/stat510/lesson/8
 
 ---
 
-## ACF: *independent* correlations
+## *Independent* correlations
 .panelset[
 .panel[.panel-name[AR(1) ACF]
 
@@ -404,7 +409,7 @@ acf(series, lwd = 2, bty = 'l',
 
 ---
 
-## pACF: *conditional* correlations
+## *Conditional* correlations
 .panelset[
 .panel[.panel-name[AR(1) pACF]
 
@@ -433,7 +438,7 @@ pacf(series, lwd = 2, bty = 'l',
 
 ---
 
-## CCF: *independent* cross-correlations
+## *Independent* cross-correlations
 .panelset[
 .panel[.panel-name[Lung disease CCF]
 
@@ -459,7 +464,7 @@ ccf(as.vector(mdeaths), as.vector(fdeaths),
 ]
 ---
 
-## ACFs can often detect seasonality
+## ACFs often detect seasonality
 .panelset[
 .panel[.panel-name[gas ACF]
 
@@ -504,16 +509,16 @@ acf(gas, lag.max = 48, lwd = 2, bty = 'l',
 ---
 
 ## Because `gas` looks like this ...
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
-
----
-
-## ... and has a clear nonlinear *trend*
 &lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-5-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
-## Raw ACF is therefore misleading
+
+## ... and has a nonlinear *trend*
 &lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-6-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+## Raw ACF is misleading
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-7-1.svg" style="display: block; margin: auto;" /&gt;
 ---
 
 ## Decompositions
@@ -527,17 +532,17 @@ These components can be summed to give the original series
 ---
 ## Example: a complex series
 
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-7-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-8-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
-## Decomposed: trend + seasonality
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-8-1.svg" style="display: block; margin: auto;" /&gt;
+## Decompose: trend + seasonality
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-9-1.svg" style="display: block; margin: auto;" /&gt;
 ---
 
 ## Under the hood
 
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-9-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-10-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -565,17 +570,17 @@ Exponential Smoothing ([ETS](https://otexts.com/fpp3/expsmooth.html))
 
 ---
 
-## *Very* easy to apply in `R` 
+## *Very* easy to apply in <svg aria-hidden="true" role="img" viewBox="0 0 581 512" style="height:1em;width:1.13em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:steelblue;overflow:visible;position:relative;"><path d="M581 226.6C581 119.1 450.9 32 290.5 32S0 119.1 0 226.6C0 322.4 103.3 402 239.4 418.1V480h99.1v-61.5c24.3-2.7 47.6-7.4 69.4-13.9L448 480h112l-67.4-113.7c54.5-35.4 88.4-84.9 88.4-139.7zm-466.8 14.5c0-73.5 98.9-133 220.8-133s211.9 40.7 211.9 133c0 50.1-26.5 85-70.3 106.4-2.4-1.6-4.7-2.9-6.4-3.7-10.2-5.2-27.8-10.5-27.8-10.5s86.6-6.4 86.6-92.7-90.6-87.9-90.6-87.9h-199V361c-74.1-21.5-125.2-67.1-125.2-119.9zm225.1 38.3v-55.6c57.8 0 87.8-6.8 87.8 27.3 0 36.5-38.2 28.3-87.8 28.3zm-.9 72.5H365c10.8 0 18.9 11.7 24 19.2-16.1 1.9-33 2.8-50.6 2.9v-22.1z"/></svg>
 
 &lt;img src="resources/fc_logo.png" style="position:fixed; right:8%; top:4%; width:100px; height:117px; border:none;" /&gt;
 
 
 
-Hyndman’s tools in the [`forecast` library](https://pkg.robjhyndman.com/forecast/) are hugely popular and accessible for time series analysis / forecasting 
+Hyndman’s tools in the [`forecast` 📦](https://pkg.robjhyndman.com/forecast/) are hugely popular and accessible for time series analysis / forecasting 
   
-ETS handles many types of seasonality and nonlinear trends 
+[ETS](https://pkg.robjhyndman.com/forecast/reference/ets.html) handles many types of seasonality and nonlinear trends 
   
-(S)ARIMAX includes additive fixed effects of predictors while capturing trends and seasonality
+[(S)ARIMAX](https://pkg.robjhyndman.com/forecast/reference/auto.arima.html) includes additive fixed effects of predictors while capturing trends and seasonality
 
 *Some* of these algorithms can handle missing data
 
@@ -629,10 +634,10 @@ etc...
 ## Example ecological time series
 &lt;/br&gt;
 .pull-left[
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-10-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-11-1.svg" style="display: block; margin: auto;" /&gt;
 ]
 .pull-right[
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-11-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-12-1.svg" style="display: block; margin: auto;" /&gt;
 ]
 
 ---
@@ -640,10 +645,10 @@ etc...
 ## Another ecological time series
 &lt;/br&gt;
 .pull-left[
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-12-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-13-1.svg" style="display: block; margin: auto;" /&gt;
 ]
 .pull-right[
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-13-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-14-1.svg" style="display: block; margin: auto;" /&gt;
 ]
 
 ---
@@ -652,20 +657,20 @@ etc...
 
 &lt;/br&gt;
 .pull-left[
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-14-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-15-1.svg" style="display: block; margin: auto;" /&gt;
 ]
 .pull-right[
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-15-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-16-1.svg" style="display: block; margin: auto;" /&gt;
 ]
 
 ---
 
 ## Collections of ecological series
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-16-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-17-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
-## Measurement error is *everywhere*
+## All can have measurement error
 &lt;/br&gt;
 &lt;img align="center" width="1200" height="300" src="resources/auger.jpg"&gt;
 
@@ -674,7 +679,9 @@ etc...
 
 ---
 
-# Can we do better?
+class: inverse middle center big-subsection
+
+# How can we do better?
 
 ---
 
