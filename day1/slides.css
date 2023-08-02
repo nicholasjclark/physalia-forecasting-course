@@ -89,6 +89,11 @@ ul li::before {
   margin-left: -1.5em;
 }
 
+/* figure caption text modifications */
+p.caption {
+  font-size: 0.6em;
+}
+
 /* body text modifications */
 body {
     font-family: 'Roboto Slab';
@@ -185,8 +190,17 @@ h2,h3 {
 /* code modifications */
 .remark-code, .remark-inline-code {
     font-family: 'Fira Code';
-    font-weight: 400;
+    font-weight: 500;
     color: var(--blue-color);
+}
+
+.remark-code-line-highlighted {
+  background-color:   #51247A20;
+}
+
+
+.hljs-github .hljs {
+    background: #DCBCBC10;
 }
 
 .remark-code {

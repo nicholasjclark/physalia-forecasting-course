@@ -26,6 +26,7 @@ knitr::opts_chunk$set(cache = FALSE, dev = 'svg', echo = TRUE,
                       fig.height = 5.1, fig.width = 1.9 * 5.1)
 library('mgcv')
 library('mvgam')
+library('fontawesome')
 ```
 
 ```{r xaringan-panelset, echo=FALSE}
@@ -439,24 +440,26 @@ $$\boldsymbol{Y}_{t}\sim \text{Normal}(\color{darkred}{-0.8} * \boldsymbol{Y}_{t
 ]
 
 ---
-## Correlations can occur *over >1 lag*
+## Correlations *over >1 lag*
 
 Can include multiple lags of the same predictor variable (the response in this case)
 
 <br/>
 
-$$\boldsymbol{Y}_{t}\sim \text{Normal}(\color{darkred}{0.8} * \boldsymbol{Y}_{t-1} \color{darkred}{+0.35} * \boldsymbol{Y}_{t-2} \color{darkred}{-0.25} * \boldsymbol{Y}_{t-3},\color{darkred}{1})$$
+$$\boldsymbol{Y}_{t}\sim \text{f}(\boldsymbol{Y}_{t-1},\boldsymbol{Y}_{t-2},\boldsymbol{Y}_{t-3})$$
 
 ---
 
 ## Lagged effects of predictors
 
-External conditions (eg temperature, humidity, landcover) often influence what happens to a series .emphasize[at later timepoints]
+External conditions (eg temperature, humidity, landcover) can also influence what happens to a series at later timepoints
 
 <br>
 
 $$\boldsymbol{Y}_{t}\sim \text{f}( \boldsymbol{Y}_{t-lag}, \color{darkred}{\boldsymbol{X}_{t-lag}})$$
-
+<br>
+Where: 
+- $\boldsymbol{X}_{t}$ is the matrix of predictor values at time $t$
 ---
 
 
@@ -467,7 +470,7 @@ class: middle center
 
 class: full-size
 
-## Seasonal patterns
+## Seasonality
 .pull-right-bigger[![Lynx](resources/canada-lynx-gary-pritts.jpg)]
 
 
@@ -484,11 +487,25 @@ Often change slowly over time
 
 ## Example seasonal series
 ```{r echo = FALSE}
+mypar()
 data("AirPassengers")
-plot(AirPassengers, bty = 'l', lwd = 2,
+plot(AirPassengers, bty = 'l', lwd = 3.5,
      col = 'darkred')
 ```
 
+---
+## Another seasonal series
+```{r echo = FALSE}
+mypar()
+portal_data %>%
+  dplyr::mutate(time = moon - (min(moon)) + 1) %>%
+  dplyr::mutate(count = PP) %>%
+  dplyr::mutate(series = as.factor('PP')) %>%
+  dplyr::select(series, year, time, count, mintemp, ndvi) -> model_data
+mylines(x = model_data$count,
+        xlab = 'Time',
+        ylab = 'Rodent captures')
+```
 ---
 
 class: inverse middle center big-subsection
@@ -508,7 +525,7 @@ Cross-correlation functions ([CCFs](https://online.stat.psu.edu/stat510/lesson/8
 
 ---
 
-## ACF: *independent* correlations
+## *Independent* correlations
 .panelset[
 .panel[.panel-name[AR(1) ACF]
 
@@ -536,7 +553,7 @@ acf(series, lwd = 2, bty = 'l',
 
 ---
 
-## pACF: *conditional* correlations
+## *Conditional* correlations
 .panelset[
 .panel[.panel-name[AR(1) pACF]
 
@@ -564,7 +581,7 @@ pacf(series, lwd = 2, bty = 'l',
 
 ---
 
-## CCF: *independent* cross-correlations
+## *Independent* cross-correlations
 .panelset[
 .panel[.panel-name[Lung disease CCF]
 
@@ -589,7 +606,7 @@ ccf(as.vector(mdeaths), as.vector(fdeaths),
 ]
 ---
 
-## ACFs can often detect seasonality
+## ACFs often detect seasonality
 .panelset[
 .panel[.panel-name[gas ACF]
 
@@ -636,13 +653,13 @@ acf(gas, lag.max = 48, lwd = 2, bty = 'l',
 library(forecast)
 mypar()
 data(gas)
-plot(gas,bty = 'l', lwd = 2.5,
+plot(gas,bty = 'l', lwd = 3.5,
      col = 'darkred')
 ```
 
 ---
 
-## ... and has a clear nonlinear *trend*
+## ... and has a nonlinear *trend*
 ```{r echo = FALSE}
 library(forecast)
 mypar()
@@ -650,16 +667,16 @@ data(gas)
 
 gas_stl <- stl(gas, s.window = 13)
 trend <- gas_stl$time.series[,2]
-plot(gas,bty = 'l', lwd = 2.5,
+plot(gas,bty = 'l', lwd = 3.5,
      col = 'grey70')
 
 ## plot the trend
-lines(trend, lwd = 3, col = 'white')
-lines(trend, lwd = 2, col = 'darkred')
+lines(trend, lwd = 3.5, col = 'white')
+lines(trend, lwd = 2.5, col = 'darkred')
 ```
 
 ---
-## Raw ACF is therefore misleading
+## Raw ACF is misleading
 ```{r echo = FALSE}
 # load the 'gas' dataset from the forecast library
 library(forecast)
@@ -685,7 +702,7 @@ These components can be summed to give the original series
 ```{r echo = FALSE}
 mypar()
 data("AirPassengers")
-plot(as.vector(AirPassengers), bty = 'l', lwd = 2.5,
+plot(as.vector(AirPassengers), bty = 'l', lwd = 3.5,
      type = 'l',
      col = 'darkred',
      xlab = '', 
@@ -699,11 +716,11 @@ box(bty = 'l', lwd = 2)
 
 ---
 
-## Decomposed: trend + seasonality
+## Decompose: trend + seasonality
 ```{r echo = FALSE}
 mypar()
 data("AirPassengers")
-plot(as.vector(AirPassengers), bty = 'l', lwd = 2.5,
+plot(as.vector(AirPassengers), bty = 'l', lwd = 3.5,
      type = 'l',
      col = 'grey70',
      xlab = '', 
@@ -721,14 +738,14 @@ mod <- gam(AirPassengers ~ s(time, k = 20) +
 trend <- predict(mod, exclude = 's(season)',
                  type = 'iterms') + coef(mod)[1]
 ## plot the trend
-lines(trend, lwd = 3, col = 'white')
-lines(trend, lwd = 2, col = 'darkred')
+lines(trend, lwd = 3.5, col = 'white')
+lines(trend, lwd = 2.5, col = 'darkred')
 
 # plot the cycle
 cycle <- predict(mod, exclude = 's(time)',
                  type = 'terms')
-lines(cycle, lwd = 3, col = 'white')
-lines(cycle, lwd = 2, col = 'darkblue')
+lines(cycle, lwd = 3.5, col = 'white')
+lines(cycle, lwd = 2.5, col = 'darkblue')
 box(bty = 'l', lwd = 2)
 
 # add labels
@@ -776,17 +793,17 @@ Exponential Smoothing ([ETS](https://otexts.com/fpp3/expsmooth.html))
 
 ---
 
-## *Very* easy to apply in `R` 
+## *Very* easy to apply in `r fa("r-project", fill = "steelblue")`
 
 <img src="resources/fc_logo.png" style="position:fixed; right:8%; top:4%; width:100px; height:117px; border:none;" />
 
 
 
-Hyndman’s tools in the [`forecast` library](https://pkg.robjhyndman.com/forecast/) are hugely popular and accessible for time series analysis / forecasting 
+Hyndman’s tools in the [`forecast` 📦](https://pkg.robjhyndman.com/forecast/) are hugely popular and accessible for time series analysis / forecasting 
   
-ETS handles many types of seasonality and nonlinear trends 
+[ETS](https://pkg.robjhyndman.com/forecast/reference/ets.html) handles many types of seasonality and nonlinear trends 
   
-(S)ARIMAX includes additive fixed effects of predictors while capturing trends and seasonality
+[(S)ARIMAX](https://pkg.robjhyndman.com/forecast/reference/auto.arima.html) includes additive fixed effects of predictors while capturing trends and seasonality
 
 *Some* of these algorithms can handle missing data
 
@@ -931,7 +948,7 @@ mvgam::plot_mvgam_series(data = beta_temp$data_train, series = 'all',
 
 ---
 
-## Measurement error is *everywhere*
+## All can have measurement error
 </br>
 <img align="center" width="1200" height="300" src="resources/auger.jpg">
 
@@ -940,7 +957,9 @@ mvgam::plot_mvgam_series(data = beta_temp$data_train, series = 'all',
 
 ---
 
-# Can we do better?
+class: inverse middle center big-subsection
+
+# How can we do better?
 
 ---
 
