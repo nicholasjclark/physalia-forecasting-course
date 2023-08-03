@@ -150,6 +150,7 @@ We will work with time series of rodent captures from the Portal Project, [a lon
 
 ![Portal Project sampling scheme in the desert near Portal, Arizona, USA; photo by SKM Ernest](resources/portal_plots.jpg)
 
+<br>
 All data from the Portal Project are made openly available in near real-time so that they can provide the maximum benefit to scientific research and outreach ([a set of open-source software tools make data readily accessible](https://www.weecology.org/software-projects/portalr/){target="_blank"}). These data are extremely rich, containing monthly counts of rodent captures for >20 species. But rather than accessing the raw data, we will use some data that I have already processed and put into a simple, usable form
 ```{r Access time series data}
 data("portal_data")
@@ -377,7 +378,8 @@ Now onto some modelling! Our first task will be to fit a Generalized Linear Mode
   
 
 ![General structure of hierarchical models; credit to Bayes Rules!, by Johnson, Ott, and Dogucu (2021); reproduced under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.](resources/partial_pool_diagram.png)
-<br/>
+
+<br>
 Hierarchical (also known as random) effects offer many advantages when modelling data with grouping structures (i.e. multiple species, locations, years etc...). The ability to incorporate these in time series models is a huge advantage over traditional models such as ARIMA or Exponential Smoothing. But before we fit the model, we will need to convert `year` to a factor so that we can use a random effect basis in `mvgam`. See `?smooth.terms` and
 `?smooth.construct.re.smooth.spec` for details about the `re` basis construction that is used by both `mvgam` and `mgcv`
 ```{r model_data, include = FALSE}
