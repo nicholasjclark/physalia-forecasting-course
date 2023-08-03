@@ -75,7 +75,10 @@ a:hover {
 }
 ```
 
-```{r klippy, echo=FALSE, include=TRUE}
+```{r klippy, echo=FALSE, include=TRUE, message = FALSE, warning = FALSE}
+if(!requireNamespace('klippy')){
+  remotes::install_github("rlesur/klippy")
+}
 klippy::klippy(position = c('top', 'right'), color = 'darkred')
 ```
 
@@ -92,7 +95,7 @@ knitr::opts_chunk$set(
 
 ## Exercises and associated data
 The data and modelling objects created in this notebook can be downloaded directly to save computational time.
-```{r echo=FALSE}
+```{r echo=FALSE, message = FALSE, warning = FALSE}
 library(downloadthis)
 download_dir(
   path = 'tutorial_1_physalia_cache/html/',
@@ -122,7 +125,7 @@ download_file(
 ```
 
 ## Load libraries and time series data
-This tutorial relies on the following packages for manipulating data, shaping time series, fitting dynamic regression models and plotting:
+This tutorial relates to content covered in [Lecture 1](https://nicholasjclark.github.io/physalia-forecasting-course/day1/lecture_1_slidedeck){target="_blank"} and [Lecture 2](https://nicholasjclark.github.io/physalia-forecasting-course/day1/lecture_2_slidedeck){target="_blank"}, and relies on the following packages for manipulating data, shaping time series, fitting dynamic regression models and plotting:
 ```{r include = FALSE}
 library(dplyr)
 #remotes::install_github('nicholasjclark/mvgam',force = TRUE)
@@ -375,7 +378,7 @@ Now onto some modelling! Our first task will be to fit a Generalized Linear Mode
   
 
 ![General structure of hierarchical models; credit to Bayes Rules!, by Johnson, Ott, and Dogucu (2021); reproduced under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.](resources/partial_pool_diagram.png)
-
+<br/>
 Hierarchical (also known as random) effects offer many advantages when modelling data with grouping structures (i.e. multiple species, locations, years etc...). The ability to incorporate these in time series models is a huge advantage over traditional models such as ARIMA or Exponential Smoothing. But before we fit the model, we will need to convert `year` to a factor so that we can use a random effect basis in `mvgam`. See `?smooth.terms` and
 `?smooth.construct.re.smooth.spec` for details about the `re` basis construction that is used by both `mvgam` and `mgcv`
 ```{r model_data, include = FALSE}
@@ -413,7 +416,13 @@ model1 <- mvgam(count ~ s(year, bs = 're') - 1,
                 samples = 250)
 ```
 
-Once the model has finished, the first step is to inspect the `summary` to ensure no major diagnostic warnings have been produced and to quickly summarise posterior distributions for key parameters
+The model can be described mathematically for each timepoint $t$ as follows:
+\begin{align*}
+\boldsymbol{count}_t & \sim \text{Poisson}(\lambda_t) \\
+log(\lambda_t) & = \beta_{year[year_t]} * \boldsymbol{year}_{t} \\
+\beta_{year} & \sim \text{Normal}(\mu_{year}, \sigma_{year}) \end{align*}
+
+Where the $\beta_{year}$ effects are drawn from a *population* distribution that is parameterized by a common mean $(\mu_{year})$ and variance $(\sigma_{year})$. Once the model has finished, the first step is to inspect the `summary` to ensure no major diagnostic warnings have been produced and to quickly summarise posterior distributions for key parameters
 ```{r Summarise the fitted model, class.output="scroll-300"}
 summary(model1)
 ```
@@ -581,6 +590,15 @@ model2 <- mvgam(count ~ s(year, bs = 're') +
                 newdata = data_test)
 ```
 
+The model can be described mathematically as follows:
+\begin{align*}
+\boldsymbol{count}_t & \sim \text{Poisson}(\lambda_t) \\
+log(\lambda_t) & = \beta_{year[year_t]} * \boldsymbol{year}_{t} + \beta_{ndvi} * \boldsymbol{ndvi}_t \\
+\beta_{year} & \sim \text{Normal}(\mu_{year}, \sigma_{year}) \\
+\beta_{ndvi} & \sim \text{Normal}(0, 1) \end{align*}
+
+Where the $\beta_{year}$ effects are the same as before but we now have another predictor $(\beta_{ndvi})$ that applies to the `ndvi` value at each timepoint $t$. Inspect the summary of this model
+
 ```{r, class.output="scroll-300"}
 summary(model2)
 ```
@@ -652,7 +670,7 @@ plot(model2, type = 'residuals')
 
 ## Random nonlinear functions of time
 
-The final point to cover in this tutorial is to incorporate nonlinear functions of time in place of the temporal yearly random effects. Nonlinear splines are commonly viewed as variations of random effects in which the coefficients that control the shape of the spline are drawn from a joint, penalized distribution. This strategy is very often used in ecological time series analysis to capture smooth temporal variation in the processes we seek to study. The lectures have gone into detail about smoothing splines and basis functions, but it is worth quickly re-iterating some of this detail here. When we construct smoothing splines, the workhorse package `mgcv` will calculate a set of basis functions that will collectively control the shape and complexity of the resulting spline. It is often helpful to visualize these basis functions to get a better sense of how splines work. We'll create a set of 6 basis functions to represent possible variation in the effect of `time` on our outcome. This can easily be done using functions in the `gratia` package:
+The final point to cover in this tutorial is to incorporate nonlinear functions of time in place of the temporal yearly random effects. Nonlinear splines are commonly viewed as variations of random effects in which the coefficients that control the shape of the spline are drawn from a joint, penalized distribution. This strategy is very often used in ecological time series analysis to capture smooth temporal variation in the processes we seek to study. The lectures (particularly [lecture 2](https://nicholasjclark.github.io/physalia-forecasting-course/day1/lecture_2_slidedeck){target="_blank"}) have gone into detail about smoothing splines and basis functions, but it is worth quickly re-iterating some of this detail here. When we construct smoothing splines, the workhorse package `mgcv` will calculate a set of basis functions that will collectively control the shape and complexity of the resulting spline. It is often helpful to visualize these basis functions to get a better sense of how splines work. We'll create a set of 6 basis functions to represent possible variation in the effect of `time` on our outcome. This can easily be done using functions in the `gratia` package:
 ```{r Construct basis functions for splines using gratia}
 basis_funs <- basis(s(time, bs = 'tp', k = 6), 
                             data = model_data)
@@ -741,6 +759,17 @@ model3 <- mvgam(count ~ s(time, bs = 'bs', k = 15) +
                 newdata = data_test)
 ```
 
+The model can be described mathematically as follows:
+\begin{align*}
+\boldsymbol{count}_t & \sim \text{Poisson}(\lambda_t) \\
+log(\lambda_t) & = f(\boldsymbol{time})_t + \beta_{ndvi} * \boldsymbol{ndvi}_t + \beta_{mintemp} * \boldsymbol{mintemp}_t \\
+f(\boldsymbol{time}) & = \sum_{k=1}^{K}b * \beta_{smooth} \\
+\beta_{smooth} & \sim \text{MVNormal}(0, (\Omega * \lambda)^{-1}) \\
+\beta_{ndvi} & \sim \text{Normal}(0, 1) \\
+\beta_{mintemp} & \sim \text{Normal}(0, 1) \end{align*}
+
+
+Where the smooth function $f_{time}$ is built by summing across a set of weighted basis functions. The basis functions $(b)$ are constructed using a thin plate regression basis in `mgcv`. The weights $(\beta_{smooth})$ are drawn from a penalized multivariate normal distribution where the precision matrix $(\Omega$) is multiplied by a smoothing penalty $(\lambda)$. If $\lambda$ becomes large, this acts to *squeeze* the covariances among the weights $(\beta_{smooth})$, leading to a less wiggly spline. Note that sometimes there are multiple smoothing penalties that contribute to the covariance matrix, but I am only showing one here for simplicity. View the summary as before
 ```{r, class.output="scroll-300"}
 summary(model3)
 ```
