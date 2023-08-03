@@ -6,7 +6,6 @@ output:
   html_document:
     toc: true
     toc_float: true
-date: "2023-05-30"
 ---
 
 
@@ -93,7 +92,7 @@ knitr::opts_chunk$set(
 
 ## Exercises and associated data
 The data and modelling objects created in this notebook can be downloaded directly to save computational time.
-```{r echo=FALSE}
+```{r echo=FALSE, message = FALSE, warning = FALSE}
 library(downloadthis)
 download_dir(
   path = 'tutorial_2_physalia_cache/html/',
@@ -123,7 +122,7 @@ download_file(
 ```
 
 ## Load libraries and time series data
-This tutorial relies on the following packages for manipulating data, shaping time series, fitting dynamic regression models and plotting:
+This tutorial relates to content covered in [Lecture 2](https://nicholasjclark.github.io/physalia-forecasting-course/day1/lecture_2_slidedeck){target="_blank"} and [Lecture 3](https://nicholasjclark.github.io/physalia-forecasting-course/day2/lecture_3_slidedeck){target="_blank"}, and relies on the following packages for manipulating data, shaping time series, fitting dynamic regression models and plotting:
 ```{r include = FALSE}
 library(dplyr)
 #remotes::install_github('nicholasjclark/mvgam',force = TRUE)
@@ -387,7 +386,7 @@ plot(conditional_effects(model1),
 
 ### Computing residuals with `tidybayes`
 A notable difference between `brms` and `mvgam` is that the former does not automatically return posterior predictions. These need to be computed after model fitting, which means that residuals also have to be computed. To inspect residual diagnostics from `brms` models, we can enlist the help of the `tidybayes` package. More information on this procedure can be found in this [tidybayes vignette](https://mjskay.github.io/tidybayes/articles/tidybayes-residuals.html#a-function-for-probability-residuals){target="_blank"}. Do not worry if this procedure is difficult to understand, it is not of major relevance to the learning objectives of the course (and if you use `mvgam`, this will be done for you automatically anyway). But it is useful to know where you can go for more information on these redisuals. Expect to see some warnings here, as some of the observations have missing values
-```{r Compute Dunn-Smyth residuals with tidybayes}
+```{r Compute Dunn-Smyth residuals with tidybayes, message=FALSE, warning=FALSE}
 data_train %>%
   # calculate posterior predictions
   add_predicted_draws(model1) %>%
@@ -430,7 +429,7 @@ ggplot(residual_data, aes(sample = z_residual)) +
 ```
 
 ### Autocorrelated error GLM in `brms`
-Clearly we need to somehow account for the strong temporal autocorrelation when modelling these data without using a smooth function of `time`. Now onto another great feature of `brms`: the ability to include (possibly latent) autocorrelated residuals in regression models. To do so, we use the `ar` function (see `?brms::ar` for details). This model will use a separate sub-model for latent residuals that evolve as an AR1 process (i.e. the error in the current time point is a function of the error in the previous time point, plus some stochastic noise). When using non-Gaussian observations, we can only select an order of 1 for the AR component (higher orders are only currently allowed for Gaussian observations). Note, this model takes considerably longer to fit than the previous model because it estimates the full temporal covariance function for the residuals
+This model is not doing well. Clearly we need to somehow account for the strong temporal autocorrelation when modelling these data without using a smooth function of `time`. Now onto another great feature of `brms`: the ability to include (possibly latent) autocorrelated residuals in regression models. To do so, we use the `ar` function (see `?brms::ar` for details). This model will use a separate sub-model for latent residuals that evolve as an AR1 process (i.e. the error in the current time point is a function of the error in the previous time point, plus some stochastic noise). When using non-Gaussian observations, we can only select an order of 1 for the AR component (higher orders are only currently allowed for Gaussian observations). Note, this model takes considerably longer to fit than the previous model because it estimates the full temporal covariance function for the residuals
 ```{r model2, include = FALSE}
 model2 <- xfun::cache_rds(brm(count ~ 
                 s(ndvi_lag12, k = 9) +
@@ -461,7 +460,18 @@ model2 <- brm(count ~
               cores = 4)
 ```
 
-View the model's summary to ensure sampler diagnostics look good. Notice how there are now summaries for the residual autoregressive parameters as well
+The model can be described mathematically as follows:
+\begin{align*}
+\boldsymbol{count}_t & \sim \text{Poisson}(\lambda_t) \\
+log(\lambda_t) & = f(\boldsymbol{ndvi})_t + \beta_{mintemp} * \boldsymbol{mintemp}_t + z_t \\
+z_t & \sim \text{Normal}(ar1 * z_{t-1}, \sigma_{error}) \\
+ar1 & \sim \text{Normal}(0, 1)[-1, 1] \\
+\sigma_{error} & \sim \text{Exponential}(2) \\
+f(\boldsymbol{ndvi}) & = \sum_{k=1}^{K}b * \beta_{smooth} \\
+\beta_{smooth} & \sim \text{MVNormal}(0, (\Omega * \lambda)^{-1}) \\
+\beta_{mintemp} & \sim \text{Normal}(0, 1) \end{align*}
+
+Here the term $z_t$ captures autocorrelated latent residuals, which are modelled using an AR1 process. In `brms`, the AR coefficients are restricted to the interval $[-1,1]$ to ensure the dynamic process is stationary. View the model's summary to ensure sampler diagnostics look good. Notice how there are now summaries for the residual autoregressive parameters as well
 ```{r Summarise the brms autocorrelated error model, class.output="scroll-300"}
 summary(model2)
 ```
@@ -686,7 +696,17 @@ model3b <- mvgam(count ~
                 trend_model = 'RW')
 ```
 
-Plotting the trend estimates for the AR1 and Random Walk models gives you further insight into the different assumptions they make about the temporal evolution of the system:
+The model can be described mathematically as follows:
+\begin{align*}
+\boldsymbol{count}_t & \sim \text{Poisson}(\lambda_t) \\
+log(\lambda_t) & = f(\boldsymbol{ndvi})_t + \beta_{mintemp} * \boldsymbol{mintemp}_t + z_t \\
+z_t & \sim \text{Normal}(z_{t-1}, \sigma_{error}) \\
+\sigma_{error} & \sim \text{Exponential}(2) \\
+f(\boldsymbol{ndvi}) & = \sum_{k=1}^{K}b * \beta_{smooth} \\
+\beta_{smooth} & \sim \text{MVNormal}(0, (\Omega * \lambda)^{-1}) \\
+\beta_{mintemp} & \sim \text{Normal}(0, 1) \end{align*}
+
+Note the similarity to model3 above. The only difference is that we no longer estimate the AR1 parameter, so the mean of the latent process at time $t$ is simply the value of the latent process at time $t-1$. Plotting the trend estimates for the AR1 and Random Walk models gives you further insight into the different assumptions they make about the temporal evolution of the system:
 ```{r, fig.width = 6, fig.asp = 1.2}
 layout(matrix(1:2, nrow = 2))
 plot(model3, type = 'trend', newdata = data_test, main = 'AR1 trend')
@@ -920,7 +940,20 @@ model4 <- brm(count ~
               cores = 4)
 ```
 
-A summary of this model now returns posterior summaries of the GP function through the parameters `sdgp(gptime)` (the $\alpha$ covariance parameter) and `lscale(gptime)` (the length scale or $\rho$ covariance parameter). It also contains the Negative Binomial overdispersion parameter ($\phi$), labelled as `shape`. The smaller this value, the more support there is for overdispersion in the observations
+The model can be described mathematically as follows:
+\begin{align*}
+\boldsymbol{count}_t & \sim \text{NegBinomial}(\lambda_t, \phi) \\
+log(\lambda_t) & = f(\boldsymbol{ndvi})_t + \beta_{mintemp} * \boldsymbol{mintemp}_t + z_t \\
+z & \sim \text{MVNormal}(0, \Sigma_{error}) \\
+\Sigma_{error}[t_i, t_j] & = \alpha^2 * exp(-0.5 * ((|t_i - t_j| / \rho))^2) \\
+\alpha & \sim \text{StudentT}(3, 0, 2.5)[0, ] \\
+\rho & \sim \text{InverseGamma}(1.5, 9) \\
+f(\boldsymbol{ndvi}) & = \sum_{k=1}^{K}b * \beta_{smooth} \\
+\beta_{smooth} & \sim \text{MVNormal}(0, (\Omega * \lambda)^{-1}) \\
+\beta_{mintemp} & \sim \text{Normal}(0, 1) \\
+\phi & \sim \text{Gamma}(0.01, 0.01) \end{align*}
+
+The latent dynamic process now evolves from a complex, high-dimensional Multivariate Normal distribution. Notice as well how the Negative Binomial distribution has a second parameter, $\phi$, which controls any extra dispersion. A summary of this model now returns posterior summaries of the GP function through the parameters `sdgp(gptime)` (the $\alpha$ covariance parameter) and `lscale(gptime)` (the length scale or $\rho$ covariance parameter). It also contains the overdispersion parameter ($\phi$), labelled as `shape`. The smaller this value, the more support there is for overdispersion in the observations
 ```{r, class.output="scroll-300"}
 summary(model4)
 ```
