@@ -62,6 +62,9 @@ class: inverse middle center big-subsection
 
 ## Workflow
 
+
+Press the "o" key on your keyboard to navigate among slides
+
 Access the [tutorial html here](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia)
 - Download the data objects and exercise `R` script from the html file
 - Complete exercises and use Slack to ask questions
@@ -247,7 +250,9 @@ Generalize to state that current value of a series (at time `\(t\)`) is .emphasi
 ---
 ## A *positively* autocorrelated series
 .panelset[
-.panel[.panel-name[AR(1) series]
+.panel[.panel-name[Code]
+
+
 
 
 ```r
@@ -266,11 +271,11 @@ plot(series, type = 'l', bty = 'l', lwd = 2,
 ```
 ]
 
-.panel[.panel-name[The implicit model]
+.panel[.panel-name[Model]
 `$$\boldsymbol{Y}_{t}\sim \text{Normal}(\color{darkred}{0.8} * \boldsymbol{Y}_{t-1},\color{darkred}{1})$$`
 ]
 
-.panel[.panel-name[View the series]
+.panel[.panel-name[Plot]
 .center[![](lecture_1_slidedeck_files/figure-html/ar_sim-1.svg)]
 
 ]
@@ -280,7 +285,9 @@ plot(series, type = 'l', bty = 'l', lwd = 2,
 
 ## A *negatively* autocorrelated series
 .panelset[
-.panel[.panel-name[AR(1) series]
+.panel[.panel-name[Code]
+
+
 
 
 ```r
@@ -299,11 +306,11 @@ plot(series, type = 'l', bty = 'l', lwd = 2,
 ```
 ]
 
-.panel[.panel-name[The implicit model]
+.panel[.panel-name[Model]
 `$$\boldsymbol{Y}_{t}\sim \text{Normal}(\color{darkred}{-0.8} * \boldsymbol{Y}_{t-1},\color{darkred}{1})$$`
 ]
 
-.panel[.panel-name[View the series]
+.panel[.panel-name[Plot]
 .center[![](lecture_1_slidedeck_files/figure-html/ar_simneg-1.svg)]
 
 ]
@@ -334,7 +341,7 @@ Where:
 
 
 class: middle center
-## Many series show complex correlation structures; they can also show other temporal patterns
+### Many series show complex correlation structures; they can also show other temporal patterns
 
 ---
 
@@ -356,11 +363,11 @@ Often change slowly over time
 ---
 
 ## Example seasonal series
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-2-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Another seasonal series
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-3-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-5-1.svg" style="display: block; margin: auto;" /&gt;
 ---
 
 class: inverse middle center big-subsection
@@ -382,7 +389,9 @@ Cross-correlation functions ([CCFs](https://online.stat.psu.edu/stat510/lesson/8
 
 ## *Independent* correlations
 .panelset[
-.panel[.panel-name[AR(1) ACF]
+.panel[.panel-name[Code]
+
+
 
 
 ```r
@@ -401,7 +410,7 @@ acf(series, lwd = 2, bty = 'l',
 ```
 ]
 
-.panel[.panel-name[View the ACF]
+.panel[.panel-name[Plot]
 .center[![](lecture_1_slidedeck_files/figure-html/ar1_acf-1.svg)]
 
 ]
@@ -411,7 +420,9 @@ acf(series, lwd = 2, bty = 'l',
 
 ## *Conditional* correlations
 .panelset[
-.panel[.panel-name[AR(1) pACF]
+.panel[.panel-name[Code]
+
+
 
 
 ```r
@@ -430,7 +441,7 @@ pacf(series, lwd = 2, bty = 'l',
 ```
 ]
 
-.panel[.panel-name[View the pACF]
+.panel[.panel-name[Plot]
 .center[![](lecture_1_slidedeck_files/figure-html/ar1_pacf-1.svg)]
 
 ]
@@ -440,7 +451,9 @@ pacf(series, lwd = 2, bty = 'l',
 
 ## *Independent* cross-correlations
 .panelset[
-.panel[.panel-name[Lung disease CCF]
+.panel[.panel-name[Code]
+
+
 
 
 ```r
@@ -457,7 +470,7 @@ ccf(as.vector(mdeaths), as.vector(fdeaths),
 ```
 ]
 
-.panel[.panel-name[View the CCF]
+.panel[.panel-name[Plot]
 .center[![](lecture_1_slidedeck_files/figure-html/death_ccf-1.svg)]
 
 ]
@@ -466,7 +479,9 @@ ccf(as.vector(mdeaths), as.vector(fdeaths),
 
 ## ACFs often detect seasonality
 .panelset[
-.panel[.panel-name[gas ACF]
+.panel[.panel-name[Code]
+
+
 
 
 ```r
@@ -483,7 +498,7 @@ acf(gas, lag.max = 48, lwd = 2, bty = 'l',
 ```
 ]
 
-.panel[.panel-name[View the ACF]
+.panel[.panel-name[Plot]
 .center[![](lecture_1_slidedeck_files/figure-html/gas_acf-1.svg)]
 
 ]
@@ -509,16 +524,16 @@ acf(gas, lag.max = 48, lwd = 2, bty = 'l',
 ---
 
 ## Because `gas` looks like this ...
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-5-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-11-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## ... and has a nonlinear *trend*
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-6-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-12-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Raw ACF is misleading
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-7-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-13-1.svg" style="display: block; margin: auto;" /&gt;
 ---
 
 ## Decompositions
@@ -532,22 +547,22 @@ These components can be summed to give the original series
 ---
 ## Example: a complex series
 
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-8-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-14-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## Decompose: trend + seasonality
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-9-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-15-1.svg" style="display: block; margin: auto;" /&gt;
 ---
 
 ## Under the hood
 
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-10-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-16-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
 class: middle center
-## Modelling these multiple components, either additively or multiplicatively, is a major goal of most time series analysis procedures
+### Modelling these multiple components, either additively or multiplicatively, is a major goal of most time series analysis procedures
 
 ---
 
@@ -634,10 +649,10 @@ etc...
 ## Example ecological time series
 &lt;/br&gt;
 .pull-left[
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-11-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-17-1.svg" style="display: block; margin: auto;" /&gt;
 ]
 .pull-right[
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-12-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-18-1.svg" style="display: block; margin: auto;" /&gt;
 ]
 
 ---
@@ -645,10 +660,10 @@ etc...
 ## Another ecological time series
 &lt;/br&gt;
 .pull-left[
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-13-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-19-1.svg" style="display: block; margin: auto;" /&gt;
 ]
 .pull-right[
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-14-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-20-1.svg" style="display: block; margin: auto;" /&gt;
 ]
 
 ---
@@ -657,16 +672,16 @@ etc...
 
 &lt;/br&gt;
 .pull-left[
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-15-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-21-1.svg" style="display: block; margin: auto;" /&gt;
 ]
 .pull-right[
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-16-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-22-1.svg" style="display: block; margin: auto;" /&gt;
 ]
 
 ---
 
 ## Collections of ecological series
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-17-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-23-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
