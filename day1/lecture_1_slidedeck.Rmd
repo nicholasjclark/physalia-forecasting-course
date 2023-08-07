@@ -8,6 +8,8 @@ output:
   xaringan::moon_reader:
     css: ['default','https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css', 'slides.css']
     lib_dir: libs
+    in_header: 
+      - 'targetblank.html'
     nature:
       titleSlideClass: ['inverse','middle','left',my-title-slide]
       highlightStyle: github
@@ -175,6 +177,9 @@ myscatter = function(x,
 ---
 
 ## Workflow
+
+
+Press the "o" key on your keyboard to navigate among slides
 
 Access the [tutorial html here](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia)
 - Download the data objects and exercise `R` script from the html file
@@ -379,9 +384,25 @@ $$\boldsymbol{Y}_{t}\sim \text{f}( \boldsymbol{Y}_{t-lag})$$
 ---
 ## A *positively* autocorrelated series
 .panelset[
-.panel[.panel-name[AR(1) series]
+.panel[.panel-name[Code]
 
-```{r ar_sim, fig.show='hide', fig.height=4, fig.width=1.9*4}
+```{r ar_sim, echo=FALSE,fig.show='hide', fig.height=4.25, fig.width=1.9*4.25}
+# set seed for reproducibility
+set.seed(1111)
+
+# number of timepoints
+T <- 100
+
+# use arima.sim to simulate from an AR(1) model
+series <- arima.sim(model = list(ar = 0.8), n = T, sd = 1)
+
+# plot the time series as a line
+mypar()
+plot(series, type = 'l', bty = 'l', lwd = 2, 
+     col = 'darkred', ylab = 'Y', xlab = 'Time')
+```
+
+```{r eval=FALSE}
 # set seed for reproducibility
 set.seed(1111)
 
@@ -397,11 +418,11 @@ plot(series, type = 'l', bty = 'l', lwd = 2,
 ```
 ]
 
-.panel[.panel-name[The implicit model]
+.panel[.panel-name[Model]
 $$\boldsymbol{Y}_{t}\sim \text{Normal}(\color{darkred}{0.8} * \boldsymbol{Y}_{t-1},\color{darkred}{1})$$
 ]
 
-.panel[.panel-name[View the series]
+.panel[.panel-name[Plot]
 .center[![](lecture_1_slidedeck_files/figure-html/ar_sim-1.svg)]
 
 ]
@@ -411,9 +432,25 @@ $$\boldsymbol{Y}_{t}\sim \text{Normal}(\color{darkred}{0.8} * \boldsymbol{Y}_{t-
 
 ## A *negatively* autocorrelated series
 .panelset[
-.panel[.panel-name[AR(1) series]
+.panel[.panel-name[Code]
 
-```{r ar_simneg, fig.show='hide', fig.height=4, fig.width=1.9*4}
+```{r ar_simneg, echo=FALSE,fig.show='hide', fig.height=4.25, fig.width=1.9*4.25,echo=FALSE}
+# set seed for reproducibility
+set.seed(1111)
+
+# number of timepoints
+T <- 100
+
+# use arima.sim to simulate from an AR(1) model
+series <- arima.sim(model = list(ar = -0.8), n = T, sd = 1)
+
+# plot the time series as a line
+mypar()
+plot(series, type = 'l', bty = 'l', lwd = 2, 
+     col = 'darkred', ylab = 'Y', xlab = 'Time')
+```
+
+```{r eval=FALSE}
 # set seed for reproducibility
 set.seed(1111)
 
@@ -429,11 +466,11 @@ plot(series, type = 'l', bty = 'l', lwd = 2,
 ```
 ]
 
-.panel[.panel-name[The implicit model]
+.panel[.panel-name[Model]
 $$\boldsymbol{Y}_{t}\sim \text{Normal}(\color{darkred}{-0.8} * \boldsymbol{Y}_{t-1},\color{darkred}{1})$$
 ]
 
-.panel[.panel-name[View the series]
+.panel[.panel-name[Plot]
 .center[![](lecture_1_slidedeck_files/figure-html/ar_simneg-1.svg)]
 
 ]
@@ -464,7 +501,7 @@ Where:
 
 
 class: middle center
-## Many series show complex correlation structures; they can also show other temporal patterns
+### Many series show complex correlation structures; they can also show other temporal patterns
 
 ---
 
@@ -527,9 +564,25 @@ Cross-correlation functions ([CCFs](https://online.stat.psu.edu/stat510/lesson/8
 
 ## *Independent* correlations
 .panelset[
-.panel[.panel-name[AR(1) ACF]
+.panel[.panel-name[Code]
 
-```{r ar1_acf, fig.show='hide', fig.height=4, fig.width=1.9*4}
+```{r ar1_acf, echo=FALSE,fig.show='hide', fig.height=4.25, fig.width=1.9*4.25}
+# set seed for reproducibility
+set.seed(1111)
+
+# number of timepoints
+T <- 100
+
+# use arima.sim to simulate from an AR(1) model
+series <- arima.sim(model = list(ar = c(0.8)), n = T, sd = 1)
+
+# plot the empirical ACF
+mypar()
+acf(series, lwd = 2, bty = 'l',
+    ci.col = 'darkred', main = '')
+```
+
+```{r eval=FALSE}
 # set seed for reproducibility
 set.seed(1111)
 
@@ -545,7 +598,7 @@ acf(series, lwd = 2, bty = 'l',
 ```
 ]
 
-.panel[.panel-name[View the ACF]
+.panel[.panel-name[Plot]
 .center[![](lecture_1_slidedeck_files/figure-html/ar1_acf-1.svg)]
 
 ]
@@ -555,9 +608,25 @@ acf(series, lwd = 2, bty = 'l',
 
 ## *Conditional* correlations
 .panelset[
-.panel[.panel-name[AR(1) pACF]
+.panel[.panel-name[Code]
 
-```{r ar1_pacf, fig.show='hide', fig.height=4, fig.width=1.9*4}
+```{r ar1_pacf, echo=FALSE, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25}
+# set seed for reproducibility
+set.seed(1111)
+
+# number of timepoints
+T <- 100
+
+# use arima.sim to simulate from an AR(1) model
+series <- arima.sim(model = list(ar = c(0.8)), n = T, sd = 1)
+
+# plot the empirical pACF
+mypar()
+pacf(series, lwd = 2, bty = 'l',
+    ci.col = 'darkred', main = '')
+```
+
+```{r eval=FALSE}
 # set seed for reproducibility
 set.seed(1111)
 
@@ -573,7 +642,7 @@ pacf(series, lwd = 2, bty = 'l',
 ```
 ]
 
-.panel[.panel-name[View the pACF]
+.panel[.panel-name[Plot]
 .center[![](lecture_1_slidedeck_files/figure-html/ar1_pacf-1.svg)]
 
 ]
@@ -583,9 +652,23 @@ pacf(series, lwd = 2, bty = 'l',
 
 ## *Independent* cross-correlations
 .panelset[
-.panel[.panel-name[Lung disease CCF]
+.panel[.panel-name[Code]
 
-```{r death_ccf, fig.show='hide', fig.height=4, fig.width=1.9*4}
+```{r death_ccf, echo=FALSE,fig.show='hide', fig.height=3.9, fig.width=1.9*3.9}
+# compute a CCF of the built-in lung cancer dataset
+mypar()
+ccf(as.vector(mdeaths), as.vector(fdeaths), 
+    # compute cross-correlations at each lag
+    type = 'correlation',
+    bty = 'l', lwd = 2, ci.col = 'darkred',
+    # add an informative title
+    main = expression(paste(italic(Cor),
+                            "(", Female~deaths,
+                            ",", Male~deaths, ")")),
+    ylab = "cross-correlation")
+```
+
+```{r eval=FALSE}
 # compute a CCF of the built-in lung cancer dataset
 ccf(as.vector(mdeaths), as.vector(fdeaths), 
     # compute cross-correlations at each lag
@@ -599,7 +682,7 @@ ccf(as.vector(mdeaths), as.vector(fdeaths),
 ```
 ]
 
-.panel[.panel-name[View the CCF]
+.panel[.panel-name[Plot]
 .center[![](lecture_1_slidedeck_files/figure-html/death_ccf-1.svg)]
 
 ]
@@ -608,9 +691,23 @@ ccf(as.vector(mdeaths), as.vector(fdeaths),
 
 ## ACFs often detect seasonality
 .panelset[
-.panel[.panel-name[gas ACF]
+.panel[.panel-name[Code]
 
-```{r gas_acf, fig.show='hide', fig.height=4, fig.width=1.9*4}
+```{r gas_acf, echo=FALSE, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25}
+# load the 'gas' dataset from the forecast library
+library(forecast)
+data(gas)
+
+# subset to the final 100 observations
+gas <- gas[377:476]
+
+# plot the empirical ACF over 48 lags
+mypar()
+acf(gas, lag.max = 48, lwd = 2, bty = 'l',
+    ci.col = 'darkred', main = '')
+```
+
+```{r eval=FALSE}
 # load the 'gas' dataset from the forecast library
 library(forecast)
 data(gas)
@@ -624,7 +721,7 @@ acf(gas, lag.max = 48, lwd = 2, bty = 'l',
 ```
 ]
 
-.panel[.panel-name[View the ACF]
+.panel[.panel-name[Plot]
 .center[![](lecture_1_slidedeck_files/figure-html/gas_acf-1.svg)]
 
 ]
@@ -683,6 +780,7 @@ library(forecast)
 data(gas)
 
 # plot the empirical ACF over 48 lags
+mypar()
 acf(as.vector(gas), lag.max = 48, lwd = 2, bty = 'l',
     ci.col = 'darkred', main = '')
 ```
@@ -770,7 +868,7 @@ plot(stl(AirPassengers, 'periodic'),
 ---
 
 class: middle center
-## Modelling these multiple components, either additively or multiplicatively, is a major goal of most time series analysis procedures
+### Modelling these multiple components, either additively or multiplicatively, is a major goal of most time series analysis procedures
 
 ---
 
