@@ -1010,7 +1010,7 @@ plot(model5, type = 'trend', newdata = data_test)
 ```
 
 As we saw in [Tutorial 1](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia){target="_blank"}, it can also be useful to understand first derivatives of smooth functions to get a sense of when (in history) they were increasing or decreasing. We can view the first derivative estimates for this model's smooth trend using the following command:
-```{r fig.asp = 1.2}
+```{r fig.asp = 1}
 plot(model5, type = 'trend', derivatives = TRUE)
 ```
 
