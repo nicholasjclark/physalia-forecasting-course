@@ -313,7 +313,7 @@ pacf(model_data$count,
 ```
 
 Both of these plots suggest there is temporal autocorrelation present, as well as strong seasonality. We can view the ACF and some other useful features of the data with one of `mvgam`'s primary functions, `plot_mvgam_series` (see `?plot_mvgam_series` for details):
-```{r Plot time series data using mvgam, fig.height=7.5, fig.width=7.5}
+```{r Plot time series data using mvgam}
 plot_mvgam_series(data = model_data, y = 'count')
 ```
 
@@ -478,7 +478,7 @@ plot(hc)
 This plot can look a bit confusing as it seems like there is linear interpolation from the end of one year to the start of the next. But this is just due to the way the lines are automatically connected in base `R` plots  
   
 In any regression analysis, a key question is whether the residuals show any patterns that can be indicative of un-modelled sources of variation. For GLMs, we can use a modified residual called the [Dunn-Smyth, or randomized quantile, residual](https://www.jstor.org/stable/1390802){target="_blank"}. Inspect Dunn-Smyth residuals from the model using `plot.mvgam` with `type = 'residuals'`
-```{r Plot posterior residuals, fig.height = 7.5, fig.width = 7.5}
+```{r Plot posterior residuals}
 plot(model1, type = 'residuals')
 ```
 
@@ -660,7 +660,7 @@ plot(model2, type = 'forecast', newdata = data_test)
 ```
 
 These predictions certainly look different. Are the residual diagnostics improved?
-```{r, fig.height = 7.5, fig.width = 7.5}
+```{r}
 plot(model2, type = 'residuals')
 ```
 
@@ -788,7 +788,7 @@ plot(model3, type = 'smooths', realisations = TRUE,
 
 ### Derivatives of smooths
 A useful question when modelling using GAMs is to identify where the function is changing most rapidly. To address this, we can plot estimated 1st derivatives of the spline:
-```{r Plot smooth term derivatives, warning = FALSE, fig.asp = 1.2}
+```{r Plot smooth term derivatives, warning = FALSE, fig.asp = 1}
 plot(model3, type = 'smooths', derivatives = TRUE)
 ```
 
