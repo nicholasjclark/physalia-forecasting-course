@@ -11,6 +11,8 @@ output:
     in_header: 
       - 'targetblank.html'
     nature:
+      navigation:
+        scroll: false
       titleSlideClass: ['inverse','middle','left',my-title-slide]
       highlightStyle: github
       highlightLines: true
@@ -62,10 +64,22 @@ c_mid_highlight <- c("#A25050")
 c_dark <- c("#8F2727")
 c_dark_highlight <- c("#7C0000")
 
+multipar = function(...){
+  par(family = "serif", 
+    bty = "l", 
+    cex.axis = 1.1, 
+    cex.lab = 1.1, 
+    cex.main = 1.3,
+    xaxs = 'r',
+    yaxs = 'r',
+    pch = 16)
+}
+
 mypar = function(...){
   par(family = "serif", 
       las = 1, 
       mar=c(4,4.1,2,2),
+      mgp = c(2,0.5,0),
       bty = "l", 
       cex.axis = 1.25, 
       cex.lab = 1.5, 
@@ -189,7 +203,7 @@ myscatter = function(x,
        pch = 21,
        bg = c_dark,
        col = 'white',
-       cex = 1.75,
+       cex = 2,
        bty = 'l',
        xlab = xlab,
        ylab = ylab)
@@ -208,7 +222,7 @@ background-image: url('./resources/smooth_only.gif')
 
 ## Workflow
 
-Press the "o" key on your keyboard if you wish to navigate among slides
+Press the "o" key on your keyboard to navigate among slides
 
 Access the [tutorial html here](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia)
 - Download the data objects and exercise `r fontawesome::fa("r-project", fill = "steelblue")` script from the html file
@@ -317,7 +331,7 @@ class: middle center
 ---
 
 ```{r echo = FALSE, fig.cap = "Properties of monthly CO2 measurement time series at the South Pole"}
-mypar()
+multipar()
 data("co2s")
 model_data = data.frame(co2 = co2s$co2,
                         time = 1:NROW(co2s),
@@ -328,7 +342,7 @@ plot_mvgam_series(data = model_data, y = 'co2')
 ---
 
 ```{r echo = FALSE, fig.cap = "Properties of lunar monthly Desert Pocket Mouse capture time series from a long-term monitoring study in Portal, Arizona, USA"}
-mypar()
+multipar()
 portal_data %>%
   dplyr::mutate(time = moon - (min(moon)) + 1) %>%
   dplyr::mutate(count = PP) %>%
@@ -341,7 +355,7 @@ plot_mvgam_series(data = model_data, y = 'count')
 
 ```{r echo = FALSE, fig.cap = "Properties of annual American kestrel abundance time series in British Columbia, Canada"}
 load(url('https://github.com/atsa-es/MARSS/raw/master/data/kestrel.rda'))
-mypar()
+multipar()
 model_data = data.frame(time = 1:NROW(kestrel),
                         series = as.factor('kestrel'),
                         count = exp(kestrel[,2]))
@@ -465,7 +479,7 @@ class: middle center
 ---
 
 ```{r echo = FALSE, fig.cap = "Properties of Merriam's kangaroo rat relative abundance time series from a long-term monitoring study in Portal, Arizona, USA"}
-mypar()
+multipar()
 portal_data %>%
   dplyr::mutate(time = moon - (min(moon)) + 1) %>%
   dplyr::rowwise() %>%
@@ -1144,7 +1158,7 @@ dplyr::glimpse(model_data)
 ```{r obs_properties, echo=FALSE,fig.show='hide', fig.height=4.25, fig.width=1.9*4, warning=FALSE, message=FALSE}
 
 # use mvgam's plot utility to view properties of the observations
-mypar()
+multipar()
 plot_mvgam_series(data = model_data, y = 'count')
 ```
 
@@ -1162,8 +1176,7 @@ plot_mvgam_series(data = model_data, y = 'count')
 ]
 ---
 
-## `mvgam` with yearly random intercepts
-
+## Yearly random intercepts
 
 <br>
 ```{r eval = FALSE}
@@ -1216,13 +1229,13 @@ plot(year_random, type = 're')
 
 # extract population estimates
 pop_params <- as.data.frame(year_random, 
-                            variable = c('mu_raw[1]',
-                                         'sigma_raw[1]'))
+                            variable = c('mean(year)',
+                                         'sd(year)'))
 
 # plot as histograms
-hist(pop_params$`mu_raw[1]`, main = expression(mu[year]))
+hist(pop_params$`mean(year)`, main = expression(mu[year]))
 
-hist(pop_params$`sigma_raw[1]`, main = expression(sigma[year]))
+hist(pop_params$`sd(year)`, main = expression(sigma[year]))
 ```
 
 ```{r year_random_means, echo=FALSE,fig.show='hide', fig.height=4, fig.width=1.9*4}
@@ -1341,15 +1354,13 @@ We .emphasize[must] use predictions and plots to understand the model
 .panel[.panel-name[Code]
 
 ```{r year_smooth_ests, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25,echo=FALSE}
-
-# plot the random effect posterior estimates
-mypar()
+multipar()
 plot(year_smooth, type = 'smooth')
 ```
 
 ```{r eval=FALSE}
 
-# plot the random effect posterior estimates
+# plot the smooth effect posterior estimates
 plot(year_smooth, type = 'smooth')
 ```
 ]
@@ -1396,16 +1407,15 @@ ggplot(basis(year_smooth$mgcv_model),
 .panelset[
 .panel[.panel-name[Code]
 
-```{r year_smooth_derivs, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25,echo=FALSE}
+```{r year_smooth_derivs, fig.show='hide', fig.height=4.25, fig.width=1.8*4.25,echo=FALSE}
 
-# plot the random effect posterior estimates
-mypar()
+multipar()
 plot(year_smooth, type = 'smooth', derivatives = TRUE)
 ```
 
 ```{r eval=FALSE}
 
-# plot the random effect posterior estimates
+# plot the smooth effect posterior estimates
 plot(year_smooth, type = 'smooth', derivatives = TRUE)
 ```
 ]
@@ -1477,7 +1487,7 @@ class: middle center
 
 ## Random year diagnostics
 ```{r echo=FALSE}
-mypar()
+multipar()
 plot(year_random, type = 'residuals')
 ```
 
@@ -1485,7 +1495,7 @@ plot(year_random, type = 'residuals')
 
 ## Smooth year diagnostics
 ```{r echo=FALSE}
-mypar()
+multipar()
 plot(year_smooth, type = 'residuals')
 ```
 
@@ -1524,7 +1534,7 @@ A thin plate regression spline of  `mintemp`
 ```{r year_temp_smooth_est, fig.show='hide', fig.height=4.25, fig.width=2.2*4.25, warning=FALSE, message=FALSE,echo=FALSE}
 
 # use mvgam's plot to view both smooth functions
-mypar()
+multipar()
 plot(year_temp_smooth, type = 'smooth')
 ```
 
@@ -1549,7 +1559,7 @@ plot(year_temp_smooth, type = 'smooth')
 ```{r year_temp_smooth_resids, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25, warning=FALSE, message=FALSE,echo=FALSE}
 
 # use mvgam's plot_mgvam_smooth to view partial residuals
-mypar()
+multipar()
 plot_mvgam_smooth(year_temp_smooth, smooth = 2, residuals = TRUE)
 ```
 
@@ -1570,7 +1580,7 @@ plot_mvgam_smooth(year_temp_smooth, smooth = 2, residuals = TRUE)
 
 ## Diagnostics
 ```{r echo=FALSE}
-mypar()
+multipar()
 plot(year_temp_smooth, type = 'residuals')
 ```
 
@@ -1675,7 +1685,7 @@ myhist(ar_params$`sigma[1]`, main = expression(sigma[error]))
 
 ## Diagnostics
 ```{r echo=FALSE}
-mypar()
+multipar()
 plot(year_temp_smooth_ar, type = 'residuals')
 ```
 
@@ -1683,7 +1693,7 @@ plot(year_temp_smooth_ar, type = 'residuals')
 
 ## Updated smooths
 ```{r echo=FALSE}
-mypar()
+multipar()
 plot(year_temp_smooth_ar, type = 'smooth')
 ```
 
