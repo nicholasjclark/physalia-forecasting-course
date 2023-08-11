@@ -86,7 +86,7 @@ remotes::install_github('nicholasjclark/mvgam', force = TRUE)
 
 
 ## Tuesday (day 2) 
-[Tutorial](https://nicholasjclark.github.io/physalia-forecasting-course/day2/tutorial_2_physalia)
+[Lecture 3 Slides](https://nicholasjclark.github.io/physalia-forecasting-course/day2/lecture_3_slidedeck) | [Tutorial](https://nicholasjclark.github.io/physalia-forecasting-course/day2/tutorial_2_physalia)
 * Dynamic GLMs and Dynamic GAMs
 * Autoregressive dynamic processes
 * Gaussian Processes
