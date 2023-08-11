@@ -794,10 +794,10 @@ In many applied time series analyses, we believe the informativeness of past obs
   <summary>Click here if you would like to see the `R` code used to produce these simulations </summary>
 ```{r}
 # set a seed for reproducibility
-set.seed(11111)
+set.seed(2222)
 
 # simulate from a fairly large length-scale parameter
-rho <- 15
+rho <- 10
 
 # set the alpha parameter to 1 for all simulations
 alpha <- 1
@@ -805,33 +805,38 @@ alpha <- 1
 # simulate functions that span 50 time points
 times <- 1:50
 
+# generate a sequence of prediction values
+draw_seq <- seq(min(times), max(times), length.out = 100)
+
 # construct the temporal covariance matrix
 Sigma <- alpha^2 * 
-  exp(-0.5 * ((outer(times, times, "-") / rho) ^ 2)) +
-  diag(1e-9, length(times))
+  exp(-0.5 * ((outer(draw_seq, draw_seq, "-") / rho) ^ 2)) +
+  diag(1e-12, length(draw_seq))
 
 # draw a single realization from the GP distribution
 gp_vals <- MASS::mvrnorm(n = 1, 
-                         mu = rep(0, length(times)),
+                         mu = rep(0, length(draw_seq)),
                          Sigma = Sigma)
 
 # plot the single GP draw
-plot(x = times, y = gp_vals, type = 'l',
+plot(x = draw_seq, y = gp_vals, type = 'l',
      lwd = 2, col = 'darkred',
      ylab = expression(f(Time)),
      xlab = 'Time', bty = 'l',
-     ylim = c(-2,2),
-     main = expression(rho~'='~15))
+     ylim = c(-3,3),
+     main = expression(alpha~'='~1*'; '~rho~'='~10))
 # overlay an additional 10 possible functions using different colours
 for(i in 1:10){
-  lines(MASS::mvrnorm(n = 1, mu = rep(0, length(times)),
-                      Sigma = Sigma),
+  draw <- MASS::mvrnorm(n = 1, mu = rep(0, length(draw_seq)),
+                        Sigma = Sigma)
+  lines(x = draw_seq, y = draw, lwd = 3.5, col = 'white')
+  lines(x = draw_seq, y = draw,
         col = sample(c("#DCBCBC",
                        "#C79999",
                        "#B97C7C",
                        "#A25050",
                        "#7C0000"), 1),
-        lwd = 2)
+        lwd = 2.5)
 }
 box(bty = 'l', lwd = 2)
 ```
@@ -840,56 +845,74 @@ box(bty = 'l', lwd = 2)
 
 ```{r echo = FALSE}
 # plot the single GP draw
-plot(x = times, y = gp_vals, type = 'l',
+plot(x = draw_seq, y = gp_vals, type = 'l',
      lwd = 2, col = 'darkred',
      ylab = expression(f(Time)),
      xlab = 'Time', bty = 'l',
-     ylim = c(-2.5, 2.5),
-     main = expression(rho~'='~15))
+     ylim = c(-3,3),
+     main = expression(alpha~'='~1*'; '~rho~'='~12))
 # overlay an additional 10 possible functions using different colours
 for(i in 1:10){
-  lines(MASS::mvrnorm(n = 1, mu = rep(0, length(times)),
-                      Sigma = Sigma),
+  draw <- MASS::mvrnorm(n = 1, mu = rep(0, length(draw_seq)),
+                        Sigma = Sigma)
+  lines(x = draw_seq, y = draw, lwd = 3.5, col = 'white')
+  lines(x = draw_seq, y = draw,
         col = sample(c("#DCBCBC",
                        "#C79999",
                        "#B97C7C",
                        "#A25050",
                        "#7C0000"), 1),
-        lwd = 2)
+        lwd = 2.5)
 }
 box(bty = 'l', lwd = 2)
 ```
 
 This plot shows there are clearly nonlinear functions supported by the GP distribution. It also shows that the temporal autocorrelations have a long 'memory', i.e. they tend to change slowly and smoothly over time. In contrast, let's see what happens when we simulate from a GP with a shorter length scale parameter (the same code as above was used, except the length scale was changed to 3)
 ```{r echo = FALSE}
-# same seed for reproducibility
+# set a seed for reproducibility
 set.seed(11111)
 
-# use a shorter length scale for these simulations
-rho <- 3
-Sigma <- alpha^2 * 
-  exp(-0.5 * ((outer(times, times, "-") / rho) ^ 2)) +
-  diag(1e-9, length(times))
+# simulate from a short length-scale parameter
+rho <- 4
 
-# plot as before
+# set the alpha parameter to 1 for all simulations
+alpha <- 1
+
+# simulate functions that span 50 time points
+times <- 1:50
+
+# generate a sequence of prediction values
+draw_seq <- seq(min(times), max(times), length.out = 100)
+
+# construct the temporal covariance matrix
+Sigma <- alpha^2 * 
+  exp(-0.5 * ((outer(draw_seq, draw_seq, "-") / rho) ^ 2)) +
+  diag(1e-12, length(draw_seq))
+
+# draw a single realization from the GP distribution
 gp_vals <- MASS::mvrnorm(n = 1, 
-                         mu = rep(0, length(times)),
+                         mu = rep(0, length(draw_seq)),
                          Sigma = Sigma)
-plot(x = times, y = gp_vals, type = 'l',
+
+# plot the single GP draw
+plot(x = draw_seq, y = gp_vals, type = 'l',
      lwd = 2, col = 'darkred',
      ylab = expression(f(Time)),
      xlab = 'Time', bty = 'l',
-     ylim = c(-2.5, 2.5),
-     main = expression(rho~'='~3))
+     ylim = c(-3,3),
+     main = expression(alpha~'='~1*'; '~rho~'='~4))
+# overlay an additional 10 possible functions using different colours
 for(i in 1:10){
-  lines(MASS::mvrnorm(n = 1, mu = rep(0, length(times)),
-                      Sigma = Sigma),
+  draw <- MASS::mvrnorm(n = 1, mu = rep(0, length(draw_seq)),
+                        Sigma = Sigma)
+  lines(x = draw_seq, y = draw, lwd = 3.5, col = 'white')
+  lines(x = draw_seq, y = draw,
         col = sample(c("#DCBCBC",
                        "#C79999",
                        "#B97C7C",
                        "#A25050",
                        "#7C0000"), 1),
-        lwd = 2)
+        lwd = 2.5)
 }
 box(bty = 'l', lwd = 2)
 ```
@@ -1010,7 +1033,7 @@ plot(model5, type = 'trend', newdata = data_test)
 ```
 
 As we saw in [Tutorial 1](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia){target="_blank"}, it can also be useful to understand first derivatives of smooth functions to get a sense of when (in history) they were increasing or decreasing. We can view the first derivative estimates for this model's smooth trend using the following command:
-```{r fig.asp = 1.2}
+```{r fig.asp = 1}
 plot(model5, type = 'trend', derivatives = TRUE)
 ```
 
@@ -1125,14 +1148,15 @@ quad_kernel = function(rho, alpha, times){
 plot_kernels = function(gp_ests, max_time = 50){
   # set up an empty matrix to store the kernel estimates 
   # for each posterior draw
-  kernels <- matrix(NA, nrow = NROW(gp_ests), ncol = max_time)
+  draw_seq <- seq(0, max_time, length.out = 100)
+  kernels <- matrix(NA, nrow = NROW(gp_ests), ncol = 100)
   
   # use a for-loop to estimate the kernel for each draw using
   # our custom quad_kernel() function
   for(i in 1:NROW(gp_ests)){
     kernels[i,] <- quad_kernel(rho = gp_ests$`rho_gp[1]`[i],
                                alpha = gp_ests$`alpha_gp[1]`[i],
-                               times = 1:max_time)
+                               times = draw_seq)
   }
   
   # Calculate posterior empirical quantiles of the kernels
@@ -1142,7 +1166,7 @@ plot_kernels = function(gp_ests, max_time = 50){
                                       probs = probs))
   
   # Plot the kernel uncertainty estimates
-  pred_vals <- 1:max_time
+  pred_vals <- draw_seq
   plot(1, xlim = c(0, max_time), ylim = c(0, max(cred)), type = 'n',
        xlab = 'Time difference', ylab = 'Covariance',
        bty = 'L')
@@ -1153,6 +1177,7 @@ plot_kernels = function(gp_ests, max_time = 50){
           col = "#B97C7C", border = NA)
   lines(pred_vals, cred[3,], col = "#7C0000", lwd = 2.5)
 }
+
 ```
 </details>
 <br>
