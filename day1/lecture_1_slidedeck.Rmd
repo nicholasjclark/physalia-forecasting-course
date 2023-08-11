@@ -11,6 +11,8 @@ output:
     in_header: 
       - 'targetblank.html'
     nature:
+      navigation:
+        scroll: false
       titleSlideClass: ['inverse','middle','left',my-title-slide]
       highlightStyle: github
       highlightLines: true
@@ -61,6 +63,7 @@ mypar = function(...){
   par(family = "serif", 
       las = 1, 
       mar=c(4,4.1,2,2),
+      mgp = c(2,0.5,0),
       bty = "l", 
       cex.axis = 1.25, 
       cex.lab = 1.5, 
@@ -110,6 +113,28 @@ myhist = function(x,
        lwd = 2,
        breaks = 20,
        main = main)
+}
+
+mybar = function(x, 
+                  xlab = '',
+                  main = '',
+                  big = TRUE){
+
+  if(big){
+      mypar()
+  } else {
+      myparsmall()
+  }
+  
+  barplot(table(x),
+          yaxt = 'n',
+          xlab = xlab,
+          border = NA,
+       ylab = '',
+       col = c_mid_highlight,
+       lwd = 2,
+       main = main)
+  axis(1, labels = NA, tck=0, lwd =2)
 }
 
 mylines = function(x, xlab = '', 
@@ -162,7 +187,7 @@ myscatter = function(x,
        pch = 21,
        bg = c_dark,
        col = 'white',
-       cex = 1.75,
+       cex = 2,
        bty = 'l',
        xlab = xlab,
        ylab = ylab)
@@ -187,9 +212,9 @@ Access the [tutorial html here](https://nicholasjclark.github.io/physalia-foreca
 
 Relevant open-source materials include:
 - [Forecasting Principles and Practice](https://otexts.com/fpp3/)
-- [Applied Time Series Analysis for Fisheries and Environmental Sciences](https://atsa-es.github.io/atsa-labs/)
+- [Applied Time Series Analysis](https://atsa-es.github.io/atsa-labs/)
 - [Ecological Forecasting & Dynamics Course](https://course.naturecast.org/)
-- [Ecological Forecasting Initiative's Youtube channel](https://www.youtube.com/@ecoforecast)
+- [Edward Malthouse's Time Series Lectures](https://www.youtube.com/playlist?list=PLDD7yyOAeWWc-CBJuXcF6WRa2dhLwiHC0)
 
 ---
 
@@ -661,11 +686,12 @@ ccf(as.vector(mdeaths), as.vector(fdeaths),
     # compute cross-correlations at each lag
     type = 'correlation',
     bty = 'l', lwd = 2, ci.col = 'darkred',
+    ylab = "cross-correlation", main = "")
     # add an informative title
-    main = expression(paste(italic(Cor),
+    title(main = expression(paste(italic(Cor),
                             "(", Female~deaths,
                             ",", Male~deaths, ")")),
-    ylab = "cross-correlation")
+          line = 0)
 ```
 
 ```{r eval=FALSE}
@@ -674,11 +700,12 @@ ccf(as.vector(mdeaths), as.vector(fdeaths),
     # compute cross-correlations at each lag
     type = 'correlation',
     bty = 'l', lwd = 2, ci.col = 'darkred',
-    # add an informative title
-    main = expression(paste(italic(Cor),
+    ylab = "cross-correlation", main = "")
+# add an informative title
+title(main = expression(paste(italic(Cor),
                             "(", Female~deaths,
                             ",", Male~deaths, ")")),
-    ylab = "cross-correlation")
+          line = 0)
 ```
 ]
 
@@ -750,8 +777,9 @@ acf(gas, lag.max = 48, lwd = 2, bty = 'l',
 library(forecast)
 mypar()
 data(gas)
+gas = gas / 1000
 plot(gas,bty = 'l', lwd = 3.5,
-     col = 'darkred')
+     col = 'darkred', ylab = 'gas (thousands of units)')
 ```
 
 ---
@@ -761,11 +789,12 @@ plot(gas,bty = 'l', lwd = 3.5,
 library(forecast)
 mypar()
 data(gas)
+gas = gas / 1000
 
 gas_stl <- stl(gas, s.window = 13)
 trend <- gas_stl$time.series[,2]
 plot(gas,bty = 'l', lwd = 3.5,
-     col = 'grey70')
+     col = 'grey70', ylab = 'gas (thousands of units)')
 
 ## plot the trend
 lines(trend, lwd = 3.5, col = 'white')
@@ -1027,7 +1056,18 @@ myhist(beta_temp, xlab = 'Relative abundance', big = FALSE,
 ```{r,fig.height = 6, fig.width = 2.2 * 6, echo=FALSE}
 set.seed(55)
 N = 50
-mypar()
+par(family = "serif", 
+    las = 1, 
+    mar=c(4,4.1,2,2),
+    mgp = c(2,0.5,0),
+    bty = "l", 
+    cex.axis = 1.25, 
+    cex.lab = 1.5, 
+    cex.main = 1.5,
+    col.lab = 'white',
+    xaxs = 'r',
+    yaxs = 'r',
+    pch = 16)
 beta_temp <- mvgam::sim_mvgam(T = N, 
                               n_series = 4,
                               family = poisson(), 
@@ -1037,11 +1077,14 @@ beta_temp <- mvgam::sim_mvgam(T = N,
                               mu = c(0, 1, 1.5, 1.7))
 beta_temp$data_train$Count <- beta_temp$data_train$y
 beta_temp$data_train %>%
-  dplyr::mutate(series = gsub('series_', 'species ', series)) -> beta_temp$data_train 
+  dplyr::mutate(series = gsub('series_', 'Species ', series)) -> beta_temp$data_train 
 beta_temp$data_train$series <- as.factor(beta_temp$data_train$series)
 
 mvgam::plot_mvgam_series(data = beta_temp$data_train, series = 'all',
                          y = 'Count')
+par(las = 0)
+mtext('Time', outer = TRUE, side = 1, line = -1.5, cex = 1.5)
+mtext('Count', outer = TRUE, side = 2, line = -1.5, cex = 1.5)
 ```
 
 ---

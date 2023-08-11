@@ -71,9 +71,9 @@ Access the [tutorial html here](https://nicholasjclark.github.io/physalia-foreca
 
 Relevant open-source materials include:
 - [Forecasting Principles and Practice](https://otexts.com/fpp3/)
-- [Applied Time Series Analysis for Fisheries and Environmental Sciences](https://atsa-es.github.io/atsa-labs/)
+- [Applied Time Series Analysis](https://atsa-es.github.io/atsa-labs/)
 - [Ecological Forecasting &amp; Dynamics Course](https://course.naturecast.org/)
-- [Ecological Forecasting Initiative's Youtube channel](https://www.youtube.com/@ecoforecast)
+- [Edward Malthouse's Time Series Lectures](https://www.youtube.com/playlist?list=PLDD7yyOAeWWc-CBJuXcF6WRa2dhLwiHC0)
 
 ---
 
@@ -462,11 +462,12 @@ ccf(as.vector(mdeaths), as.vector(fdeaths),
     # compute cross-correlations at each lag
     type = 'correlation',
     bty = 'l', lwd = 2, ci.col = 'darkred',
-    # add an informative title
-    main = expression(paste(italic(Cor),
+    ylab = "cross-correlation", main = "")
+# add an informative title
+title(main = expression(paste(italic(Cor),
                             "(", Female~deaths,
                             ",", Male~deaths, ")")),
-    ylab = "cross-correlation")
+          line = 0)
 ```
 ]
 
@@ -714,6 +715,9 @@ Temporal residual correlation structures
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script src="macros.js"></script>
 <script>var slideshow = remark.create({
+"navigation": {
+"scroll": false
+},
 "highlightStyle": "github",
 "highlightLines": true,
 "countIncrementalSlides": false,
