@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Ecological forecasting in R</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Nicholas Clark" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/panelset/panelset.css" rel="stylesheet" />
+    <script src="libs/panelset/panelset.js"></script>
+    <link href="libs/animate.css/animate.xaringan.css" rel="stylesheet" />
+    <script src="libs/clipboard/clipboard.min.js"></script>
+    <link href="libs/xaringanExtra-clipboard/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-clipboard/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"Copy Code","success":"Copied!","error":"Press Ctrl+C to Copy"})</script>
+    <link href="libs/tile-view/tile-view.css" rel="stylesheet" />
+    <script src="libs/tile-view/tile-view.js"></script>
+    <script src="libs/kePrint/kePrint.js"></script>
+    <link href="libs/lightable/lightable.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="slides.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: inverse, middle, left, my-title-slide, title-slide
+
+.title[
+# Ecological forecasting in R
+]
+.subtitle[
+## Lecture 3: latent AR and GP models
+]
+.author[
+### Nicholas Clark
+]
+.institute[
+### School of Veterinary Science, University of Queensland
+]
+.date[
+### 0900–1200 CET Tuesday 5th September, 2023
+]
+
+---
+
+
+
+
+<style>.panelset{--panel-tab-foreground: #8F2727;--panel-tab-inactive-opacity: 0.8;}</style>
+
+
+
+
+
+
+
+
+
+
+
+## Workflow
+
+Press the "o" key on your keyboard to navigate among slides
+
+Access the [tutorial html here](https://nicholasjclark.github.io/physalia-forecasting-course/day2/tutorial_2_physalia)
+- Download the data objects and exercise <svg aria-hidden="true" role="img" viewBox="0 0 581 512" style="height:1em;width:1.13em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:steelblue;overflow:visible;position:relative;"><path d="M581 226.6C581 119.1 450.9 32 290.5 32S0 119.1 0 226.6C0 322.4 103.3 402 239.4 418.1V480h99.1v-61.5c24.3-2.7 47.6-7.4 69.4-13.9L448 480h112l-67.4-113.7c54.5-35.4 88.4-84.9 88.4-139.7zm-466.8 14.5c0-73.5 98.9-133 220.8-133s211.9 40.7 211.9 133c0 50.1-26.5 85-70.3 106.4-2.4-1.6-4.7-2.9-6.4-3.7-10.2-5.2-27.8-10.5-27.8-10.5s86.6-6.4 86.6-92.7-90.6-87.9-90.6-87.9h-199V361c-74.1-21.5-125.2-67.1-125.2-119.9zm225.1 38.3v-55.6c57.8 0 87.8-6.8 87.8 27.3 0 36.5-38.2 28.3-87.8 28.3zm-.9 72.5H365c10.8 0 18.9 11.7 24 19.2-16.1 1.9-33 2.8-50.6 2.9v-22.1z"/></svg> script from the html file
+- Complete exercises and use Slack to ask questions
+
+Relevant open-source materials include:
+- [Introduction to Generalized Additive Models with <svg aria-hidden="true" role="img" viewBox="0 0 581 512" style="height:1em;width:1.13em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:steelblue;overflow:visible;position:relative;"><path d="M581 226.6C581 119.1 450.9 32 290.5 32S0 119.1 0 226.6C0 322.4 103.3 402 239.4 418.1V480h99.1v-61.5c24.3-2.7 47.6-7.4 69.4-13.9L448 480h112l-67.4-113.7c54.5-35.4 88.4-84.9 88.4-139.7zm-466.8 14.5c0-73.5 98.9-133 220.8-133s211.9 40.7 211.9 133c0 50.1-26.5 85-70.3 106.4-2.4-1.6-4.7-2.9-6.4-3.7-10.2-5.2-27.8-10.5-27.8-10.5s86.6-6.4 86.6-92.7-90.6-87.9-90.6-87.9h-199V361c-74.1-21.5-125.2-67.1-125.2-119.9zm225.1 38.3v-55.6c57.8 0 87.8-6.8 87.8 27.3 0 36.5-38.2 28.3-87.8 28.3zm-.9 72.5H365c10.8 0 18.9 11.7 24 19.2-16.1 1.9-33 2.8-50.6 2.9v-22.1z"/></svg> and `mgcv`](https://www.youtube.com/watch?v=sgw4cu8hrZM)
+- [Qualitative difference between stationary and non-stationary AR(1)s](https://www.youtube.com/watch?v=v70-kLB3BLM)
+- [Statistical Rethinking 2023 - 16 - Gaussian Processes](https://www.youtube.com/watch?v=Y2ZLt4iOrXU)
+
+---
+
+## This lecture's topics
+
+Extrapolating splines
+
+Latent autoregressive processes
+
+Latent Gaussian Processes
+
+Dynamic coefficient models
+
+---
+
+class: inverse middle center big-subsection
+
+# Extrapolating splines
+
+---
+## Simulated data
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-1-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+## A spline of `time`
+
+```r
+library(mvgam)
+model &lt;- mvgam(y ~ 
+*                s(time, k = 20, bs = 'bs', m = 2),
+                data = data_train,
+                newdata = data_test,
+                family = gaussian())
+```
+
+A B-spline (`bs = 'bs'`) with `m = 2` sets the penalty on the second derivative
+
+---
+
+## A spline of `time`
+
+```r
+library(mvgam)
+model &lt;- mvgam(y ~ 
+                 s(time, k = 20, bs = 'bs', m = 2), 
+                data = data_train,
+*               newdata = data_test,
+                family = gaussian())
+```
+
+A B-spline (`bs = 'bs'`) with `m = 2` sets the penalty on the second derivative
+
+Use `newdata` argument to generate automatic probabilistic forecasts
+
+---
+## The smooth function
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Realizations of the function
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-5-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Hindcasts <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm177.6 62.1C192.8 334.5 218.8 352 256 352s63.2-17.5 78.4-33.9c9-9.7 24.2-10.4 33.9-1.4s10.4 24.2 1.4 33.9c-22 23.8-60 49.4-113.6 49.4s-91.7-25.5-113.6-49.4c-9-9.7-8.4-24.9 1.4-33.9s24.9-8.4 33.9 1.4zm40-89.3l0 0 0 0-.2-.2c-.2-.2-.4-.5-.7-.9c-.6-.8-1.6-2-2.8-3.4c-2.5-2.8-6-6.6-10.2-10.3c-8.8-7.8-18.8-14-27.7-14s-18.9 6.2-27.7 14c-4.2 3.7-7.7 7.5-10.2 10.3c-1.2 1.4-2.2 2.6-2.8 3.4c-.3 .4-.6 .7-.7 .9l-.2 .2 0 0 0 0 0 0c-2.1 2.8-5.7 3.9-8.9 2.8s-5.5-4.1-5.5-7.6c0-17.9 6.7-35.6 16.6-48.8c9.8-13 23.9-23.2 39.4-23.2s29.6 10.2 39.4 23.2c9.9 13.2 16.6 30.9 16.6 48.8c0 3.4-2.2 6.5-5.5 7.6s-6.9 0-8.9-2.8l0 0 0 0zm160 0l0 0-.2-.2c-.2-.2-.4-.5-.7-.9c-.6-.8-1.6-2-2.8-3.4c-2.5-2.8-6-6.6-10.2-10.3c-8.8-7.8-18.8-14-27.7-14s-18.9 6.2-27.7 14c-4.2 3.7-7.7 7.5-10.2 10.3c-1.2 1.4-2.2 2.6-2.8 3.4c-.3 .4-.6 .7-.7 .9l-.2 .2 0 0 0 0 0 0c-2.1 2.8-5.7 3.9-8.9 2.8s-5.5-4.1-5.5-7.6c0-17.9 6.7-35.6 16.6-48.8c9.8-13 23.9-23.2 39.4-23.2s29.6 10.2 39.4 23.2c9.9 13.2 16.6 30.9 16.6 48.8c0 3.4-2.2 6.5-5.5 7.6s-6.9 0-8.9-2.8l0 0 0 0 0 0z"/></svg>
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-6-1.svg" style="display: block; margin: auto;" /&gt;
+
+```
+## No non-missing values in test_observations; cannot calculate forecast score
+```
+
+---
+
+## Extrapolate 2-steps ahead <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm177.6 62.1C192.8 334.5 218.8 352 256 352s63.2-17.5 78.4-33.9c9-9.7 24.2-10.4 33.9-1.4s10.4 24.2 1.4 33.9c-22 23.8-60 49.4-113.6 49.4s-91.7-25.5-113.6-49.4c-9-9.7-8.4-24.9 1.4-33.9s24.9-8.4 33.9 1.4zM144.4 208a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm192-32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-7-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## 5-steps ahead <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zM174.6 384.1c-4.5 12.5-18.2 18.9-30.7 14.4s-18.9-18.2-14.4-30.7C146.9 319.4 198.9 288 256 288s109.1 31.4 126.6 79.9c4.5 12.5-2 26.2-14.4 30.7s-26.2-2-30.7-14.4C328.2 358.5 297.2 336 256 336s-72.2 22.5-81.4 48.1zM144.4 208a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm192-32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-8-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## 20-steps ahead <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M175.9 448c-35-.1-65.5-22.6-76-54.6C67.6 356.8 48 308.7 48 256C48 141.1 141.1 48 256 48s208 93.1 208 208s-93.1 208-208 208c-28.4 0-55.5-5.7-80.1-16zM0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zM128 369c0 26 21.5 47 48 47s48-21 48-47c0-20-28.4-60.4-41.6-77.7c-3.2-4.4-9.6-4.4-12.8 0C156.6 308.6 128 349 128 369zm128-65c-13.3 0-24 10.7-24 24s10.7 24 24 24c30.7 0 58.7 11.5 80 30.6c9.9 8.8 25 8 33.9-1.9s8-25-1.9-33.9C338.3 320.2 299 304 256 304zm47.6-96a32 32 0 1 0 64 0 32 32 0 1 0 -64 0zm-128 32a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg>
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-9-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+## Forecasts <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M400 406.1V288c0-13.3-10.7-24-24-24s-24 10.7-24 24V440.6c-28.7 15-61.4 23.4-96 23.4s-67.3-8.5-96-23.4V288c0-13.3-10.7-24-24-24s-24 10.7-24 24V406.1C72.6 368.2 48 315 48 256C48 141.1 141.1 48 256 48s208 93.1 208 208c0 59-24.6 112.2-64 150.1zM256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM159.6 220c10.6 0 19.9 3.8 25.4 9.7c7.6 8.1 20.2 8.5 28.3 .9s8.5-20.2 .9-28.3C199.7 186.8 179 180 159.6 180s-40.1 6.8-54.6 22.3c-7.6 8.1-7.1 20.7 .9 28.3s20.7 7.1 28.3-.9c5.5-5.8 14.8-9.7 25.4-9.7zm166.6 9.7c5.5-5.8 14.8-9.7 25.4-9.7s19.9 3.8 25.4 9.7c7.6 8.1 20.2 8.5 28.3 .9s8.5-20.2 .9-28.3C391.7 186.8 371 180 351.6 180s-40.1 6.8-54.6 22.3c-7.6 8.1-7.1 20.7 .9 28.3s20.7 7.1 28.3-.9zM208 320v32c0 26.5 21.5 48 48 48s48-21.5 48-48V320c0-26.5-21.5-48-48-48s-48 21.5-48 48z"/></svg>
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-10-1.svg" style="display: block; margin: auto;" /&gt;
+
+```
+## Out of sample CRPS:
+## [1] 53.94449
+```
+
+---
+## 2nd derivative penalty
+
+Penalizes the overall .emphasize[curvature] of the spline
+
+This is default behaviour in 📦's `mgcv`, `brms` and `mvgam`
+
+Provides linear extrapolations
+- Slope remains unchanged from the last boundary of training data
+- Uncertainty grows but has no probabilistic understanding of time
+
+This behaviour is widely known; .emphasize[but spline extrapolation is still commonplace]
+
+---
+
+background-image: url('./resources/who_extrapolate.png')
+background-size: cover
+
+---
+
+## 1st derivative penalty?
+&lt;br&gt;
+
+```r
+model &lt;- mvgam(y ~ 
+*                s(time, k = 20, bs = 'bs', m = 1),
+               data = data_train,
+               newdata = data_test,
+               family = gaussian())
+```
+
+Using `m = 1` sets the penalty on the first derivative
+
+---
+
+## Hindcasts <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm177.6 62.1C192.8 334.5 218.8 352 256 352s63.2-17.5 78.4-33.9c9-9.7 24.2-10.4 33.9-1.4s10.4 24.2 1.4 33.9c-22 23.8-60 49.4-113.6 49.4s-91.7-25.5-113.6-49.4c-9-9.7-8.4-24.9 1.4-33.9s24.9-8.4 33.9 1.4zM144.4 208a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm192-32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-12-1.svg" style="display: block; margin: auto;" /&gt;
+
+```
+## No non-missing values in test_observations; cannot calculate forecast score
+```
+
+---
+
+## 2-step ahead prediction <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm177.6 62.1C192.8 334.5 218.8 352 256 352s63.2-17.5 78.4-33.9c9-9.7 24.2-10.4 33.9-1.4s10.4 24.2 1.4 33.9c-22 23.8-60 49.4-113.6 49.4s-91.7-25.5-113.6-49.4c-9-9.7-8.4-24.9 1.4-33.9s24.9-8.4 33.9 1.4zM144.4 208a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm192-32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-13-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## 20-steps ahead <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M256 48a208 208 0 1 0 0 416 208 208 0 1 0 0-416zM512 256A256 256 0 1 1 0 256a256 256 0 1 1 512 0zM168 320c-13.3 0-24 10.7-24 24s10.7 24 24 24h8V320h-8zm40 48h32V320H208v48zm96 0V320H272v48h32zm32 0h8c13.3 0 24-10.7 24-24s-10.7-24-24-24h-8v48zM168 288H344c30.9 0 56 25.1 56 56s-25.1 56-56 56H168c-30.9 0-56-25.1-56-56s25.1-56 56-56zm-23.6-80a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm192-32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-14-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Forecasts <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M464 256A208 208 0 1 1 48 256a208 208 0 1 1 416 0zM256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM160.4 248a24 24 0 1 0 0-48 24 24 0 1 0 0 48zm216-24a24 24 0 1 0 -48 0 24 24 0 1 0 48 0zM192 336c-13.3 0-24 10.7-24 24s10.7 24 24 24H320c13.3 0 24-10.7 24-24s-10.7-24-24-24H192zM160 176a48 48 0 1 1 0 96 48 48 0 1 1 0-96zm0 128a80 80 0 1 0 0-160 80 80 0 1 0 0 160zm144-80a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zm128 0a80 80 0 1 0 -160 0 80 80 0 1 0 160 0z"/></svg>
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-15-1.svg" style="display: block; margin: auto;" /&gt;
+
+```
+## Out of sample CRPS:
+## [1] 32.74794
+```
+
+---
+
+## 1st derivative penalty
+
+Penalizes deviations from a flat function
+
+Provides flat extrapolations
+- Mean remains unchanged from last boundary of the training data
+- Uncertainty remains unrealistically narrow
+
+Not commonly used, though [there are exceptions](https://peerj.com/articles/6876/)
+
+---
+
+class: middle center
+
+### Changing penalties when using splines will impact how they extrapolate
+&lt;br&gt;
+### Extrapolation also reacts *strongly* to what the spline is doing at the boundaries
+&lt;br&gt;
+### This is because splines only have *local knowledge*
+
+
+---
+background-image: url('./lecture_3_slidedeck_files/figure-html/basis-functions-weights-1.svg')
+## Basis functions &amp;#8680; local knowledge
+
+---
+
+## We need *global knowledge*
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-16-1.svg" style="display: block; margin: auto;" /&gt;
+
+```
+## Out of sample CRPS:
+## [1] 10.41213
+```
+
+---
+
+## First, a few other pitfalls
+
+`mgcv` 📦 has a heuristic checking function (`gam.check`) to inform whether a spline is *wiggly enough*
+
+Can be useful to understand if your functions are complex enough to capture patterns in observed data
+
+But can also be misleading when dealing with time series
+
+`mvgam` 📦 includes an underlying object of class `gam` that can be checked with `gam.check`
+
+---
+## Simulated data
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-17-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+## Restricted smooth of `time`
+&lt;br&gt;
+
+```r
+model &lt;- mvgam(y ~ s(time, k = 6),
+                 family = gaussian(),
+               data = data_train,
+               newdata = data_test)
+```
+
+Using a thin plate spline with low maximum complexity (`k = 6`)
+
+---
+
+## Check basis complexity
+
+
+```r
+gam.check(model$mgcv_model)
+```
+
+.small[
+
+```
+## 
+## Method: REML   Optimizer: outer newton
+## full convergence after 6 iterations.
+## Gradient range [-2.516432e-07,-8.657903e-09]
+## (score 94.00124 &amp; scale 0.590227).
+## Hessian positive definite, eigenvalue range [1.028413,36.58177].
+## Model rank =  6 / 6 
+## 
+## Basis dimension (k) checking results. Low p-value (k-index&lt;1) may
+## indicate that k is too low, especially if edf is close to k'.
+## 
+##           k'  edf k-index p-value    
+## s(time) 5.00 4.41    0.55  &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+]
+
+---
+
+## Unmodelled variation
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-21-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Increase complexity?
+
+```r
+model &lt;- mvgam(y ~ s(time, k = 15), family = gaussian(),
+               data = data_train, newdata = data_test)
+
+gam.check(model$mgcv_model)
+```
+
+.small[
+
+```
+## 
+## Method: REML   Optimizer: outer newton
+## full convergence after 5 iterations.
+## Gradient range [-1.64113e-07,3.260311e-08]
+## (score 86.84541 &amp; scale 0.4085855).
+## Hessian positive definite, eigenvalue range [1.993815,36.91466].
+## Model rank =  15 / 15 
+## 
+## Basis dimension (k) checking results. Low p-value (k-index&lt;1) may
+## indicate that k is too low, especially if edf is close to k'.
+## 
+##            k'   edf k-index p-value  
+## s(time) 14.00  8.57    0.82   0.045 *
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+]
+---
+
+## Not wiggly enough
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-24-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Even more complex?
+
+```r
+model &lt;- mvgam(y ~ s(time, k = 50), family = gaussian(),
+               data = data_train, newdata = data_test)
+
+gam.check(model$mgcv_model)
+```
+
+.small[
+
+```
+## 
+## Method: REML   Optimizer: outer newton
+## full convergence after 6 iterations.
+## Gradient range [1.752317e-07,4.46345e-07]
+## (score 84.14271 &amp; scale 0.372791).
+## Hessian positive definite, eigenvalue range [0.883367,37.11506].
+## Model rank =  50 / 50 
+## 
+## Basis dimension (k) checking results. Low p-value (k-index&lt;1) may
+## indicate that k is too low, especially if edf is close to k'.
+## 
+##           k'  edf k-index p-value
+## s(time) 49.0 10.4     0.9     0.2
+```
+]
+---
+
+## Finally wiggly enough 
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-27-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: middle center
+
+### Capturing this autocorrelation is important
+&lt;br&gt;
+### Improves inferences on other parts of the model, while also giving more appropriate p-values, confidence intervals etc... in frequentist paradigms
+&lt;br&gt;
+### But what effect does this variation in wiggliness have on forecasts?
+
+---
+
+## Forecasts vary *hugely*
+&lt;br&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-28-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+class: middle center inverse huge
+background-image: url('./resources/too_many_wiggles.png')
+background-size: cover
+# TOO MANY WIGGLES
+
+---
+
+class: middle center
+
+### `gam.check` is sensitive to unmodelled autocorrelation
+&lt;br&gt;
+### Raising `k` to satisfy warnings may improve inference on historical patterns, but leads to even more unpredictable extrapolation behaviour
+&lt;br&gt;
+### If the goal is to produce predictions (i.e. to forecast), we can do better with appropriate *time series models*
+
+---
+
+## Ok. Can we just do this?
+A Poisson GLM with an autoregressive term
+&lt;br/&gt;
+&lt;br/&gt;
+`\begin{align*}
+\boldsymbol{Y}_t &amp; \sim \text{Poisson}(\lambda_t) \\
+log(\lambda_t) &amp; = \alpha + \beta_1 \boldsymbol{Y}_{t-1} + \cdots
+\end{align*}`
+
+Where: 
+- `\(\alpha\)` is an intercept coefficient
+- `\(\beta_1\)` is a .emphasize[first-order autoregressive coefficient]
+
+
+---
+
+## Not if our data have these
+Temporal autocorrelation
+
+Lagged effects
+
+Non-Gaussian data and missing observations
+
+Measurement error
+
+Time-varying effects
+
+Nonlinearities
+
+Multi-series clustering
+
+---
+
+## A motivating example
+
+```r
+# set seed for reproducibility
+set.seed(222)
+
+# simulate an integer-valued time series with some missing observations
+sim_data &lt;- sim_mvgam(T = 100, n_series = 1, 
+                      trend_model = 'RW',
+*                     prop_missing = 0.2)
+```
+
+&lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; y &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; season &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; year &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; series &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; time &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+## The simulated data
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-31-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Use the `tscount` 📦?
+
+```r
+# attempt a tscount time series model
+# which can fit autoregressive models for count time series
+library(tscount)
+
+# use the tsglm function for AR modelling
+tsglm(sim_data$data_train$y, 
+      
+      # model using outcome at lag 1 as the predictor
+      model = list(past_obs = 1))
+```
+
+
+```
+## Error in tsglm.meanfit(ts = ts, model = model, xreg = xreg, link = link, : Cannot make estimation with missing values in time series or covariates
+```
+
+`NA`s cause big problems in autoregressive models
+---
+
+## `NA`s compound over lags
+
+&lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; time &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; y &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; y_lag1 &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; y_lag2 &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; season &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; year &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; series &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 8 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 8 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+## Only 2/8 rows complete
+
+&lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; time &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; y &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; y_lag1 &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; y_lag2 &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; season &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; year &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; series &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 7 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 7 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; series_1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 8 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 8 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; series_1 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+
+## Other problems of AR observations
+Measurement errors also compound
+
+Difficult / impossible to ensure stability of forecasts
+- Can use `\(log(Y_{t-lag})\)` as predictors, but this doesn't always work
+
+Challenging to link dynamics across multiple series
+
+Not extendable to other types of dynamics 
+- Smooth temporal evolution
+- Changepoint models
+- Stochastic variance / volatility
+- etc...
+
+---
+
+class: inverse middle center big-subsection
+
+# Latent autoregressive processes
+
+---
+
+# Dynamic Poisson GLM
+A dynamic Poisson GLM can use .emphasize[autocorrelated latent residuals]
+&lt;br/&gt;
+&lt;br/&gt;
+`\begin{align*}
+\boldsymbol{Y}_t &amp; \sim \text{Poisson}(\lambda_i) \\
+log(\lambda_t) &amp; = \alpha + \cdots + z_t \\
+z_t &amp; \sim \text{Normal}(z_{t-1}, \sigma) \\
+\sigma &amp; \sim \text{Exponential}(2)
+\end{align*}`
+
+Where: 
+- `\(z_t\)` is the value of the latent residual at time `\(t\)`
+- `\(\sigma\)` captures variation in the latent dynamic process
+
+---
+
+background-image: url('./resources/SS_model.svg')
+background-size: contain
+
+## Evolves *independently*
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+Missing observations do not impede evolution of the *latent* process
+
+---
+
+background-image: url('./resources/SS_model.svg')
+background-size: contain
+
+## Evolves *independently*
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+The latent process model can take on a *huge variety* of forms
+
+---
+
+## Back to the example
+
+
+
+
+```r
+mod_example &lt;- mvgam(y ~ 1,
+*                    trend_model = 'AR1',
+                     data = sim_data$data_train,
+                     newdata = sim_data$data_test,
+                     family = poisson())
+```
+
+`mvgam` 📦 has no problem with these observations
+
+Fit a model with latent AR1 dynamics and just an intercept in the observation model
+
+---
+## The latent trend
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-38-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+## Forecasts
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-39-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+## Residuals
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-40-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## A tougher example?
+
+```r
+# set seed for reproducibility
+set.seed(100)
+
+# simulate an integer-valued time series with some missing observations
+sim_data2 &lt;- sim_mvgam(T = 100, n_series = 1, 
+                       mu = 1,
+                      trend_model = 'RW',
+*                     prop_missing = 0.75)
+```
+
+75% of observations missing!
+
+---
+## Same model
+&lt;br&gt;
+
+```r
+mod_example2 &lt;- mvgam(y ~ 1,
+                     trend_model = 'AR1',
+                     data = sim_data2$data_train,
+                     newdata = sim_data2$data_test,
+                     family = poisson())
+```
+
+
+
+---
+## The latent trend
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-44-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+## Forecasts
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-45-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: middle center
+### *Some* packages exist to model count-valued time series using autoregressive terms
+&lt;br&gt;
+### But you must not have missing data or measurement error, and you cannot handle multiple series at once
+&lt;br&gt;
+### Fine for some situations. But what if your data look like this?
+
+---
+
+&lt;div class="figure" style="text-align: center"&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-46-1.svg" alt="Properties of Merriam's kangaroo rat relative abundance time series from a long-term monitoring study in Portal, Arizona, USA"  /&gt;
+&lt;p class="caption"&gt;Properties of Merriam's kangaroo rat relative abundance time series from a long-term monitoring study in Portal, Arizona, USA&lt;/p&gt;
+&lt;/div&gt;
+
+---
+
+## Dynamic Beta GAM
+
+```r
+mod_beta &lt;- mvgam(relabund ~ 
+                    te(mintemp, ndvi),
+                  trend_model = 'AR3',
+*                 family = betar(),
+                  data = dm_data)
+```
+
+
+
+Beta regression using the `mgcv` 📦's `betar` family
+
+---
+
+## Dynamic Beta GAM
+
+```r
+mod_beta &lt;- mvgam(relabund ~ 
+                    te(mintemp, ndvi),
+*                 trend_model = 'AR3',
+                  family = betar(), 
+                  data = dm_data)
+```
+
+
+
+Beta regression using the `mgcv` 📦's `betar` family
+
+AR3 dynamic trend model
+
+---
+
+## Dynamic Beta GAM
+
+```r
+mod_beta &lt;- mvgam(relabund ~ 
+*                   te(mintemp, ndvi),
+                  trend_model = 'AR3',
+                  family = betar(), 
+                  data = dm_data)
+```
+
+
+
+Beta regression using the `mgcv` 📦's `betar` family
+
+AR3 dynamic trend model
+
+Multidimensional [tensor product smooth function for nonlinear covariate interactions (using `te`)](https://fromthebottomoftheheap.net/2015/11/21/climate-change-and-spline-interactions/)
+
+---
+
+## The latent trend
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-53-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+## Multidimensionial smooth
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-54-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: animated fadeIn black-inverse
+.center[.grey[.big[Huh?]]]
+&lt;img src="resources/now_what.gif" style="position:fixed; right:10%; top:20%; width:960px; height:408px; border:none;"/&gt;
+
+---
+
+## `marginaleffects` for clarity
+
+.panelset[
+.panel[.panel-name[Code]
+
+
+```r
+# plot conditional effect of NDVI on the outcome scale
+plot_predictions(mod_beta, condition = 'ndvi',
+                 points = 0.5, conf_level = 0.8, rug = TRUE) +
+  theme_classic()
+```
+
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_3_slidedeck_files/figure-html/beta_ndvi-1.svg)]
+
+]
+]
+
+---
+
+## `marginaleffects` for clarity
+
+.panelset[
+.panel[.panel-name[Code]
+
+
+```r
+# plot conditional effect of Min Temp on the outcome scale
+plot_predictions(mod_beta, condition = 'mintemp',
+                 points = 0.5, conf_level = 0.8, rug = TRUE) +
+  theme_classic()
+```
+
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_3_slidedeck_files/figure-html/beta_mintemp-1.svg)]
+
+]
+]
+
+---
+
+## `marginaleffects` for clarity
+
+.panelset[
+.panel[.panel-name[Code]
+
+
+```r
+# plot conditional effect of BOTH covariates on the outcome scale
+plot_predictions(mod_beta, condition = c('ndvi', 'mintemp'),
+                 points = 0.5, conf_level = 0.8, rug = TRUE) +
+  theme_classic()
+```
+
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_3_slidedeck_files/figure-html/beta_both-1.svg)]
+
+]
+]
+
+---
+## Hindcasts
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-55-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: middle center
+### We can estimate latent dynamic residuals for *many* types of GLMs / GAMs, thanks to the link function
+&lt;br&gt;
+### We do not need to regress the outcome on its own past values
+&lt;br&gt;
+### Very advantageous for ecological time series. But what kinds of dynamic processes are available in the `mvgam` and `brms` 📦's?
+
+---
+
+## Random walks
+Simple stochastic processes that can fit a wide range of data
+&lt;br/&gt;
+&lt;br/&gt;
+`\begin{align*}
+x_t &amp; \sim \text{Normal}(\alpha + x_{t-1}, \sigma) \\
+\end{align*}`
+
+Where: 
+- `\(\sigma\)` determines the spread (or flexibility) of the process
+- `\(\alpha\)` is an optional intercept or *drift* parameter
+
+Process at time `\(t\)` is centred around it's own value at time `\(t-1\)`, with spread determined by probabilistic error
+
+---
+
+## A Random Walk
+.panelset[
+.panel[.panel-name[Code]
+
+
+
+
+```r
+# set seed and number of timepoints
+set.seed(1111); T &lt;- 100
+
+# initialize first value
+series &lt;- vector(length = T); series[1] &lt;- rnorm(n = 1, mean = 0, sd = 1)
+
+# compute values 2 through T
+for (t in 2:T) {
+    series[t] &lt;- rnorm(n = 1, mean = series[t - 1], sd = 1)
+}
+
+# plot the time series as a line
+plot(series, type = 'l', bty = 'l', lwd = 2, 
+     col = 'darkred', ylab = 'x', xlab = 'Time')
+```
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_3_slidedeck_files/figure-html/rw_sim-1.svg)]
+
+]
+]
+
+---
+
+## AR1
+Similar to a Random Walk and can fit a wide range of data
+&lt;br/&gt;
+&lt;br/&gt;
+`\begin{align*}
+x_t &amp; \sim \text{Normal}( \alpha + \phi * x_{t-1}, \sigma) \\
+\end{align*}`
+
+Where: 
+- `\(\sigma\)` determines the spread (or flexibility) of the process
+- `\(\alpha\)` is an optional intercept or *drift* parameter
+- `\(\phi\)` is a coefficient estimating correlation between `\(x_t\)` and `\(x_{t-1}\)`
+
+Process at time `\(t\)` is *a function* of it's own value at time `\(t-1\)`
+
+---
+
+## AR2 and AR3
+As with AR1, but with additional autoregressive terms
+&lt;br/&gt;
+&lt;br/&gt;
+`\begin{align*}
+x_t &amp; \sim \text{Normal}( \alpha + \phi_1 * x_{t-1} + \phi_2 * x_{t-2} + \phi_3 * x_{t-3}, \sigma) \\
+\end{align*}`
+
+---
+
+## An AR1
+.panelset[
+.panel[.panel-name[Code]
+
+
+
+
+```r
+# set seed and number of timepoints
+set.seed(1111); T &lt;- 100
+
+# initialize first value
+series &lt;- vector(length = T); series[1] &lt;- rnorm(n = 1, mean = 0, sd = 1)
+
+# compute values 2 through T, with phi = 0.7
+for (t in 2:T) {
+    series[t] &lt;- rnorm(n = 1, mean = 0.7 * series[t - 1], sd = 1)
+}
+
+# plot the time series as a line
+plot(series, type = 'l', bty = 'l', lwd = 2, 
+     col = 'darkred', ylab = 'x', xlab = 'Time')
+```
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_3_slidedeck_files/figure-html/ar_sim-1.svg)]
+
+]
+]
+
+---
+
+## Alternative AR1 simulation
+.panelset[
+.panel[.panel-name[Code]
+
+
+
+
+```r
+# set seed for reproducibility
+set.seed(1111)
+
+# number of timepoints
+T &lt;- 100
+
+# use arima.sim to simulate from a AR1 model (phi = 0.7)
+series &lt;- arima.sim(model = list(ar = 0.7), n = T, sd = 1)
+
+# plot the time series as a line
+plot(series, type = 'l', bty = 'l', lwd = 2, 
+     col = 'darkred', ylab = 'x', xlab = 'Time')
+```
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_3_slidedeck_files/figure-html/ar_sim2-1.svg)]
+
+]
+]
+
+---
+## Properties of an AR1
+`\(\phi = 0\)` and `\(\alpha = 0\)`, process is white noise
+
+`\(\phi = 1\)` and `\(\alpha = 0\)`, process is a Random Walk
+
+`\(\phi = 1\)` and `\(\alpha \neq 0\)`, process is a Random Walk with drift
+
+`\(|\phi| &lt; 0\)`, process oscillates around `\(\alpha\)` and is .emphasize[stationary]
+
+---
+
+## Stationarity
+
+"*A stationary time series is one whose statistical properties do not depend on the time at which the series is observed*" ([Hyndman and Athanasopoulos, Forecasting Principles and Practice](https://otexts.com/fpp3/stationarity.html))
+
+Non-stationary series are more difficult to predict
+- Either mean, variance, and/or autocorrelation structure can change over time
+- Random Walk is nonstationary because it has no long-term mean
+
+Stationary time series are useful for inferring properties of .emphasize[stability]
+
+---
+
+## Stationarity &amp;#8680; stability
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-59-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Enforcing AR stationarity
+For AR processes up to order 3 (AR1, AR2 or AR3), process remains stationary as long as:
+
+`\(|\phi| &lt; 0\)` for all `\(\phi\)`
+
+
+---
+## Enforcing AR stationarity
+Enforcing stationarity (by restricting `\(|\phi| &lt; 0\)`) is the default behaviour in [`brms` 📦](https://paul-buerkner.github.io/brms/reference/ar.html)
+
+
+```r
+library(brms)
+brm(y ~ x + ... +
+*     ar(p = 1, time = time, cov = TRUE),
+    family = poisson(),
+    data = data)
+```
+
+---
+
+## Enforcing AR stationarity
+This .emphasize[is not] the default behaviour in `mvgam` 📦. 
+
+Instead, `\(|\phi| &lt; 1.5\)` to allow nonstationary residual processes if they are supported by the data
+
+
+```r
+mvgam(y ~ x + ...,
+*     trend_model = 'AR1',
+      data = data)
+```
+
+---
+
+## Enforcing AR stationarity
+This can be modified by changing upper and lower boundaries in the prior
+
+
+```r
+priors &lt;- get_mvgam_priors(y ~ x + ...,
+                 trend_model = 'AR1',
+                 data = data)
+priors$new_lowerbound[1] &lt;- 1
+priors$new_upperbound[1] &lt;- 1
+
+mvgam(y ~ x + ...,
+      trend_model = 'AR1',
+*     priors = priors,
+      data = data)
+```
+
+---
+
+## An example
+Simulate a time series with heavy-tailed Student-T observations over a latent Random Walk process that also has seasonal variation
+
+
+```r
+set.seed(555)
+t_data &lt;- sim_mvgam(T = 100, n_series = 1,
+                    family = student_t(),
+                    trend_model = 'RW',
+                    trend_rel = 0.6)
+```
+
+---
+## Simulated data
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-64-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+## Fit RW and AR1 models
+
+```r
+t_mod_rw &lt;- mvgam(
+*                 y ~ s(season, bs = 'cc', k = 6),
+*                 knots = list(season = c(0.5, 12.5)),
+                  trend_model = 'RW', family = student_t(),
+                  data = t_data$data_train, newdata = t_data$data_test)
+
+t_mod_ar1 &lt;- mvgam(
+*                 y ~ s(season, bs = 'cc', k = 6),
+*                 knots = list(season = c(0.5, 12.5)),
+                  trend_model = 'AR1', family = student_t(),
+                  data = t_data$data_train, newdata = t_data$data_test)
+```
+
+In both models, a [cyclic smooth captures repeated periodic variation by forcing the smooth to join at the boundaries](https://stats.stackexchange.com/questions/522960/gam-set-knot-locations-for-first-but-not-second-smooth-term)
+
+---
+## RW MCMC diagnostics <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm177.6 62.1C192.8 334.5 218.8 352 256 352s63.2-17.5 78.4-33.9c9-9.7 24.2-10.4 33.9-1.4s10.4 24.2 1.4 33.9c-22 23.8-60 49.4-113.6 49.4s-91.7-25.5-113.6-49.4c-9-9.7-8.4-24.9 1.4-33.9s24.9-8.4 33.9 1.4zM144.4 208a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm192-32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>
+
+.small[
+
+```
+## n_eff / iter looks reasonable for all parameters
+## Rhat looks reasonable for all parameters
+## 0 of 2000 iterations ended with a divergence (0%)
+## 0 of 2000 iterations saturated the maximum tree depth of 10 (0%)
+## Chain 1: E-FMI = 0.1385
+## Chain 2: E-FMI = 0.1088
+## Chain 3: E-FMI = 0.0873
+## *E-FMI below 0.2 indicates you may need to reparameterize your model
+```
+
+]
+
+Good convergence, no divergences encountered
+---
+
+## AR1 MCMC diagnostics <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M175.9 448c-35-.1-65.5-22.6-76-54.6C67.6 356.8 48 308.7 48 256C48 141.1 141.1 48 256 48s208 93.1 208 208s-93.1 208-208 208c-28.4 0-55.5-5.7-80.1-16zM0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zM128 369c0 26 21.5 47 48 47s48-21 48-47c0-20-28.4-60.4-41.6-77.7c-3.2-4.4-9.6-4.4-12.8 0C156.6 308.6 128 349 128 369zm128-65c-13.3 0-24 10.7-24 24s10.7 24 24 24c30.7 0 58.7 11.5 80 30.6c9.9 8.8 25 8 33.9-1.9s8-25-1.9-33.9C338.3 320.2 299 304 256 304zm47.6-96a32 32 0 1 0 64 0 32 32 0 1 0 -64 0zm-128 32a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg>
+
+.small[
+
+```
+## n_eff / iter looks reasonable for all parameters
+## Rhats above 1.05 found for 45 parameters
+## *Diagnose further to investigate why the chains have not mixed
+## 0 of 2000 iterations ended with a divergence (0%)
+## 0 of 2000 iterations saturated the maximum tree depth of 10 (0%)
+## Chain 1: E-FMI = 0.1215
+## Chain 2: E-FMI = 0.1225
+## Chain 3: E-FMI = 0.1438
+## Chain 4: E-FMI = 0.0758
+## *E-FMI below 0.2 indicates you may need to reparameterize your model
+```
+
+]
+
+No divergences encountered, but bad convergence
+
+---
+
+## Similar smooth inferences
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-68-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## AR1 mostly stationary ...
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-69-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## ... so trends differ ...
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-70-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## ... as do forecasts
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-71-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Process error must compromise
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-72-1.svg" style="display: block; margin: auto;" /&gt;
+---
+class: middle center
+
+### It is straightforward to fit latent dynamic models with RW or AR models up to order 3 in `mvgam`. Bayesian regularizations helps shrink un-needed AR coefficients toward 0
+&lt;br&gt;
+### In `brms`, only AR1 can be fit for non-Gaussian observations (though can also handle ARMA(1,1)) models. However, implementation is different and much slower
+&lt;br&gt;
+### But what if we think the latent dynamic process is *smooth*?
+---
+
+class: inverse middle center big-subsection
+
+# Gaussian Processes
+
+---
+
+## Gaussian Processes
+"*A Gaussian Process defines a probability distribution over functions; in other words every sample from a Gaussian Process is an entire function from the covariate space X to the real-valued output space.*" (Betancourt; [Robust Gaussian Process Modeling](https://betanalpha.github.io/assets/case_studies/gaussian_processes.html)) 
+
+`\begin{align*}
+x &amp; \sim \text{MVNormal}(0, \Sigma) \\
+\Sigma_{t_i, t_j} &amp; = \alpha^2 * exp(-0.5 * ((|t_i - t_j| / \rho))^2)
+\end{align*}`
+
+Where: 
+- `\(\alpha\)` controls the marginal variability (magnitude) of the function
+- `\(\rho\)` controls how correlations decay as a function of distance
+- `\(\Sigma\)` is the kernel, in this case a squared exponential kernel
+
+---
+
+## Random *functions*
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-73-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+## Length scale  &amp;#8680; *memory*
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-74-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Kernel &amp;#8680; covariance decay
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-75-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+## Kernel &amp;#8680; covariance decay
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-76-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Kernel &amp;#8680; covariance decay
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-77-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+background-image: url('./resources/gp_kernel.gif')
+## Kernel smoothing in action
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+.small[[McElreath 2023](https://www.youtube.com/watch?v=Y2ZLt4iOrXU)]
+
+---
+
+class: middle center
+### A latent GP allows prediction for *any* time point because all we need is the distance to each training time point
+&lt;br&gt;
+### The cross-covariance for prediction vs training time points provides the kernel used to extend functions forward in time
+&lt;br&gt;
+### Allows GPs to make much better predictions than splines, but at a high computational cost
+---
+
+## Global knowledge <svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg>
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-78-1.svg" style="display: block; margin: auto;" /&gt;
+
+```
+## Out of sample CRPS:
+## [1] 10.41213
+```
+---
+
+## Approximating GPs
+A quick note that both the `mvgam` and `brms` 📦's can employ an approximation method to improve computational efficiency for estimating Gaussian Process parameters
+
+Relies on basis expansions to reduce dimensionality of the problem
+
+Details not focus of this lecture, but can be found in this reference
+- Riutort-Mayol et al 2023; [Practical Hilbert space approximate Bayesian Gaussian processes for probabilistic programming](https://link.springer.com/article/10.1007/s11222-022-10167-2)
+
+Both packages use automatic, [informative priors for length scales `\(\rho\)`](https://betanalpha.github.io/assets/case_studies/gaussian_processes.html#323_Informative_Prior_Model), but these can be changed (more on this in [Tutorial 2](https://nicholasjclark.github.io/physalia-forecasting-course/day2/tutorial_2_physalia#Gaussian_Processes))
+---
+
+## Estimation in `brms`
+In `brms`📦, use the [`gp` function](https://paul-buerkner.github.io/brms/reference/gp.html) with `time` as the covariate
+
+
+```r
+brm(y ~ x + ... +
+*     gp(time, c = 5/4, k = 20, scale = FALSE),
+    family = poisson(),
+    data = data)
+```
+
+Requires arguments to determine behaviour of the approximation (`c` and `k`). Good defaults are `5/4` and `20`, but depends on number of timepoints and expected smoothness
+---
+
+## Estimation in `mvgam`
+In `mvgam`📦, use `trend_model = 'GP'`
+
+
+```r
+mvgam(y ~ x + ... +
+*     trend_model = "GP",
+    family = poisson(),
+    data = data)
+```
+
+Doesn't require arguments, but the number of basis functions `k` can be altered by changing the priors
+---
+class: middle center
+### No examples here as we will go deeper into GPs in the tutorial
+&lt;br&gt;
+### But if you want extra detail, watch this lecture: - [Statistical Rethinking 2023 - 16 - Gaussian Processes](https://www.youtube.com/watch?v=Y2ZLt4iOrXU)
+
+---
+class: inverse middle center big-subsection
+
+# Dynamic coefficient models
+
+---
+## Dynamic coefficients
+Major advantage of flexible interfaces such as `brms`, `mgcv` and `mvgam`📦's is ability to handle many types of nonlinear effects
+
+These can include smooth functions of covariates, as we have been using so far
+
+But they can also include other types of nonlinearities
+- Spatial autocorrelation functions
+- Distributed lag functions
+- .emphasize[Time-varying effects]
+
+---
+## Smooth time-varying effects
+If a covariate effect changes over time, we'd usually expect this change to be .emphasize[smooth]
+
+Splines and Gaussian Processes provide useful tools to estimate these effects
+
+But as we've seen previously, splines will often give poor predictions about how effects will change in the future
+
+---
+## In `mvgam`
+In `mvgam`📦, use `dynamic` to set up time-varying effects
+
+
+```r
+mod_beta_dyn &lt;- mvgam(relabund ~ s(mintemp, k = 6) +
+*                   dynamic(ndvi, rho = 28),
+                  family = betar(),
+                  data = dm_data)
+```
+
+Requires user to set the length scale `\(\rho\)`, as the function is approximated using a low-rank GP smooth from the `mgcv`📦
+
+No uncertainty in the GP parameters will be estimated, but function will resemble a squared exponential GP
+
+---
+
+## Estimated smooths
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-82-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Predicted effects
+.panelset[
+.panel[.panel-name[Code]
+
+
+
+
+```r
+# use mvgam's plot_mvgam_smooth to view predicted effects
+plot_mvgam_smooth(mod_beta_dyn, smooth = 2,
+                  # datagrid from marginaleffects is useful
+                  # to set up prediction scenarios
+                  newdata = datagrid(time = 1:230,
+                                     model = mod_beta_dyn))
+abline(v = max(dm_data$time), lwd = 2, lty = 'dashed')
+```
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_3_slidedeck_files/figure-html/ndvi_time-1.svg)]
+
+]
+]
+
+---
+## In `brms`
+In `brms`📦, use `gp` with the `by` argument
+
+```r
+brm_beta_dyn &lt;- brm(relabund ~ s(mintemp, k = 6) +
+*                     gp(time, by = ndvi, c = 5/4, k = 20),
+                    family = Beta(),
+                    data = dm_data,
+                    chains = 4,
+                    cores = 4,
+                    backend = 'cmdstanr')
+```
+
+
+
+A GP specifying time-varying effects of `ndvi`. This estimates a full GP, so is more flexible than the `mvgam` / `mgcv` version
+
+---
+
+## Time-vaying effect
+.panelset[
+.panel[.panel-name[Code]
+
+
+```r
+# use brms' conditional_effects to view predictions
+plot(conditional_effects(brm_beta_dyn, effects = c('time:ndvi')),
+                    theme = theme_classic(),
+                    mean = FALSE,
+                    rug = TRUE)
+```
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_3_slidedeck_files/figure-html/ndvi_time_brm-1.svg)]
+
+]
+]
+
+---
+class: middle center
+### We have seen many ways to handle dynamic components in Bayesian regression models
+&lt;br&gt;
+### These flexible processes can capture time-varying effects and give realistic forecasts, while also allowing us to respect the properties of the observations
+&lt;br&gt;
+### But how do we evaluate and compare dynamic GAMs / GLMs?
+
+---
+
+## In the next lecture, we will cover
+
+Forecasting from dynamic models
+
+Point-based forecast evaluation
+
+Probabilistic forecast evaluation
+
+Bayesian posterior predictive checks
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="macros.js"></script>
+<script>var slideshow = remark.create({
+"navigation": {
+"scroll": false
+},
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
