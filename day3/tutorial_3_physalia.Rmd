@@ -1,6 +1,6 @@
 ---
 title: "Ecological forecasting in R"
-subtitle: 'Tutorial 3: model and forecase evaluation'
+subtitle: 'Tutorial 3: model and forecast evaluation'
 author: Nicholas Clark, School of Veterinary Science, University of Queensland^[n.clark@uq.edu.au, https://github.com/nicholasjclark]
 output: 
   html_document:
