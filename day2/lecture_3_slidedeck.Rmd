@@ -2065,9 +2065,9 @@ class: middle center
 
 Forecasting from dynamic models
 
+Bayesian posterior predictive checks
+
 Point-based forecast evaluation
 
 Probabilistic forecast evaluation
-
-Bayesian posterior predictive checks
 
