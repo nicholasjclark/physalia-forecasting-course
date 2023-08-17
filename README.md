@@ -96,10 +96,10 @@ remotes::install_github('nicholasjclark/mvgam', force = TRUE)
 
 ## Wednesday (day 3)
 [Tutorial](https://nicholasjclark.github.io/physalia-forecasting-course/day3/tutorial_3_physalia)
+* Bayesian posterior predictive checks
 * Forecasting from dynamic models
 * Point-based forecast evaluation
 * Probabilistic forecast evaluation
-* Bayesian posterior predictive checks
 
 
 ## Thursday (day 4)
