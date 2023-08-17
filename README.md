@@ -48,7 +48,8 @@ update.packages(ask = FALSE, checkBuilt = TRUE)
 
 # packages to install
 pkgs <- c("brms", "dplyr", "gratia", "ggplot2",
-          "marginaleffects", "zoo", "remotes")
+          "marginaleffects", "tidybayes", "zoo",
+          "viridis", "remotes")
 
 # install those packages by setting Ncpus to number of CPU cores you have available
 install.packages(pkgs, Ncpus = 4)
@@ -94,6 +95,7 @@ remotes::install_github('nicholasjclark/mvgam', force = TRUE)
 
 
 ## Wednesday (day 3)
+[Tutorial](https://nicholasjclark.github.io/physalia-forecasting-course/day3/tutorial_3_physalia)
 * Forecasting from dynamic models
 * Point-based forecast evaluation
 * Probabilistic forecast evaluation
