@@ -381,7 +381,7 @@ abline(v = max(gausdat$data_train$time), lwd = 2, lty = 'dashed')
 ---
 ## Forecasts `r fontawesome::fa("face-sad-cry")`
 
-```{r echo = FALSE, message = FALSE}
+```{r echo = FALSE, message = FALSE, results='hide'}
 mypar()
 plot(splinemod, type = 'forecast', newdata = gausdat$data_test, xlab = 'time',
      ylab = 'Predictions')
@@ -456,7 +456,7 @@ abline(v = max(gausdat$data_train$time), lwd = 2, lty = 'dashed')
 
 ## Forecasts `r fontawesome::fa("face-flushed")`
 
-```{r echo = FALSE, message = FALSE}
+```{r echo = FALSE, message = FALSE, results='hide'}
 mypar()
 plot(splinemod_1p, type = 'forecast', newdata = gausdat$data_test, xlab = 'time',
      ylab = 'Predictions')
@@ -516,7 +516,7 @@ background-image: url('./lecture_3_slidedeck_files/figure-html/basis-functions-w
 ---
 
 ## We need *global knowledge*
-```{r echo = FALSE, message = FALSE}
+```{r echo = FALSE, message = FALSE, results='hide'}
 mypar()
 plot(gpmod, type = 'forecast', newdata = gausdat$data_test, xlab = 'time',
      ylab = 'Predictions')
@@ -1880,7 +1880,7 @@ class: middle center
 ---
 
 ## Global knowledge `r fontawesome::fa("check")`
-```{r echo = FALSE, message = FALSE}
+```{r echo = FALSE, message = FALSE, results='hide'}
 mypar()
 plot(gpmod, type = 'forecast', newdata = gausdat$data_test, xlab = 'time',
      ylab = 'Predictions')
@@ -2065,9 +2065,9 @@ class: middle center
 
 Forecasting from dynamic models
 
+Bayesian posterior predictive checks
+
 Point-based forecast evaluation
 
 Probabilistic forecast evaluation
-
-Bayesian posterior predictive checks
 
