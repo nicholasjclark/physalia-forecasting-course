@@ -513,7 +513,7 @@ As an illustration of the some of the many uses for the `predict.mvgam` function
 # take draws from the model that compute the average comparison between
 # spawners recorded at 5,000 vs 3,000 (be sure to log first!)
 post_contrasts <- avg_comparisons(model2, 
-                        newdata = datagrid(log_spawners = log(c(3000, 5000)))) %>%
+                        variables = list(log_spawners = log(c(3000, 5000)))) %>%
   posteriordraws() 
 
 # use the resulting posterior draw object to plot a density of the 
