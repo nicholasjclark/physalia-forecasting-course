@@ -171,7 +171,7 @@ Use `newdata` argument to generate automatic probabilistic forecasts
 ---
 ## 2nd derivative penalty
 
-Penalizes the overall .emphasize[curvature] of the spline
+Penalizes the overall .emphasize[*curvature*] of the spline
 
 This is default behaviour in 📦's `mgcv`, `brms` and `mvgam`
 
@@ -179,7 +179,7 @@ Provides linear extrapolations
 - Slope remains unchanged from the last boundary of training data
 - Uncertainty grows but has no probabilistic understanding of time
 
-This behaviour is widely known; .emphasize[but spline extrapolation is still commonplace]
+This behaviour is widely known; .emphasize[*but spline extrapolation is still commonplace*]
 
 ---
 
@@ -444,7 +444,7 @@ log(\lambda_t) &amp; = \alpha + \beta_1 \boldsymbol{Y}_{t-1} + \cdots
 
 Where: 
 - `\(\alpha\)` is an intercept coefficient
-- `\(\beta_1\)` is a .emphasize[first-order autoregressive coefficient]
+- `\(\beta_1\)` is a .emphasize[*first-order autoregressive coefficient*]
 
 
 ---
@@ -754,7 +754,7 @@ class: inverse middle center big-subsection
 ---
 
 # Dynamic Poisson GLM
-A dynamic Poisson GLM can use .emphasize[autocorrelated latent residuals]
+A dynamic Poisson GLM can use .emphasize[*autocorrelated latent residuals*]
 &lt;br/&gt;
 &lt;br/&gt;
 `\begin{align*}
@@ -1189,7 +1189,7 @@ plot(series, type = 'l', bty = 'l', lwd = 2,
 
 `\(\phi = 1\)` and `\(\alpha \neq 0\)`, process is a Random Walk with drift
 
-`\(|\phi| &lt; 0\)`, process oscillates around `\(\alpha\)` and is .emphasize[stationary]
+`\(|\phi| &lt; 0\)`, process oscillates around `\(\alpha\)` and is .emphasize[*stationary*]
 
 ---
 
@@ -1201,7 +1201,7 @@ Non-stationary series are more difficult to predict
 - Either mean, variance, and/or autocorrelation structure can change over time
 - Random Walk is nonstationary because it has no long-term mean
 
-Stationary time series are useful for inferring properties of .emphasize[stability]
+Stationary time series are useful for inferring properties of .emphasize[*stability*]
 
 ---
 
@@ -1232,7 +1232,7 @@ brm(y ~ x + ... +
 ---
 
 ## Enforcing AR stationarity
-This .emphasize[is not] the default behaviour in `mvgam` 📦. 
+This .emphasize[*is not*] the default behaviour in `mvgam` 📦. 
 
 Instead, `\(|\phi| &lt; 1.5\)` to allow nonstationary residual processes if they are supported by the data
 
@@ -1510,11 +1510,11 @@ These can include smooth functions of covariates, as we have been using so far
 But they can also include other types of nonlinearities
 - Spatial autocorrelation functions
 - Distributed lag functions
-- .emphasize[Time-varying effects]
+- .emphasize[*Time-varying effects*]
 
 ---
 ## Smooth time-varying effects
-If a covariate effect changes over time, we'd usually expect this change to be .emphasize[smooth]
+If a covariate effect changes over time, we'd usually expect this change to be .emphasize[*smooth*]
 
 Splines and Gaussian Processes provide useful tools to estimate these effects
 
