@@ -124,13 +124,13 @@ Nearly all common time series models assume this data distribution
 ---
 ## Linear regression
 
-It is common to estimate linear predictors of `\(\mu\)` with .emphasize[regression]
+It is common to estimate linear predictors of `\(\mu\)` with .emphasize[*regression*]
 &lt;br/&gt;
 &lt;br/&gt;
 `$$\boldsymbol{Y}\sim \text{Normal}(\alpha + \beta * \boldsymbol{X},\sigma)$$`
 &lt;br/&gt;
 Where:
-- `\(\boldsymbol{X}\)` represents a design matrix of .emphasize[covariates] that contribute linearly to variation in `\(\mu\)`
+- `\(\boldsymbol{X}\)` represents a design matrix of covariates that contribute linearly to variation in `\(\mu\)`
 - `\(\alpha\)` is an intercept coefficient
 - `\(\beta\)` is a vector of regression coefficients
 - `\(\sigma\)` controls the spread of the errors about `\(\mu\)`
@@ -166,7 +166,7 @@ Where:
 ---
 
 class: middle center
-### But most real-world ecological observations, including time series, .emphasize[are not Gaussian]
+### But most real-world ecological observations, including time series, *are not Gaussian*
 
 ---
 
@@ -213,7 +213,7 @@ Properties
 - Lower bound (supports `\(0\)` to `\(\infty\)`)
 - mean = variance = `\(\lambda\)`
 
-.emphasize[Virtually no time series models support this distribution]
+.emphasize[*Virtually no time series models support this distribution*]
 - Most analysts use `log` or [`Box-Cox`](https://otexts.com/fpp3/transformations.html) transformation
 - But see the [`tscount` 📦](https://cran.r-project.org/web/packages/tscount/vignettes/tsglm.pdf)
 
@@ -243,9 +243,9 @@ Linear regression can't be trusted to give sensible predictions for non-negative
 
 We can do better by choosing distributions that obey the constraints on our outcome variables
 
-The idea is to .emphasize[generalize] the linear regression by replacing parameters from other probability distributions with linear models
+The idea is to .emphasize[*generalize*] the linear regression by replacing parameters from other probability distributions with linear models
 
-This requires a .emphasize[link function] that transforms from the unbounded scale of the linear predictor to a scale that is appropriate for the parameters being modelled
+This requires a .emphasize[*link function*] that transforms from the unbounded scale of the linear predictor to a scale that is appropriate for the parameters being modeled
 
 ---
 
@@ -291,7 +291,7 @@ log(\lambda_i) &amp; = \boldsymbol{X}_i \beta \\
 &amp; = \color{darkred}{\alpha + \beta_1 \boldsymbol{x}_{1i} + \beta_2 \boldsymbol{x}_{2i} + \cdots + \beta_j \boldsymbol{x}_{ij}}
 \end{align*}`
 
-The .emphasize[linear predictor] component can be *hugely flexible*, as we will see in later slides
+The .emphasize[*linear predictor component can be hugely flexible*], as we will see in later slides
 
 ---
 
@@ -316,7 +316,7 @@ Properties
 - mean = `\(\mu\)`
 - precision = `\(\phi\)` (higher `\(\phi\)` = a tighter spread about `\(\mu\)`)
 
-.emphasize[Virtually no time series models support this distribution]
+.emphasize[*Virtually no time series models support this distribution*]
 - Most analysts would use [`logit`](http://strata.uga.edu/8370/rtips/proportions.html) transformation
 
 ---
@@ -361,13 +361,13 @@ Where:
 ## Some other relevant distributions
 
 [Many other useful GLM probability distributions exist](https://cran.r-project.org/web/packages/brms/vignettes/brms_families.html). Some of these include:
-- .emphasize[Negative Binomial] &amp;mdash; overdispersed integers in `\((0,1,2,...)\)`
-- .emphasize[Bernoulli] &amp;mdash; presence-absence data in `\(\{0,1\}\)`
-- .emphasize[Student's T] &amp;mdash; heavy-tailed (skewed) real values in `\((-\infty, \infty)\)` 
-- .emphasize[Lognormal] &amp;mdash; heavy-tailed (right skewed) real values in `\((0, \infty)\)` 
-- .emphasize[Gamma] &amp;mdash; lighter-tailed (less skewed) real values in `\((0, \infty)\)` 
-- .emphasize[Multinomial] &amp;mdash; integers representing `\(K\)` unordered categories in `\((0,1,..., K)\)`
-- .emphasize[Ordinal] &amp;mdash; integers representing `\(K\)` ordered categories in `\((0,1,..., K)\)`
+- .emphasize[*Negative Binomial*] &amp;mdash; overdispersed integers in `\((0,1,2,...)\)`
+- .emphasize[*Bernoulli*] &amp;mdash; presence-absence data in `\(\{0,1\}\)`
+- .emphasize[*Student's T*] &amp;mdash; heavy-tailed (skewed) real values in `\((-\infty, \infty)\)` 
+- .emphasize[*Lognormal*] &amp;mdash; heavy-tailed (right skewed) real values in `\((0, \infty)\)` 
+- .emphasize[*Gamma*] &amp;mdash; lighter-tailed (less skewed) real values in `\((0, \infty)\)` 
+- .emphasize[*Multinomial*] &amp;mdash; integers representing `\(K\)` unordered categories in `\((0,1,..., K)\)`
+- .emphasize[*Ordinal*] &amp;mdash; integers representing `\(K\)` ordered categories in `\((0,1,..., K)\)`
 
 ---
 
@@ -386,15 +386,15 @@ class: middle center
 Lagged effects]
 
 
-.emphasize[Non-Gaussian data and missing observations
+.emphasize[*Non-Gaussian data and missing observations*
 
-Measurement error
+*Measurement error*
 
-Time-varying effects
+*Time-varying effects*
 
-Nonlinearities
+*Nonlinearities*
 
-Multi-series clustering]
+*Multi-series clustering*]
 
 ---
 
@@ -411,7 +411,7 @@ Measurement error
 
 Time-varying effects]
 
-.emphasize[Nonlinearities]
+.emphasize[*Nonlinearities*]
 
 .grey[Multi-series clustering]
 
@@ -437,6 +437,12 @@ background-image: url('./lecture_2_slidedeck_files/figure-html/basis-functions-w
 
 background-image: url('./resources/basis_weights.gif')
 ## ... gives a spline `\((f(x))\)`
+
+---
+
+background-image: url('./resources/penalty_spline.gif')
+background-size: contain
+## Penalize `\(f"(x)\)` to learn weights
 
 ---
 
@@ -483,7 +489,7 @@ class: inverse middle center big-subsection
 
 ---
 
-## Random effects are .emphasize[hierarchical]
+## Random effects are *hierarchical*
 &lt;br&gt;
 &lt;br&gt;
 &lt;img align="center" width="1000" height="225" src="resources/partial_pool_diagram.png"&gt;
@@ -493,9 +499,9 @@ class: inverse middle center big-subsection
 ---
 
 class: middle center
-### Hierarchical models .emphasize[learn from all groups at once] to inform group-level estimates
+### Hierarchical models *learn from all groups at once* to inform group-level estimates
 &lt;br&gt;
-### This induces .emphasize[regularization], where noisy estimates are pulled towards the overall mean
+### This induces *regularization*, where noisy estimates are pulled towards the overall mean
 &lt;br&gt;
 ### The regularization is known as [partial pooling](https://www.jstor.org/stable/25471160)
 
@@ -1292,7 +1298,7 @@ rownames(coef(year_smooth))
 ## [11] "s(year).10"  "s(year).11"  "s(year).12"  "s(year).13"  "s(year).14"
 ```
 
-We .emphasize[must] use predictions and plots to understand the model
+We .emphasize[*must*] use predictions and plots to understand the model
 
 ---
 
