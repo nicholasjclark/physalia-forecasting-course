@@ -79,7 +79,7 @@ remotes::install_github('nicholasjclark/mvgam', force = TRUE)
  
 
 ## Monday (day 1) 
-[Lecture 1 Slides](https://nicholasjclark.github.io/physalia-forecasting-course/day1/lecture_1_slidedeck) | [Lecture 2 Slides](https://nicholasjclark.github.io/physalia-forecasting-course/day1/lecture_2_slidedeck) | [Tutorial1](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia)
+[Lecture 1 Slides](https://nicholasjclark.github.io/physalia-forecasting-course/day1/lecture_1_slidedeck) | [Lecture 2 Slides](https://nicholasjclark.github.io/physalia-forecasting-course/day1/lecture_2_slidedeck) | [Tutorial 1](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia)
 * Introduction to time series and time series visualization
 * Some traditional time series models and their assumptions
 * GLMs and GAMs for ecological modelling
@@ -87,7 +87,7 @@ remotes::install_github('nicholasjclark/mvgam', force = TRUE)
 
 
 ## Tuesday (day 2) 
-[Lecture 3 Slides](https://nicholasjclark.github.io/physalia-forecasting-course/day2/lecture_3_slidedeck) | [Tutorial2](https://nicholasjclark.github.io/physalia-forecasting-course/day2/tutorial_2_physalia)
+[Lecture 3 Slides](https://nicholasjclark.github.io/physalia-forecasting-course/day2/lecture_3_slidedeck) | [Tutorial 2](https://nicholasjclark.github.io/physalia-forecasting-course/day2/tutorial_2_physalia)
 * Dynamic GLMs and Dynamic GAMs
 * Autoregressive dynamic processes
 * Gaussian Processes
@@ -95,7 +95,7 @@ remotes::install_github('nicholasjclark/mvgam', force = TRUE)
 
 
 ## Wednesday (day 3)
-[Lecture 4 Slides](https://nicholasjclark.github.io/physalia-forecasting-course/day3/lecture_4_slidedeck) | [Tutorial3](https://nicholasjclark.github.io/physalia-forecasting-course/day3/tutorial_3_physalia)
+[Lecture 4 Slides](https://nicholasjclark.github.io/physalia-forecasting-course/day3/lecture_4_slidedeck) | [Tutorial 3](https://nicholasjclark.github.io/physalia-forecasting-course/day3/tutorial_3_physalia)
 * Bayesian posterior predictive checks
 * Forecasting from dynamic models
 * Point-based forecast evaluation
@@ -103,7 +103,7 @@ remotes::install_github('nicholasjclark/mvgam', force = TRUE)
 
 
 ## Thursday (day 4)
-[Tutorial4](https://nicholasjclark.github.io/physalia-forecasting-course/day4/tutorial_4_physalia)
+[Tutorial 4](https://nicholasjclark.github.io/physalia-forecasting-course/day4/tutorial_4_physalia)
 * Multivariate ecological time series
 * Vector autoregressive processes
 * Dynamic factor models
