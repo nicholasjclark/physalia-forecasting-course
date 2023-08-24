@@ -1,6 +1,6 @@
 ---
 title: "Ecological forecasting in R"
-subtitle: "Lecture 1: Introduction to time series models"
+subtitle: "Lecture 1: introduction to time series models"
 institute: "School of Veterinary Science, University of Queensland"
 author: "Nicholas Clark"
 date: "0900&ndash;1200 CET Monday 4th September, 2023"
@@ -332,10 +332,10 @@ Multi-series clustering
 ---
 
 ## Let's focus on these for now 
-.emphasize[Temporal autocorrelation] 
+.emphasize[**Temporal autocorrelation*] 
 
 
-.emphasize[Lagged effects]
+.emphasize[**Lagged effects*]
 
 .grey[
 Non-Gaussian data and missing observations 
@@ -351,7 +351,7 @@ Multi-series clustering]
 ---
 
 ## What is temporal autocorrelation?
-Values at current time .emphasize[correlated with past values]
+Values at current time .emphasize[*correlated with past values*]
 
 $$Cor({Y}_{t}, {Y}_{t-lag})\neq0$$
 
@@ -378,12 +378,12 @@ title(main = expression(paste(italic(Cor),"(",X,",",Y, ") = 0.85")))
 abline(lm(y3~x), lwd = 2)
 ```
 
-Correlation assumes a .emphasize[linear] relationship among two variables
+Correlation assumes a .emphasize[*linear*] relationship among two variables
 
 ---
 
 ## What is temporal autocorrelation?
-Values at current time .emphasize[correlated with past values]
+Values at current time .emphasize[*correlated with past values*]
 
 $$Cor({Y}_{t}, {Y}_{t-lag})\neq0$$
 
@@ -394,7 +394,7 @@ $$\boldsymbol{Y}_{t}\sim \text{Normal}(\alpha + \color{darkred}{\beta} * \boldsy
 ---
 
 ## What is temporal autocorrelation?
-Values at current time .emphasize[correlated with past values]
+Values at current time .emphasize[*correlated with past values*]
 
 $$Cor({Y}_{t}, {Y}_{t-lag})\neq0$$
 
@@ -402,7 +402,7 @@ We can estimate the correlation $(\beta)$ with linear regression
 
 $$\boldsymbol{Y}_{t}\sim \text{Normal}(\alpha + \color{darkred}{\beta} * \boldsymbol{Y}_{t-lag},\sigma)$$
 
-Generalize to state that current value of a series (at time $t$) is .emphasize[a function] of it's own past values (at time $t-lag$)
+Generalize to state that current value of a series (at time $t$) is .emphasize[*a function*] of it's own past values (at time $t-lag$)
 
 $$\boldsymbol{Y}_{t}\sim \text{f}( \boldsymbol{Y}_{t-lag})$$
 
@@ -536,7 +536,7 @@ class: full-size
 .pull-right-bigger[![Lynx](resources/canada-lynx-gary-pritts.jpg)]
 
 
-Many time series show .emphasize[repeated periodic cycles]
+Many time series show .emphasize[*repeated periodic cycles*]
 - Breeding seasons
 - Migration
 - Green-ups / green-downs
@@ -946,15 +946,15 @@ Hyndman’s tools in the [`forecast` 📦](https://pkg.robjhyndman.com/forecast/
 Lagged effects]
 
 
-.emphasize[Non-Gaussian data and missing observations
+.emphasize[*Non-Gaussian data and missing observations*
 
-Measurement error
+*Measurement error*
 
-Time-varying effects
+*Time-varying effects*
 
-Nonlinearities
+*Nonlinearities*
 
-Multi-series clustering]
+*Multi-series clustering*]
 
 ---
 
