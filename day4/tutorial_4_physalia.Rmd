@@ -98,7 +98,7 @@ The data and modelling objects created in this notebook can be downloaded direct
 library(downloadthis)
 download_dir(
   path = 'tutorial_4_physalia_cache/html/',
-  output_name = "Tutorial3_exercise_data",
+  output_name = "Tutorial4_exercise_data",
   button_label = "Click here to download all files needed for exercises",
   button_type = "success",
   has_icon = TRUE,
