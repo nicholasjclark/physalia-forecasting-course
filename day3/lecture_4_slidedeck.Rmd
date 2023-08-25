@@ -1520,7 +1520,7 @@ Interpretation is similar
 ## `score.mvgam_forecast`
 Once forecasts are computed and stored in an object of class `mvgam_forecast`, scores can be directly applied
 
-User chooses among the Scaled Interval Score (`sis`), log score (`elpd`), CRPS (`crps`), DRPS (`drps`) and a multivariate score (`variogram`; more on this in the next lecture)
+User chooses among the Scaled Interval Score (`sis`), log score (`elpd`), CRPS (`crps`), DRPS (`drps`) and two multivariate scores (`energy` or `variogram`; more on this in the next lecture)
 
 User also specifies an interval for calculating coverage and/or which interval to use for the Scaled Interval Score
 
