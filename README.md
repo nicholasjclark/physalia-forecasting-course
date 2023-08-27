@@ -111,5 +111,5 @@ remotes::install_github('nicholasjclark/mvgam', force = TRUE)
 
 
 ## Friday (day 5)
-* Extended practical examples using {mvgam}
+* Extended practical examples using `mvgam`
 * Review and open discussion
