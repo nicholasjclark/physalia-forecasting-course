@@ -101,7 +101,7 @@ Tutorial 2 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/
 
 
 ## Wednesday (day 3)
-Lecture 4 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day3/lecture_4_slidedeck) | [pdf]())
+Lecture 4 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day3/lecture_4_slidedeck) | [pdf](https://github.com/nicholasjclark/physalia-forecasting-course/raw/main/day3/lecture_4_slidedeck.pdf))
 <br>
 Tutorial 3 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day3/tutorial_3_physalia))
 * Bayesian posterior predictive checks
