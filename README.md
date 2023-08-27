@@ -111,6 +111,8 @@ Tutorial 3 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/
 
 
 ## Thursday (day 4)
+Lecture 5 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day4/lecture_5_slidedeck) | [pdf](https://github.com/nicholasjclark/physalia-forecasting-course/raw/main/day4/lecture_5_slidedeck.pdf))
+<br>
 Tutorial 4 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day4/tutorial_4_physalia))
 * Multivariate ecological time series
 * Vector autoregressive processes
