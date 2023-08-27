@@ -91,7 +91,9 @@ Tutorial 1 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/
 
 
 ## Tuesday (day 2) 
-[Lecture 3 Slides](https://nicholasjclark.github.io/physalia-forecasting-course/day2/lecture_3_slidedeck) | [Tutorial 2](https://nicholasjclark.github.io/physalia-forecasting-course/day2/tutorial_2_physalia)
+Lecture 3 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day2/lecture_3_slidedeck) | [pdf](https://github.com/nicholasjclark/physalia-forecasting-course/raw/main/day2/lecture_3_slidedeck.pdf))
+<br>
+Tutorial 2 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day2/tutorial_2_physalia))
 * Dynamic GLMs and Dynamic GAMs
 * Autoregressive dynamic processes
 * Gaussian Processes
@@ -99,7 +101,9 @@ Tutorial 1 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/
 
 
 ## Wednesday (day 3)
-[Lecture 4 Slides](https://nicholasjclark.github.io/physalia-forecasting-course/day3/lecture_4_slidedeck) | [Tutorial 3](https://nicholasjclark.github.io/physalia-forecasting-course/day3/tutorial_3_physalia)
+Lecture 4 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day3/lecture_4_slidedeck) | [pdf]())
+<br>
+Tutorial 3 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day3/tutorial_3_physalia))
 * Bayesian posterior predictive checks
 * Forecasting from dynamic models
 * Point-based forecast evaluation
@@ -107,7 +111,7 @@ Tutorial 1 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/
 
 
 ## Thursday (day 4)
-[Tutorial 4](https://nicholasjclark.github.io/physalia-forecasting-course/day4/tutorial_4_physalia)
+Tutorial 4 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day4/tutorial_4_physalia))
 * Multivariate ecological time series
 * Vector autoregressive processes
 * Dynamic factor models
