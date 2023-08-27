@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Ecological forecasting in R</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Nicholas Clark" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/panelset/panelset.css" rel="stylesheet" />
+    <script src="libs/panelset/panelset.js"></script>
+    <link href="libs/animate.css/animate.xaringan.css" rel="stylesheet" />
+    <script src="libs/clipboard/clipboard.min.js"></script>
+    <link href="libs/xaringanExtra-clipboard/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-clipboard/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"Copy Code","success":"Copied!","error":"Press Ctrl+C to Copy"})</script>
+    <link href="libs/tile-view/tile-view.css" rel="stylesheet" />
+    <script src="libs/tile-view/tile-view.js"></script>
+    <script src="libs/kePrint/kePrint.js"></script>
+    <link href="libs/lightable/lightable.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="slides.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: inverse, middle, left, my-title-slide, title-slide
+
+.title[
+# Ecological forecasting in R
+]
+.subtitle[
+## Lecture 4: multivariate ecological timeseries
+]
+.author[
+### Nicholas Clark
+]
+.institute[
+### School of Veterinary Science, University of Queensland
+]
+.date[
+### 0900–1200 CET Thursday 7th September, 2023
+]
+
+---
+
+
+
+
+<style>.panelset{--panel-tab-foreground: #8F2727;--panel-tab-inactive-opacity: 0.8;}</style>
+
+
+
+
+
+
+
+
+
+
+
+## Workflow
+
+Press the "o" key on your keyboard to navigate among slides
+
+Access the [tutorial html here](https://nicholasjclark.github.io/physalia-forecasting-course/day4/tutorial_4_physalia)
+- Download the data objects and exercise <svg aria-hidden="true" role="img" viewBox="0 0 581 512" style="height:1em;width:1.13em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:steelblue;overflow:visible;position:relative;"><path d="M581 226.6C581 119.1 450.9 32 290.5 32S0 119.1 0 226.6C0 322.4 103.3 402 239.4 418.1V480h99.1v-61.5c24.3-2.7 47.6-7.4 69.4-13.9L448 480h112l-67.4-113.7c54.5-35.4 88.4-84.9 88.4-139.7zm-466.8 14.5c0-73.5 98.9-133 220.8-133s211.9 40.7 211.9 133c0 50.1-26.5 85-70.3 106.4-2.4-1.6-4.7-2.9-6.4-3.7-10.2-5.2-27.8-10.5-27.8-10.5s86.6-6.4 86.6-92.7-90.6-87.9-90.6-87.9h-199V361c-74.1-21.5-125.2-67.1-125.2-119.9zm225.1 38.3v-55.6c57.8 0 87.8-6.8 87.8 27.3 0 36.5-38.2 28.3-87.8 28.3zm-.9 72.5H365c10.8 0 18.9 11.7 24 19.2-16.1 1.9-33 2.8-50.6 2.9v-22.1z"/></svg> script from the html file
+- Complete exercises and use Slack to ask questions
+
+Relevant open-source materials include:
+- [GAMs for time series](https://youtu.be/Ukfvd8akfco?si=tlmSm2-51ZZ1wQf6)
+- [Smoothed dynamic factor analysis for identifying trends in multivariate time series](https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/2041-210X.13788)
+- [Multivariate State-Space models](https://youtu.be/4nrZZGMY1bc?si=VuKYtJVKKaMBliI6)
+
+---
+
+## This lecture's topics
+
+Multivariate ecological time series
+
+Vector autoregressive processes
+
+Dynamic factor models
+
+Multivariate forecast evaluation
+
+---
+
+class: inverse middle center big-subsection
+
+# Multivariate ecological time series
+
+---
+
+## We often measure *multiple* series
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-1-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+## Applicable for many situations
+
+Multivariate time series arise when we have:
+- Multiple species in one site
+- Same species in multiple sites
+- Multiple subjects in an experiment
+- Multiple plots within a site
+- etc...
+
+Often the structure of the data is grouped in some way (i.e. .emphasize[*hierarchical*])
+
+Both `mvgam` and `brms` 📦's were designed to handle this kind of data
+
+---
+
+
+class: middle center
+### Hierarchical models *learn from all groups at once* to inform group-level estimates
+&lt;br&gt;
+### This induces *regularization*, where noisy estimates are pulled towards the overall mean
+&lt;br&gt;
+### The regularization is known as [partial pooling](https://www.jstor.org/stable/25471160)
+
+---
+background-image: url('./resources/partial_pool.gif')
+## Partial pooling in action
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+.small[[McElreath 2023](https://www.youtube.com/watch?v=SocRgsf202M)]
+
+---
+
+## Noisy estimates *pulled* to the mean
+&lt;br&gt;
+.center[&lt;img align="center" width="768" height="384" src="resources/partial_pool_estimates.png"&gt;]
+
+.small[[Johnson *et al* 2021](https://www.bayesrulesbook.com/)]
+
+---
+
+## What about *nonlinear* effects?
+&lt;img src="resources/mozzie_cycles.jpg" style="position:fixed; right:13%; top:20%; width:896px; height:465px; border:none;"/&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+.small[[Whittaker et al 2022](https://royalsocietypublishing.org/doi/10.1098/rspb.2022.0089)]
+
+---
+
+## What about *nonlinear* effects?
+We very often expect to encounter nonlinear effects in ecology
+
+But if we measure multiple species / plots / individuals etc.. through time, we can also encounter hierarchical nonlinear effects
+- Same species may respond similarly to environmental change over different sites
+- Different species may respond similarly in the same site
+
+Our data may not be rich enough to estimate all effects individually; so what can we do?
+---
+
+## Simulate some hierarchical data
+
+.panelset[
+.panel[.panel-name[Code]
+
+
+```r
+library(mvgam)
+
+# set a seed for reproducibility
+set.seed(650)
+
+# simulate four time series with very little 
+# trend and with hierarchical seasonality
+simdat &lt;- sim_mvgam(seasonality = 'hierarchical',
+                   trend_rel = 0.05,
+                   n_series = 4, 
+                   mu = c(1, 1, 2, 1.2))
+```
+]
+
+.panel[.panel-name[Data]
+&lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; y &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; season &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; year &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; series &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; time &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+]
+]
+
+---
+## The series
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+## Simlar seasonal patterns
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-5-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: middle center
+### Can we somehow estimate the average population smooth *and* a smooth to determine how each series deviates from the population?
+&lt;br&gt;
+### Yes! We can use .multicolor[hierarchical GAMs]
+
+---
+
+## Decomposing seasonality
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-6-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## How did we model this?
+
+
+```r
+mod &lt;- mvgam(y ~ 
+               s(season, bs = 'cc', k = 12) +
+               s(season, series, k = 4, bs = 'fs'),
+             data = data, 
+             family = poisson())
+```
+
+---
+
+## How did we model this?
+
+
+```r
+mod &lt;- mvgam(y ~ 
+*              s(season, bs = 'cc', k = 12) +
+               s(season, series, k = 4, bs = 'fs'),
+             data = data, 
+             family = poisson())
+```
+
+A .emphasize[*global*] smooth of seasonality
+
+This is a group-level smooth, similar to what we might expect the average seasonal function to be in this set of series
+---
+
+## How did we model this?
+
+
+```r
+mod &lt;- mvgam(y ~ 
+               s(season, bs = 'cc', k = 12) + 
+*              s(season, series, k = 4, bs = 'fs'),
+             data = data, 
+             family = poisson())
+```
+
+Series-level .emphasize[*deviation*] smooths of seasonality, which all share a common smoothing penalty
+
+These are individual-level smooths that capture how each series' seasonal pattern differs from the global smooth
+- There are a number of ways to do this using splines
+- See [Pedersen et al 2019](https://peerj.com/articles/6876/) for useful guidance
+
+---
+## Conditional predictions
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-10-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Hierarchical GAMs (HGAMs)
+By decomposing the linear predictor into a set of additive smooths, HGAMs offer a number of very useful ways model multivariate data
+
+Each of these strategies allows us to:
+- Learn smooth functions for each series using data from .emphasize[*all series in the data*]
+- Regularize functions when using noisy and/or sparse data
+- Make predictions for .emphasize[*new series that haven't been measured yet*]
+
+See [`?mgcv::factor.smooth.interaction`](https://stat.ethz.ch/R-manual/R-devel/library/mgcv/html/factor.smooth.html) for more details 
+
+---
+
+class: middle center
+### But what if we have smooths of two or more covariates? Can we still learn these hierarchically?
+
+---
+## Hierarchical smooth interactions
+
+
+```r
+mvgam(y ~ 
+*       te(temp, month, k = c(4, 4)) +
+*       te(temp, month, k = c(4, 4), by = series),
+      family = gaussian(),
+      data = plankton_train,
+      newdata = plankton_test,
+      trend_model = 'None')
+```
+
+Here each series is given a [tensor product smooth](https://onlinelibrary.wiley.com/doi/10.1111/j.1541-0420.2006.00574.x) of two covariates
+
+But we learn the series-specific smooth as a deviation from the "global" smooth
+
+More on this example in [Tutorial 4](https://nicholasjclark.github.io/physalia-forecasting-course/day4/tutorial_4_physalia)
+
+---
+
+## Hierarchical distributed lags
+
+
+```r
+mvgam(y ~  s(ndvi_ma12, trend, bs = 're') +
+*       te(mintemp, lag, k = c(3, 4), bs = c('tp', 'cr')) +
+*       te(mintemp, lag, by = weights_dm, k = c(3, 4), bs = c('tp', 'cr')) +
+*       te(mintemp, lag, by = weights_do, k = c(3, 4), bs = c('tp', 'cr')) +
+*       te(mintemp, lag, by = weights_ot, k = c(3, 4), bs = c('tp', 'cr')) +
+*       te(mintemp, lag, by = weights_pp, k = c(3, 4), bs = c('tp', 'cr')),
+      ...)
+```
+
+Here the effect of minimum temperature [changes smoothly over lags](https://rpubs.com/NickClark47/mvgam3) for each series, using the `by` argument with a set of series-specific weights for deviations
+
+More on this example [on my Github account](https://github.com/nicholasjclark/portal_VAR)
+
+---
+
+class: middle center
+### HGAMs offer a solution to estimate the hierarchical, nonlinear effects that we think are common in ecology
+&lt;br&gt;
+### This is a huge advantage over traditional time series models
+&lt;br&gt;
+### But how can we handle multivariate *dynamic components*?
+
+---
+class: inverse middle center big-subsection
+
+# Vector autoregressive processes
+
+---
+
+## VAR1
+Similar to an AR1, but the response is now a .emphasize[*vector*]
+&lt;br/&gt;
+&lt;br/&gt;
+`\begin{align*}
+x_t &amp; \sim \text{Normal}(A * x_{t-1}, \Sigma) \\
+\end{align*}`
+
+Where: 
+- `\(x_t\)` is a vector of time series observations at time `\(t\)`
+- `\(\Sigma\)` determines the spread (or flexibility) of the process and any correlations among time series errors
+- `\(A\)` is a matrix of coefficients estimating lagged dependence and cross-dependence between the elements of `\(x\)`
+
+---
+
+background-image: url('./resources/VAR.svg')
+background-size: contain
+## VAR1
+
+---
+
+## Properties of a VAR1
+If off-diagonals in both `\(A\)` and `\(\Sigma\)` = 0, process is an AR1
+
+If off-diagonals in `\(A\)`, but not in `\(\Sigma\)`, = 0, process is an AR1 with correlated errors
+
+If `\(A\)` has no zero entries, the process can quickly become .emphasize[*nonstationary*], leading to explosive forecasts
+
+---
+
+## Advantages of VARs
+
+They allow us to explore whether one response variable can be useful in predicting another, giving us a means to tackle .emphasize[*interactions*]
+
+They allow for impulse response analyses, where the response of one variable to a sudden but temporary change in another variable can be predicted
+
+They allow us to identify which other responses are most influential in driving our uncertainty in a focal response
+
+---
+
+## Simulating VAR data
+
+.panelset[
+.panel[.panel-name[Code]
+
+
+```r
+library(mvgam)
+
+# set a seed for reproducibility
+set.seed(650)
+
+# simulate four time series with very little 
+# seasonality and VAR1 dynamics (without correlated errors)
+vardat &lt;- sim_mvgam(family = gaussian(),
+                    n_series = 4,
+                    trend_model = 'VAR1',
+                    trend_rel = 1)
+```
+]
+
+.panel[.panel-name[A]
+&lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 0.40 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.36 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.23 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.74 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; -0.17 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.37 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.51 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.02 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 0.09 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.49 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.36 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.10 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 0.47 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.10 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.26 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.27 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+]
+
+.panel[.panel-name[Sigma]
+&lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 1.14 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.05 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.14 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.52 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+]
+]
+
+---
+## The series
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-16-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+## Latent VAR1s in `mvgam` 📦
+
+
+```r
+varmod &lt;- mvgam(y ~ 1,
+*               trend_model = 'VAR1',
+                data = vardat$data_train,
+                newdata = vardat$data_test,
+                family = gaussian())
+```
+
+If multiple series are included in the data, we can use a VAR1 to estimate latent dynamics
+- `trend_model = 'VAR1'`: a VAR1 with uncorrelated process errors (off-diagonals in `\(\Sigma\)` set to zero)
+- `trend_model = 'VAR1cor'`: a VAR1 with possibly correlated process errors
+
+---
+## Enforcing stationarity
+Forecasts from VAR models, especially those with many series, can very quickly become nonstationary
+
+Not only will forecast variance increase indefinitely, but dynamics can become unstable and forecasts can .emphasize[*explode*]
+
+`mvgam` 📦 enforces stationarity in all VAR1 models using careful prior choices
+- Maps the process to unconstrained partial autocorrelations, which can be constrained to preserve stationarity
+- Derived and explained in detail by Sarah Heaps [here](https://www.youtube.com/watch?v=W7rUEvQKyus) and [here](https://www.tandfonline.com/doi/full/10.1080/10618600.2022.2079648)
+
+---
+## Trend estimates
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-18-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+## Hindasts / forecasts
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-19-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+class: middle center
+### VAR models give us a tool to capture complex multi-series dynamics while providing sensible forecasts
+&lt;br&gt;
+### But often we have enough series that estimating VAR parameters becomes intractible
+&lt;br&gt;
+### How can we achieve dimension reduction when forecasting multiple series?
+
+---
+
+class: inverse middle center big-subsection
+
+# Dynamic factor models
+
+---
+
+background-image: url('./resources/df_with_series.gif')
+## Inducing multiseries correlations
+---
+
+## Dynamic factors
+Propagate a set of latent factors and allow each observed series to .emphasize[*depend*] on these factors with a set of weights
+&lt;br/&gt;
+&lt;br/&gt;
+`\begin{align*}
+x_t &amp; = z_t*\theta \\
+\end{align*}`
+
+Where: 
+- `\(x_t\)` is a vector of time series observations at time `\(t\)`
+- `\(z_t\)` is a vector of dynamic factor estimates at time `\(t\)`
+- `\(\theta\)` is a matrix of loading coefficients that control how each series in `\(x\)` depends on the factors in `\(z\)`
+
+---
+class: middle center
+### Dynamic factor models are hugely flexible
+&lt;br&gt;
+### The factors can take on a number of possible time series dynamics (RW, AR, GP)
+&lt;br&gt;
+### Similar loadings &amp;#8680; correlated trends
+---
+
+## Dynamic factors in `mvgam` 📦
+
+
+```r
+dfmod &lt;- mvgam(y ~ 1,
+*               use_lv = TRUE,
+*               n_lv = 2,
+                trend_model = 'AR', 
+                data = vardat$data_train,
+                newdata = vardat$data_test,
+                family = gaussian())
+```
+
+If multiple series are included in the data, we can use a dynamic factor model to estimate latent dynamics
+- `n_lv`: the number of latent factors to estimate
+- `trend_model`: can be `RW`, `AR1`, `AR2`, `AR3` or `GP`
+- variance parameters for all factors fixed to ensure identifiability
+
+---
+
+## Trend estimates
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-21-1.svg" style="display: block; margin: auto;" /&gt;
+---
+
+## Hindasts / forecasts
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-22-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+`plot_mvgam_factors(dfmod)`
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-23-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+`mcmc_hist(dfmod$model_output, regex_pars = 'lv_coefs')`
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-24-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Induced correlations
+
+```r
+mean_corrs &lt;- lv_correlations(object = dfmod)$mean_correlations
+mean_corrs
+```
+
+&lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt;   &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; series_1 &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; series_2 &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; series_3 &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; series_4 &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.00 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.93 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.72 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.20 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; series_2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.93 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.00 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.77 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.17 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; series_3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.72 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.77 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.00 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.09 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; series_4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.20 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.17 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.09 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.00 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+
+`heatmap(mean_corrs, distfun = function(c) as.dist(1 - c))`
+
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-27-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+class: middle center
+### We have many ways to estimate multivariate dynamic components in the `mvgam` framework
+&lt;br&gt;
+### VARs can approximate Granger causality and allow for targeted hypotheses about interactions to be evaluated; Dynamic factors can capture time series correlations with fewer parameters
+&lt;br&gt;
+### But how do we go about *evaluating* forecasts to choose among models?
+---
+
+class: inverse middle center big-subsection
+
+# Multivariate forecast evaluation
+
+---
+
+## Energy score
+Generalizes the CRPS for multivariate forecasts
+
+`$$ES(F,y)= \frac{1}{m}\sum_{i=1}^{m}||F_i - y||-\frac{1}{2m^2}\sum_{i=1}^{m}\sum_{j=1}^{m}||F_i-F_j||$$` 
+
+Where:
+- `\(F(\hat{y})\)` is a set of `\(m\)` samples from the forecast distribution
+- `\(||\cdot||\)` is the Euclidean norm
+
+Essentially a weighted distance between the forecast distribution and distribution of observations
+
+---
+
+## Compare energy scores
+
+.panelset[
+.panel[.panel-name[Code]
+
+
+
+
+```r
+# score forecasts from each model and 
+# compute differences (VAR scores - DF scores)
+fc_var &lt;- forecast(varmod); fc_df &lt;- forecast(dfmod)
+diff_scores &lt;- score(fc_var, score = 'energy')$all_series$score -
+  score(fc_df, score = 'energy')$all_series$score
+
+# plot the differences (negative means VAR1 was better; 
+# positive means DF was better)
+plot(diff_scores, pch = 16, col = 'darkred', 
+     ylim = c(-1*max(abs(diff_scores), na.rm = TRUE),
+              max(abs(diff_scores), na.rm = TRUE)),
+     bty = 'l', xlab = 'Forecast horizon',
+     ylab = expression(energy[VAR1]~-~energy[DF]))
+abline(h = 0, lty = 'dashed', lwd = 2)
+```
+
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_5_slidedeck_files/figure-html/energy_comp-1.svg)]
+]
+]
+
+---
+
+class: middle center
+### Energy score gernealizes to the univariate CRPS; is readily applicable to a variety of forecasts (ensemble, samples)
+&lt;br&gt;
+### May not be able to tell us whether a forecast misses correlation structures that are evident in out of sample observations
+&lt;br&gt;
+### We may also need a score that penalizes forecasts which do not replicate the observed correlation structure
+
+---
+
+## Variogram score
+Asks if forecast distribution captures .emphasize[*correlation structure*] evident in observations
+
+`$$Variogram(F,y)= \sum_{i,j=1}^{d}w_{ij}(\sqrt{|y_i-y_j|}-\sqrt{|F_i-F_j|})^2$$` 
+
+Where:
+- `\(F(\hat{y})\)` is the mean (or median) forecast for the `\(d\)` series
+- `\(w\)` is a set of non-negative weights
+
+Penalizes forecasts whose variograms don't match the observed variogram
+
+---
+
+## Compare variogram scores
+
+.panelset[
+.panel[.panel-name[Code]
+
+
+
+
+```r
+# score forecasts from each model and 
+# compute differences (VAR scores - DF scores)
+fc_var &lt;- forecast(varmod); fc_df &lt;- forecast(dfmod)
+diff_scores &lt;- score(fc_var, score = 'variogram')$all_series$score -
+  score(fc_df, score = 'variogram')$all_series$score
+
+# plot the differences (negative means VAR1 was better; 
+# positive means DF was better)
+plot(diff_scores, pch = 16, col = 'darkred', 
+     ylim = c(-1*max(abs(diff_scores), na.rm = TRUE),
+              max(abs(diff_scores), na.rm = TRUE)),
+     bty = 'l', xlab = 'Forecast horizon',
+     ylab = expression(variogram[VAR1]~-~variogram[DF]))
+abline(h = 0, lty = 'dashed', lwd = 2)
+```
+
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_5_slidedeck_files/figure-html/var_comp-1.svg)]
+]
+]
+
+---
+class: middle center
+### The variogram score is more useful for directly asking if a forecast distribution resembles the dependency structure in the observations
+&lt;br&gt;
+### But it only uses a summary of the forecast (i.e. the mean or median forecast for each series), so does not address the sharpness or calibration of the forecast
+&lt;br&gt;
+### Weighted combinations of variogram and energy scores may be necessary to fully characterize the performance of a forecast
+
+---
+
+## In the next lecture, we will cover
+
+Extended practical examples using `mvgam`
+
+Review and open discussion
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="macros.js"></script>
+<script>var slideshow = remark.create({
+"navigation": {
+"scroll": false
+},
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
