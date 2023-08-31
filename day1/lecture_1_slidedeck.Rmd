@@ -200,6 +200,24 @@ myscatter = function(x,
 ???
 
 ---
+## About me
+<img src="resources/NicholasClark.jpg" style="position:fixed; right:8%; top:9%; width:239px; height:326px; border:none;" />
+
+<img src="resources/uqmap.png" style="position:fixed; right:0%; top:56%; width:454px; height:296px; border:none;" />
+
+Australian Research Council Early Career Fellow
+
+The University of Queensland
+- School of Veterinary Science 
+- Located in Gatton, Australia
+
+
+Expertise in:
+- Quantitative ecology
+- Molecular genetics
+- Multivariate time series modelling
+
+---
 
 ## Workflow
 
@@ -332,10 +350,10 @@ Multi-series clustering
 ---
 
 ## Let's focus on these for now 
-.emphasize[**Temporal autocorrelation*] 
+.emphasize[*Temporal autocorrelation*] 
 
 
-.emphasize[**Lagged effects*]
+.emphasize[*Lagged effects*]
 
 .grey[
 Non-Gaussian data and missing observations 
