@@ -247,6 +247,15 @@ Temporal random effects
 Temporal residual correlation structures
 
 ---
+class: middle center
+### When applying statistical modelling to a time series, we aim to estimate parameters for a collection of probability distributions
+<br>
+### These distributions are indexed by *time* (i.e. the observations are random draws from a set of time-varying distributions)
+<br>
+### Usually we allow the mean of these distributions to vary over time. But what kinds of distributions are available to us?
+
+---
+
 class: inverse middle center big-subsection
 
 # Useful probability distributions
@@ -255,11 +264,11 @@ class: inverse middle center big-subsection
 
 ## Normal (Gaussian)
 
-$$\boldsymbol{Y}\sim \text{Normal}(\mu,\sigma)$$
+$$\boldsymbol{Y_t}\sim \text{Normal}(\mu_t,\sigma)$$
 Properties
 - Real-valued continuous observations (including any decimal)
 - Unbounded (supports $-\infty$ to $\infty$)
-- Symmetric spread, controlled by $\sigma$, about the mean $(\mu)$
+- Symmetric spread, controlled by $\sigma$, about the mean $(\mu_t)$
 
 Nearly all common time series models assume this data distribution
 - RW, AR, and ARIMA
@@ -269,7 +278,7 @@ Nearly all common time series models assume this data distribution
 
 ## Normal (Gaussian)
 
-$$\boldsymbol{Y}\sim \text{Normal}(0,2)$$
+$$\boldsymbol{Y_t}\sim \text{Normal}(0,2)$$
 ```{r echo = FALSE}
 myhist(rnorm(10000, 0, 2), big = TRUE)
 ```
@@ -277,7 +286,7 @@ myhist(rnorm(10000, 0, 2), big = TRUE)
 
 ## Normal (Gaussian)
 
-$$\boldsymbol{Y}\sim \text{Normal}(50,20)$$
+$$\boldsymbol{Y_t}\sim \text{Normal}(50,20)$$
 ```{r echo = FALSE}
 myhist(rnorm(10000, 50, 20), big = TRUE)
 ```
@@ -287,13 +296,13 @@ myhist(rnorm(10000, 50, 20), big = TRUE)
 It is common to estimate linear predictors of $\mu$ with .emphasize[*regression*]
 <br/>
 <br/>
-$$\boldsymbol{Y}\sim \text{Normal}(\alpha + \beta * \boldsymbol{X},\sigma)$$
+$$\boldsymbol{Y_t}\sim \text{Normal}(\alpha + \beta * \boldsymbol{X_t},\sigma)$$
 <br/>
 Where:
-- $\boldsymbol{X}$ represents a design matrix of covariates that contribute linearly to variation in $\mu$
+- $\boldsymbol{X_t}$ represents a design matrix of covariates that contribute linearly to variation in $\mu_t$
 - $\alpha$ is an intercept coefficient
 - $\beta$ is a vector of regression coefficients
-- $\sigma$ controls the spread of the errors about $\mu$
+- $\sigma$ controls the spread of the errors about $\mu_t$
 
 ---
 ## ETS(A,A,A)
@@ -380,11 +389,11 @@ class: black-inverse
 
 ## Poisson
 
-$$\boldsymbol{Y}\sim \text{Poisson}(\lambda)$$
+$$\boldsymbol{Y_t}\sim \text{Poisson}(\lambda_t)$$
 Properties
 - Discrete, integer-valued observations (including $0$)
 - Lower bound (supports $0$ to $\infty$)
-- mean = variance = $\lambda$
+- mean = variance = $\lambda_t$
 
 .emphasize[*Virtually no time series models support this distribution*]
 - Most analysts use `log` or [`Box-Cox`](https://otexts.com/fpp3/transformations.html) transformation
@@ -393,7 +402,7 @@ Properties
 ---
 
 ## Poisson
-$$\boldsymbol{Y}\sim \text{Poisson}(3)$$
+$$\boldsymbol{Y_t}\sim \text{Poisson}(3)$$
 ```{r echo=FALSE}
 mybar(rpois(10000, 3), big = TRUE)
 ```
@@ -401,7 +410,7 @@ mybar(rpois(10000, 3), big = TRUE)
 ---
 
 ## Poisson
-$$\boldsymbol{Y}\sim \text{Poisson}(50)$$
+$$\boldsymbol{Y_t}\sim \text{Poisson}(50)$$
 ```{r echo=FALSE}
 mybar(rpois(10000, 50), big = TRUE)
 ```
@@ -427,13 +436,13 @@ This requires a .emphasize[*link function*] that transforms from the unbounded s
 ---
 
 # Modelling the mean
-Most GLMs are used to model the conditional mean $(\mu)$
+Most GLMs are used to model the conditional mean $(\mu_t)$
 <br/>
 <br/>
-$$\mathbb{E}(\boldsymbol{Y}|\boldsymbol{X})=\mu=g^{-1}(\alpha+\boldsymbol{X}\beta)$$
+$$\mathbb{E}(\boldsymbol{Y_t}|\boldsymbol{X_t})=\mu_t=g^{-1}(\alpha+\boldsymbol{X_t}\beta)$$
 <br/>
 Where: 
-- $\mathbb{E}$ is the *expected value* of $\boldsymbol{Y}$ conditional on $\boldsymbol{X}$
+- $\mathbb{E_t}$ is the *expected value* of $\boldsymbol{Y_t}$ conditional on $\boldsymbol{X_t}$
 - $g^{-1}$ is the *inverse* of the link function
 - $\alpha$ is an intercept coefficient
 - $\beta$ is a vector of regression coefficients
@@ -445,16 +454,16 @@ A Poisson GLM models the conditional mean with a $log$ link
 <br/>
 <br/>
 \begin{align*}
-\boldsymbol{Y}_i & \sim \text{Poisson}(\lambda_i) \\
-log(\lambda_i) & = \boldsymbol{X}_i \beta \\
-& = \alpha + \beta_1 \boldsymbol{x}_{1i} + \beta_2 \boldsymbol{x}_{2i} + \cdots + \beta_j \boldsymbol{x}_{ij}
+\boldsymbol{Y}_t & \sim \text{Poisson}(\lambda_t) \\
+log(\lambda_t) & = \boldsymbol{X}_t \beta \\
+& = \alpha + \beta_1 \boldsymbol{x}_{1t} + \beta_2 \boldsymbol{x}_{2t} + \cdots + \beta_j \boldsymbol{x}_{jt}
 \end{align*}
 
 Where: 
-- $\boldsymbol{X}_{i}$ is the matrix of predictor values at observation $i$
+- $\boldsymbol{X}_{t}$ is the matrix of predictor values at time $t$
 - $\alpha$ is an intercept coefficient
 - $\beta$ is a vector of regression coefficients
-- $\mathbb{E}(\boldsymbol{Y}_{i}|\boldsymbol{X}_{i})=exp(\alpha+\boldsymbol{X}_{i}\beta)$
+- $\mathbb{E}(\boldsymbol{Y}_{t}|\boldsymbol{X}_{t})=exp(\alpha+\boldsymbol{X}_{t}\beta)$
 
 ---
 
@@ -463,9 +472,9 @@ A Poisson GLM models the conditional mean with a $log$ link
 <br/>
 <br/>
 \begin{align*}
-\boldsymbol{Y}_i & \sim \text{Poisson}(\lambda_i) \\
-log(\lambda_i) & = \boldsymbol{X}_i \beta \\
-& = \color{darkred}{\alpha + \beta_1 \boldsymbol{x}_{1i} + \beta_2 \boldsymbol{x}_{2i} + \cdots + \beta_j \boldsymbol{x}_{ij}}
+\boldsymbol{Y}_t & \sim \text{Poisson}(\lambda_t) \\
+log(\lambda_t) & = \boldsymbol{X}_t \beta \\
+& = \color{darkred}{\alpha + \beta_1 \boldsymbol{x}_{1t} + \beta_2 \boldsymbol{x}_{2t} + \cdots + \beta_j \boldsymbol{x}_{jt}}
 \end{align*}
 
 The .emphasize[*linear predictor component can be hugely flexible*], as we will see in later slides
@@ -493,12 +502,12 @@ portal_data %>%
 ---
 ## Beta
 
-$$\boldsymbol{Y}\sim \text{Beta}(\mu,\phi)$$
+$$\boldsymbol{Y_t}\sim \text{Beta}(\mu_t,\phi)$$
 Properties
 - Real-valued continuous observations (including any decimal)
 - Both lower and upper bounds (supports $0$ to $1$, noninclusive)
-- mean = $\mu$
-- precision = $\phi$ (higher $\phi$ = a tighter spread about $\mu$)
+- mean = $\mu_t$
+- precision = $\phi$ (higher $\phi$ = a tighter spread about $\mu_t$)
 
 .emphasize[*Virtually no time series models support this distribution*]
 - Most analysts would use [`logit`](http://strata.uga.edu/8370/rtips/proportions.html) transformation
@@ -506,7 +515,7 @@ Properties
 ---
 
 ## Beta
-$$\boldsymbol{Y}\sim \text{Beta}(0.5,1)$$
+$$\boldsymbol{Y_t}\sim \text{Beta}(0.5,1)$$
 ```{r echo=FALSE}
 beta_shapes = function(mu, phi) {
   return(list(shape1 = mu * phi,
@@ -520,7 +529,7 @@ myhist(rbeta(10000, shape1 = beta_shapes(0.5, 1)$shape1,
 ---
 
 ## Beta
-$$\boldsymbol{Y}\sim \text{Beta}(0.5,15)$$
+$$\boldsymbol{Y_t}\sim \text{Beta}(0.5,15)$$
 ```{r echo=FALSE}
 beta_shapes = function(mu, phi) {
   return(list(shape1 = mu * phi,
@@ -535,7 +544,7 @@ myhist(rbeta(10000, shape1 = beta_shapes(0.5, 15)$shape1,
 ---
 
 ## Beta
-$$\boldsymbol{Y}\sim \text{Beta}(0.75,4)$$
+$$\boldsymbol{Y_t}\sim \text{Beta}(0.75,4)$$
 ```{r echo=FALSE}
 beta_shapes = function(mu, phi) {
   return(list(shape1 = mu * phi,
@@ -553,16 +562,16 @@ A Beta GLM models the conditional mean with a $logit$ link
 <br/>
 <br/>
 \begin{align*}
-\boldsymbol{Y}_i & \sim \text{Beta}(\mu_i,\phi) \\
-logit(\mu_i) & = \boldsymbol{X}_i \beta \\
-& = \alpha + \beta_1 \boldsymbol{x}_{1i} + \beta_2 \boldsymbol{x}_{2i} + \cdots + \beta_j \boldsymbol{x}_{ij}
+\boldsymbol{Y}_t & \sim \text{Beta}(\mu_t,\phi) \\
+logit(\mu_t) & = \boldsymbol{X}_t \beta \\
+& = \alpha + \beta_1 \boldsymbol{x}_{1t} + \beta_2 \boldsymbol{x}_{2t} + \cdots + \beta_j \boldsymbol{x}_{jt}
 \end{align*}
 
 Where: 
-- $\boldsymbol{X}_{i}$ is the matrix of predictor values at observation $i$
+- $\boldsymbol{X}_{t}$ is the matrix of predictor values at time $t$
 - $\alpha$ is an intercept coefficient
 - $\beta$ is a vector of regression coefficients
-- $\mathbb{E}(\boldsymbol{Y}_{i}|\boldsymbol{X}_{i})=logit^{-1}(\alpha+\boldsymbol{X}_{i}\beta)$
+- $\mathbb{E}(\boldsymbol{Y}_{t}|\boldsymbol{X}_{t})=logit^{-1}(\alpha+\boldsymbol{X}_{t}\beta)$
 
 ---
 
@@ -581,7 +590,9 @@ Where:
 
 class: middle center
 
-### GLMs allow us to build models that respect the bounds and distributions of our observed data. 
+### GLMs allow us to build models that respect the bounds and distributions of our observed data
+<br>
+### They traditionally assume the appropriately transformed mean response depends *linearly* on the predictors
 <br>
 ### But there are many other properties we'd like to model
 
@@ -708,7 +719,7 @@ background-image: url('./resources/smooth_to_data.gif')
 ---
 
 class: middle center
-### GAMs are just fancy GLMs, where some (or all) of the predictor effects are estimated as smooth functions.
+### GAMs are just fancy GLMs, where some (or all) of the predictor effects are estimated as (possibly nonlinear) smooth functions
 <br>
 ### But the complexity they can handle is *enormous*
 
@@ -743,7 +754,7 @@ class: full-size
 ## GAMs easy to fit in `r fontawesome::fa("r-project", fill = "steelblue")`
 <img align="center" width="306" height="464" src="resources/gam_book.jpg" style="float: right; 
   margin: 10px;">
-$$\mathbb{E}(\boldsymbol{Y}|\boldsymbol{X})=g^{-1}(\alpha + \sum_{j=1}^{J}f(x_j))$$
+$$\mathbb{E}(\boldsymbol{Y_t}|\boldsymbol{X_t})=g^{-1}(\alpha + \sum_{j=1}^{J}f(x_{jt}))$$
 
 <br/>
 Where: 
@@ -806,16 +817,16 @@ background-image: url('./resources/partial_pool.gif')
 
 ---
 
-## How are they modelled? 
+## How can they be modelled? 
 \begin{align*}
-\boldsymbol{Y}_i & \sim \text{Poisson}(\lambda_i) \\
-log(\lambda_i) & = \beta_{year[year_t]} * \boldsymbol{year}_{t} \\
+\boldsymbol{Y}_t & \sim \text{Poisson}(\lambda_t) \\
+log(\lambda_t) & = \beta_{year[year_t]} \\
 \beta_{year} & \sim \text{Normal}(\color{darkred}{\mu_{year}, \sigma_{year}}) \\
 \color{darkred}{\mu_{year}} & \sim \text{Normal}(0, 1) \\
 \color{darkred}{\sigma_{year}} & \sim \text{Exponential}(2) 
 \end{align*}
 
-Where
+Where we have multiple time points per year, and:
 - ${\beta_{year}}$ are yearly intercepts (*one effect per year*)
 - ${\color{darkred}{\mu_{year}}}$ estimates *mean effect among all years*
 - ${\color{darkred}{\sigma_{year}}}$ estimates *how much effects vary across years*
@@ -839,7 +850,7 @@ Uses [Stan](https://mc-stan.org/) for efficient Hamiltonian Monte Carlo sampling
 
 ---
 
-## Extended `mgcv` 📦 interface
+## Example of the interface
 
 ```{r eval = FALSE}
 model <- mvgam(
@@ -859,8 +870,9 @@ model <- mvgam(
   )
 ```
 
+Where `y` = response,`x`'s = covariates, and `series` = a grouping term
 ---
-## Formula for the response
+## Typical formula syntax
 
 ```{r eval = FALSE}
 model <- mvgam(
@@ -1057,13 +1069,14 @@ model <- mvgam(
 
 ---
 
-## Data structure (long format)
+## Example data (long format)
 
 ```{r echo=FALSE}
 set.seed(100)
 data <- sim_mvgam(n_series = 4, T = 24, prop_missing = 0.3)
 data$data_train$year <- NULL
 data$data_train$season <- NULL
+data$data_train$series <- gsub('series', 'species', data$data_train$series)
 head(data$data_train, 8) %>%
   kbl() %>%
   kable_minimal(full_width = FALSE)
@@ -1078,6 +1091,7 @@ set.seed(100)
 data <- sim_mvgam(n_series = 4, T = 24, prop_missing = 0.3)
 data$data_train$year <- NULL
 data$data_train$season <- NULL
+data$data_train$series <- gsub('series', 'species', data$data_train$series)
 head(data$data_train, 8) %>%
   kbl() %>%
   kable_minimal(full_width = FALSE) %>%
@@ -1093,6 +1107,7 @@ set.seed(100)
 data <- sim_mvgam(n_series = 4, T = 24, prop_missing = 0.3)
 data$data_train$year <- NULL
 data$data_train$season <- NULL
+data$data_train$series <- gsub('series', 'species', data$data_train$series)
 head(data$data_train, 8) %>%
   kbl() %>%
   kable_minimal(full_width = FALSE) %>%
@@ -1108,6 +1123,7 @@ set.seed(100)
 data <- sim_mvgam(n_series = 4, T = 24, prop_missing = 0.3)
 data$data_train$year <- NULL
 data$data_train$season <- NULL
+data$data_train$series <- gsub('series', 'species', data$data_train$series)
 head(data$data_train, 8) %>%
   kbl() %>%
   kable_minimal(full_width = FALSE) %>%
@@ -1121,16 +1137,19 @@ head(data$data_train, 8) %>%
 ```{r echo=FALSE}
 set.seed(100)
 data <- sim_mvgam(n_series = 4, T = 24, prop_missing = 0.3)
-data$data_train$x0 <- rnorm(24)
-data$data_train$site <- ifelse(
+data$data_train$x0 <- round(rnorm(24), 2)
+data$data_train$x1 <- ifelse(
   data$data_train$series %in% c('series_1', 'series_2'), 'A', 'B')
+data$data_train$x2 <- round(rnorm(24), 2)
+data$data_train$x3 <- round(rnorm(24), 2)
+data$data_train$x4 <- round(rnorm(24), 2)
 data$data_train$season <- NULL
 data$data_train$year <- NULL
+data$data_train$series <- gsub('series', 'species', data$data_train$series)
 head(data$data_train, 8) %>%
   kbl() %>%
   kable_minimal(full_width = FALSE) %>%
-  column_spec(4, bold = T, background = '#51247A20') %>%
-  column_spec(5, bold = T, background = '#51247A20')
+  column_spec(4:8, bold = T, background = '#51247A20')
 ```
 
 ---
@@ -1182,14 +1201,27 @@ plot_mvgam_series(data = model_data, y = 'count')
 ]
 ---
 
+## Yearly heterogeneity
+```{r echo=FALSE}
+mypar()
+boxplot(count ~ year, data = model_data,
+        ylab = 'Count',
+        xlab = 'Year',
+        col = '#C79999',
+        border = 'darkred',
+        frame.plot = FALSE,
+        outline = FALSE)
+```
+
+---
 ## Yearly random intercepts
 
-<br>
 ```{r eval = FALSE}
 year_random <- mvgam(count ~ 
                        s(year, bs = 're') - 1,#<<
                     family = poisson(),
                     data = model_data,
+                    trend_model = 'None',
                     burnin = 500,
                     samples = 500,
                     chains = 4)
@@ -1246,16 +1278,16 @@ hist(pop_params$`sd(year)`, main = expression(sigma[year]))
 
 ```{r year_random_means, echo=FALSE,fig.show='hide', fig.height=4, fig.width=1.9*4}
 pop_params <- as.data.frame(year_random, 
-                            variable = c('mu_raw[1]',
-                                         'sigma_raw[1]'))
-myhist(pop_params$`mu_raw[1]`, main = expression(mu[year]))
+                            variable = c('mean(year)',
+                                         'sd(year)'))
+myhist(pop_params$`mean(year)`, main = expression(mu[year]))
 ```
 
 ```{r year_random_sds, echo=FALSE,fig.show='hide', fig.height=4, fig.width=1.9*4}
 pop_params <- as.data.frame(year_random, 
-                            variable = c('mu_raw[1]',
-                                         'sigma_raw[1]'))
-myhist(pop_params$`sigma_raw[1]`, main = expression(sigma[year]))
+                            variable = c('mean(year)',
+                                         'sd(year)'))
+myhist(pop_params$`sd(year)`, main = expression(sigma[year]))
 ```
 ]
 
@@ -1270,6 +1302,25 @@ myhist(pop_params$`sigma_raw[1]`, main = expression(sigma[year]))
 ]
 ]
 
+---
+## Or using `bayesplot`
+
+.panelset[
+.panel[.panel-name[Code]
+
+```{r year_random_mcmcplot, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25, warning=FALSE, message=FALSE}
+
+# use bayesplot utilities to plot parameter estimates
+mcmc_plot(year_random, type = 'areas',
+          variable = c('mean(year)', 'sd(year)'))
+```
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_2_slidedeck_files/figure-html/year_random_mcmcplot-1.svg)]
+
+]
+]
 ---
 
 ## Conditional predictions
@@ -1335,6 +1386,7 @@ year_smooth <- mvgam(count ~
                        s(year, bs = 'tp', k = 15), #<<
                     family = poisson(),
                     data = model_data,
+                    trend_model = 'None',
                     burnin = 500,
                     samples = 500,
                     chains = 4)
@@ -1525,6 +1577,7 @@ year_temp_smooth <- mvgam(count ~
                             s(mintemp, bs = 'tp', k = 8), #<<
                           family = poisson(),
                           data = model_data,
+                          trend_model = 'None',
                           burnin = 500,
                           samples = 500,
                           chains = 4)
