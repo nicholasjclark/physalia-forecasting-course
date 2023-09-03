@@ -423,19 +423,19 @@ All stored as MCMC draws in an object of class `stanfit` in the `model_output` s
 ---
 # The `stanfit` object
 ```{r}
-summary(model$model_output)
+summary(model2$model_output)
 ```
 
 ```{r}
-model$model_output@model_pars
+model2$model_output@model_pars
 ```
 
 ```{r}
-model$model_output@sim$chains
+model2$model_output@sim$chains
 ```
 
 ```{r}
-model$model_output@sim$iter
+model2$model_output@sim$iter
 ```
 ---
 
@@ -445,14 +445,15 @@ model$model_output@sim$iter
 .panel[.panel-name[Code]
 
 ```{r alpha, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25, message=FALSE,warning=FALSE}
-
 # use bayesplot to visualise posterior draws
 library(ggplot2)
-library(bayesplot)
-mcmc_trace(model$model_output, 
+mcmc_plot(model2, 
            
-           # View draws of the GP length scale
-           pars = 'rho_gp[1]') +
+           # view draws of the GP length scale
+           variable = 'rho_gp[1]',
+          
+          # visualise as a traceploit
+          type = 'trace') +
   
   # use ggplot2 to add informative labels
   ylab(expression(rho[error]))
@@ -475,14 +476,14 @@ mcmc_trace(model$model_output,
 
 # view posterior draws of the trend
 mypar()
-plot(model, type = 'trend', realisations = TRUE, 
+plot(model2, type = 'trend', realisations = TRUE, 
      n_realisations = 10)
 ```
 
 ```{r eval=FALSE}
 
 # view posterior draws of the trend
-plot(model, type = 'trend', realisations = TRUE, 
+plot(model2, type = 'trend', realisations = TRUE, 
      n_realisations = 10)
 ```
 
@@ -559,9 +560,9 @@ box(bty = 'l', lwd = 2)
 
 ```{r eval=FALSE}
 # extract trend parameter draws and plot one draw
-trend_draws <- as.matrix(model, variable = 'trend', regex = TRUE)
-alpha_draws <- as.matrix(model, variable = 'alpha_gp', regex = TRUE)
-rho_draws <- as.matrix(model, variable = 'rho_gp', regex = TRUE)
+trend_draws <- as.matrix(model2, variable = 'trend', regex = TRUE)
+alpha_draws <- as.matrix(model2, variable = 'alpha_gp', regex = TRUE)
+rho_draws <- as.matrix(model2, variable = 'rho_gp', regex = TRUE)
 plot(1, type = 'n', bty = 'l',
      xlim = c(1, 130), ylim = range(trend_draws[1,]),
      ylab = 'One trend draw', xlab = 'Time')
@@ -656,7 +657,7 @@ plot(forecast(model, type = 'trend', newdata = poisdat$data_test))
 class: middle center
 ### Once dynamic trend is extrapolated, computing forecasts is easy
 <br>
-### We only need any remaining "future" predictor values from covariates
+### We only need to supply any remaining "future" predictor values from covariates
 
 ---
 ## GAM covariate predictions
@@ -837,9 +838,9 @@ This is probably the most confusing type of prediction
 ## Normal distribution
 
 \begin{align*}
-\boldsymbol{Y} & \sim \text{Normal}(\mu, \sigma) \\
-link & = \mu = \alpha + \boldsymbol{X}\beta + z \\
-expected & = \mathbb{E}(\boldsymbol{Y}|\mu, \sigma) = \mu
+\boldsymbol{Y}_t & \sim \text{Normal}(\mu_t, \sigma) \\
+\mu_t & = \alpha + \boldsymbol{X}_t\beta + z_t &&\color{darkred}{\leftarrow} \color{darkred}{\text{type = 'link'}}  \\
+\mathbb{E}(\boldsymbol{Y}_t|\mu_t, \sigma) & = \mu_t &&\color{darkred}{\leftarrow} \color{darkred}{\text{type = 'expected'}}
 \end{align*}
 
 ---
@@ -855,9 +856,9 @@ title(main = 'Y ~ Normal(5, 2); Mean(Y) = 5')
 ## Poisson distribution
 
 \begin{align*}
-\boldsymbol{Y} & \sim \text{Poisson}(\lambda) \\
-link & = log(\lambda) = \alpha + \boldsymbol{X}\beta + z \\
-expected & = \mathbb{E}(\boldsymbol{Y}|\lambda) = exp(\lambda)
+\boldsymbol{Y}_t & \sim \text{Poisson}(\lambda_t) \\
+log(\lambda_t) & =  \alpha + \boldsymbol{X}_t\beta + z_t &&\color{darkred}{\leftarrow} \color{darkred}{\text{type = 'link'}}  \\
+\mathbb{E}(\boldsymbol{Y}_t|\lambda_t) & =  exp(\lambda_t)  &&\color{darkred}{\leftarrow} \color{darkred}{\text{type = 'expected'}}  
 \end{align*}
 ---
 
@@ -876,9 +877,9 @@ title(main = 'Y ~ Poisson(5); Mean(Y) = 5')
 ## LogNormal distribution
 
 \begin{align*}
-\boldsymbol{Y} & \sim \text{LogNormal}(\mu, \sigma) \\
-link & = \mu = \alpha + \boldsymbol{X}\beta + z  \\
-expected & = \mathbb{E}(\boldsymbol{Y}|\mu, \sigma) = exp(\mu + \frac{\sigma^2}{2})
+\boldsymbol{Y}_t & \sim \text{LogNormal}(\mu_t, \sigma) \\
+\mu_t &= \alpha + \boldsymbol{X}_t\beta + z_t  &&\color{darkred}{\leftarrow} \color{darkred}{\text{type = 'link'}} \\
+\mathbb{E}(\boldsymbol{Y}_t|\mu_t, \sigma) &= exp(\mu_t + \frac{\sigma^2}{2}) &&\color{darkred}{\leftarrow} \color{darkred}{\text{type = 'expected'}}
 \end{align*}
 
 ---
@@ -1315,7 +1316,7 @@ Lower values are better for all these measures
 ---
 
 class: middle center
-### We won't dwell much on point-based measures because ecological predictions and their associated management decisions are inherently ([but see this video for more details](https://www.youtube.com/watch?v=ek5xLEoQN3E&t=5s)) *uncertain*
+### We won't dwell much on point-based measures because ecological predictions and their associated management decisions are inherently *uncertain* ([but see this video for more details](https://www.youtube.com/watch?v=ek5xLEoQN3E&t=5s))
 <br>
 ### Point-based measures ignore far too much information in the forecast distribution
 <br>
@@ -1330,7 +1331,7 @@ class: inverse middle center big-subsection
 ## Interval scores
 A common step to evaluate a forecast distribution is to [compute how well it's prediction intervals perform](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008618):
 
-$$MSIS = (U_{t} - L_{t}) + \frac{2}{\alpha}(L_{t} - y_{t})\mathcal{1}(y_{t} < L_{t}) + \frac{2}{\alpha}(y_{t} - U_{t})\mathcal{1}(y_{t} > U_{t})$$
+$$SIS = (U_{t} - L_{t}) + \frac{2}{\alpha}(L_{t} - y_{t})\mathcal{1}(y_{t} < L_{t}) + \frac{2}{\alpha}(y_{t} - U_{t})\mathcal{1}(y_{t} > U_{t})$$
 Where:
 - $y_{t}$ is the true observed value at horizon $H$
 - $\alpha$ is $1-\text{interval width}$
@@ -1369,7 +1370,7 @@ msis <- round(mean(interval_score(true_values = fc$test_observations$series_1,
                                   upper = cred[2,],
                                   interval_range = 80)), 2)
 
-title(main = bquote(MSIS[80]~'= '~.(msis)))
+title(main = bquote(Mean~SIS[80]~'= '~.(msis)))
 
 # fake a tighter fit
 plot(1, type = 'n',
@@ -1397,7 +1398,7 @@ msis <- round(mean(interval_score(true_values = fc$test_observations$series_1,
                                   lower = cred$fit - cred$se.fit,
                                   upper = cred$fit + cred$se.fit,
                                   interval_range = 80)), 2)
-title(main = bquote(MSIS[80]~'= '~.(msis)))
+title(main = bquote(Mean~SIS[80]~'= '~.(msis)))
 mtext('Forecast horizon', side = 1, outer = TRUE, line = -2)
 ```
 

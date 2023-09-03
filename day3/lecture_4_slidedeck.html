@@ -200,7 +200,7 @@ All stored as MCMC draws in an object of class `stanfit` in the `model_output` s
 # The `stanfit` object
 
 ```r
-summary(model$model_output)
+summary(model2$model_output)
 ```
 
 ```
@@ -210,7 +210,7 @@ summary(model$model_output)
 
 
 ```r
-model$model_output@model_pars
+model2$model_output@model_pars
 ```
 
 ```
@@ -220,7 +220,7 @@ model$model_output@model_pars
 
 
 ```r
-model$model_output@sim$chains
+model2$model_output@sim$chains
 ```
 
 ```
@@ -229,7 +229,7 @@ model$model_output@sim$chains
 
 
 ```r
-model$model_output@sim$iter
+model2$model_output@sim$iter
 ```
 
 ```
@@ -246,11 +246,13 @@ model$model_output@sim$iter
 ```r
 # use bayesplot to visualise posterior draws
 library(ggplot2)
-library(bayesplot)
-mcmc_trace(model$model_output, 
+mcmc_plot(model2, 
            
-           # View draws of the GP length scale
-           pars = 'rho_gp[1]') +
+           # view draws of the GP length scale
+           variable = 'rho_gp[1]',
+          
+          # visualise as a traceploit
+          type = 'trace') +
   
   # use ggplot2 to add informative labels
   ylab(expression(rho[error]))
@@ -274,7 +276,7 @@ mcmc_trace(model$model_output,
 
 ```r
 # view posterior draws of the trend
-plot(model, type = 'trend', realisations = TRUE, 
+plot(model2, type = 'trend', realisations = TRUE, 
      n_realisations = 10)
 ```
 
@@ -334,9 +336,9 @@ sim_gp = function(trend_draw, h, rho, alpha){
 
 ```r
 # extract trend parameter draws and plot one draw
-trend_draws &lt;- as.matrix(model, variable = 'trend', regex = TRUE)
-alpha_draws &lt;- as.matrix(model, variable = 'alpha_gp', regex = TRUE)
-rho_draws &lt;- as.matrix(model, variable = 'rho_gp', regex = TRUE)
+trend_draws &lt;- as.matrix(model2, variable = 'trend', regex = TRUE)
+alpha_draws &lt;- as.matrix(model2, variable = 'alpha_gp', regex = TRUE)
+rho_draws &lt;- as.matrix(model2, variable = 'rho_gp', regex = TRUE)
 plot(1, type = 'n', bty = 'l',
      xlim = c(1, 130), ylim = range(trend_draws[1,]),
      ylab = 'One trend draw', xlab = 'Time')
@@ -402,7 +404,7 @@ class: middle center
 class: middle center
 ### Once dynamic trend is extrapolated, computing forecasts is easy
 &lt;br&gt;
-### We only need any remaining "future" predictor values from covariates
+### We only need to supply any remaining "future" predictor values from covariates
 
 ---
 ## GAM covariate predictions
@@ -576,9 +578,9 @@ This is probably the most confusing type of prediction
 ## Normal distribution
 
 `\begin{align*}
-\boldsymbol{Y} &amp; \sim \text{Normal}(\mu, \sigma) \\
-link &amp; = \mu = \alpha + \boldsymbol{X}\beta + z \\
-expected &amp; = \mathbb{E}(\boldsymbol{Y}|\mu, \sigma) = \mu
+\boldsymbol{Y}_t &amp; \sim \text{Normal}(\mu_t, \sigma) \\
+\mu_t &amp; = \alpha + \boldsymbol{X}_t\beta + z_t &amp;&amp;\color{darkred}{\leftarrow} \color{darkred}{\text{type = 'link'}}  \\
+\mathbb{E}(\boldsymbol{Y}_t|\mu_t, \sigma) &amp; = \mu_t &amp;&amp;\color{darkred}{\leftarrow} \color{darkred}{\text{type = 'expected'}}
 \end{align*}`
 
 ---
@@ -589,9 +591,9 @@ expected &amp; = \mathbb{E}(\boldsymbol{Y}|\mu, \sigma) = \mu
 ## Poisson distribution
 
 `\begin{align*}
-\boldsymbol{Y} &amp; \sim \text{Poisson}(\lambda) \\
-link &amp; = log(\lambda) = \alpha + \boldsymbol{X}\beta + z \\
-expected &amp; = \mathbb{E}(\boldsymbol{Y}|\lambda) = exp(\lambda)
+\boldsymbol{Y}_t &amp; \sim \text{Poisson}(\lambda_t) \\
+log(\lambda_t) &amp; =  \alpha + \boldsymbol{X}_t\beta + z_t &amp;&amp;\color{darkred}{\leftarrow} \color{darkred}{\text{type = 'link'}}  \\
+\mathbb{E}(\boldsymbol{Y}_t|\lambda_t) &amp; =  exp(\lambda_t)  &amp;&amp;\color{darkred}{\leftarrow} \color{darkred}{\text{type = 'expected'}}  
 \end{align*}`
 ---
 
@@ -604,9 +606,9 @@ expected &amp; = \mathbb{E}(\boldsymbol{Y}|\lambda) = exp(\lambda)
 ## LogNormal distribution
 
 `\begin{align*}
-\boldsymbol{Y} &amp; \sim \text{LogNormal}(\mu, \sigma) \\
-link &amp; = \mu = \alpha + \boldsymbol{X}\beta + z  \\
-expected &amp; = \mathbb{E}(\boldsymbol{Y}|\mu, \sigma) = exp(\mu + \frac{\sigma^2}{2})
+\boldsymbol{Y}_t &amp; \sim \text{LogNormal}(\mu_t, \sigma) \\
+\mu_t &amp;= \alpha + \boldsymbol{X}_t\beta + z_t  &amp;&amp;\color{darkred}{\leftarrow} \color{darkred}{\text{type = 'link'}} \\
+\mathbb{E}(\boldsymbol{Y}_t|\mu_t, \sigma) &amp;= exp(\mu_t + \frac{\sigma^2}{2}) &amp;&amp;\color{darkred}{\leftarrow} \color{darkred}{\text{type = 'expected'}}
 \end{align*}`
 
 ---
@@ -1041,7 +1043,7 @@ Lower values are better for all these measures
 ---
 
 class: middle center
-### We won't dwell much on point-based measures because ecological predictions and their associated management decisions are inherently ([but see this video for more details](https://www.youtube.com/watch?v=ek5xLEoQN3E&amp;t=5s)) *uncertain*
+### We won't dwell much on point-based measures because ecological predictions and their associated management decisions are inherently *uncertain* ([but see this video for more details](https://www.youtube.com/watch?v=ek5xLEoQN3E&amp;t=5s))
 &lt;br&gt;
 ### Point-based measures ignore far too much information in the forecast distribution
 &lt;br&gt;
@@ -1056,7 +1058,7 @@ class: inverse middle center big-subsection
 ## Interval scores
 A common step to evaluate a forecast distribution is to [compute how well it's prediction intervals perform](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008618):
 
-`$$MSIS = (U_{t} - L_{t}) + \frac{2}{\alpha}(L_{t} - y_{t})\mathcal{1}(y_{t} &lt; L_{t}) + \frac{2}{\alpha}(y_{t} - U_{t})\mathcal{1}(y_{t} &gt; U_{t})$$`
+`$$SIS = (U_{t} - L_{t}) + \frac{2}{\alpha}(L_{t} - y_{t})\mathcal{1}(y_{t} &lt; L_{t}) + \frac{2}{\alpha}(y_{t} - U_{t})\mathcal{1}(y_{t} &gt; U_{t})$$`
 Where:
 - `\(y_{t}\)` is the true observed value at horizon `\(H\)`
 - `\(\alpha\)` is `\(1-\text{interval width}\)`
