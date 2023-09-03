@@ -1651,123 +1651,60 @@ class: middle center
 ### How can we deal with this?
 
 ---
-## Adding a latent AR term
+## A smooth of time
 ```{r echo = FALSE}
-load('cache_not_for_upload/lec2_year_temp_smooth_ar.rds')
+load('cache_not_for_upload/lec2_temp_time_smooth.rds')
 ```
 
 ```{r eval = FALSE}
-year_temp_smooth_ar <- mvgam(count ~ 
-                            s(year, bs = 'tp', k = 15) +
-                            s(mintemp, bs = 'tp', k = 8),
+temp_time_smooth <- mvgam(count ~ 
+                            s(mintemp, bs = 'tp', k = 8) +
+                            s(time, bs = 'tp', k = 50),#<<
                           family = poisson(),
-                          trend_model = 'AR1',#<<
                           data = model_data,
                           burnin = 500,
                           samples = 500,
                           chains = 4)
 ```
 
-A latent (unobserved) dynamic model for residuals
+Replace the spline of `year` with a complex spline of `time` to capture autocorrelation
 ---
 
-## The latent trend
-.panelset[
-.panel[.panel-name[Code]
-
-```{r year_temp_smooth_ar_trend, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25, echo=FALSE,warning=FALSE, message=FALSE}
-
-# use mvgam's plot to view the trend
-mypar()
-plot(year_temp_smooth_ar, type = 'trend')
+## Updated smooths
+```{r echo=FALSE}
+multipar()
+plot(temp_time_smooth, type = 'smooth')
 ```
-
-```{r eval=FALSE}
-
-# use mvgam's plot to view the trend
-plot(year_temp_smooth_ar, type = 'trend')
-```
-]
-
-.panel[.panel-name[Plot]
-.center[![](lecture_2_slidedeck_files/figure-html/year_temp_smooth_ar_trend-1.svg)]
-
-]
-]
-
----
-
-## AR parameters
-.panelset[
-.panel[.panel-name[Code]
-
-```{r eval = FALSE}
-
-# extract AR estimates
-ar_params <- as.data.frame(year_temp_smooth_ar, 
-                            variable = c('ar1[1]',
-                                         'sigma[1]'))
-
-# plot as histograms
-hist(ar_params$`ar1[1]`, main = expression(AR1[error]))
-
-hist(ar_params$`sigma[1]`, main = expression(sigma[error]))
-```
-
-```{r year_temp_smooth_ars, echo=FALSE,fig.show='hide', fig.height=4, fig.width=1.9*4}
-ar_params <- as.data.frame(year_temp_smooth_ar, 
-                            variable = c('ar1[1]',
-                                         'sigma[1]'))
-myhist(ar_params$`ar1[1]`, main = expression(AR1[error]))
-```
-
-```{r year_temp_smooth_sigmas, echo=FALSE,fig.show='hide', fig.height=4, fig.width=1.9*4}
-ar_params <- as.data.frame(year_temp_smooth_ar, 
-                            variable = c('ar1[1]',
-                                         'sigma[1]'))
-myhist(ar_params$`sigma[1]`, main = expression(sigma[error]))
-```
-]
-
-.panel[.panel-name[AR1s]
-.center[![](lecture_2_slidedeck_files/figure-html/year_temp_smooth_ars-1.svg)]
-
-]
-
-.panel[.panel-name[SDs]
-.center[![](lecture_2_slidedeck_files/figure-html/year_temp_smooth_sigmas-1.svg)]
-
-]
-]
 
 ---
 
 ## Diagnostics
 ```{r echo=FALSE}
 multipar()
-plot(year_temp_smooth_ar, type = 'residuals')
+plot(temp_time_smooth, type = 'residuals')
 ```
 
 ---
 
-## Updated smooths
-```{r echo=FALSE}
-multipar()
-plot(year_temp_smooth_ar, type = 'smooth')
-```
-
----
-
-## Hindcast predictions
+## Hindcast predictions `r fontawesome::fa("face-smile-beam")`
 ```{r echo=FALSE}
 mypar()
-plot(year_temp_smooth_ar, type = 'forecast')
+plot(temp_time_smooth, type = 'forecast')
 ```
 
+---
 
+class: middle center
+### Using an *additive* combination of smooth functions, we have captured a lot of the variation in the observed data
+<br>
+### But we are dealing with a time series, so we'd like our model to generate sensible forecast predictions
+<br>
+### As we'll see in the next lecture, this one has some problems
 ---
 
 ## In the next lecture, we will cover
+
+Extrapolating splines
 
 Latent autoregressive processes
 
