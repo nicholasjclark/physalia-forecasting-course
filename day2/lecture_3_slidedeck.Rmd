@@ -691,6 +691,22 @@ class: middle center
 ---
 
 ## Ok. Can we just do this?
+A linear model with an autoregressive term
+<br/>
+<br/>
+\begin{align*}
+\boldsymbol{Y}_t & \sim \text{Normal}(\mu_t, \sigma) \\
+\mu_t & = \alpha + \beta_1 \boldsymbol{Y}_{t-1} + \cdots
+\end{align*}
+
+Where: 
+- $\alpha$ is an intercept coefficient
+- $\beta_1$ is a .emphasize[*first-order autoregressive coefficient*]
+
+Can sometimes work because of identity link; but missingness, measurement error will still cause problems
+---
+
+## What about Poisson?
 A Poisson GLM with an autoregressive term
 <br/>
 <br/>
@@ -703,23 +719,6 @@ Where:
 - $\alpha$ is an intercept coefficient
 - $\beta_1$ is a .emphasize[*first-order autoregressive coefficient*]
 
-
----
-
-## Not if our data have these
-Temporal autocorrelation
-
-Lagged effects
-
-Non-Gaussian data and missing observations
-
-Measurement error
-
-Time-varying effects
-
-Nonlinearities
-
-Multi-series clustering
 
 ---
 
@@ -850,7 +849,7 @@ A dynamic Poisson GLM can use .emphasize[*autocorrelated latent residuals*]
 <br/>
 <br/>
 \begin{align*}
-\boldsymbol{Y}_t & \sim \text{Poisson}(\lambda_i) \\
+\boldsymbol{Y}_t & \sim \text{Poisson}(\lambda_t) \\
 log(\lambda_t) & = \alpha + \cdots + z_t \\
 z_t & \sim \text{Normal}(z_{t-1}, \sigma) \\
 \sigma & \sim \text{Exponential}(2)
@@ -1180,7 +1179,7 @@ Simple stochastic processes that can fit a wide range of data
 <br/>
 <br/>
 \begin{align*}
-x_t & \sim \text{Normal}(\alpha + x_{t-1}, \sigma) \\
+z_t & \sim \text{Normal}(\alpha + z_{t-1}, \sigma) \\
 \end{align*}
 
 Where: 
@@ -1248,13 +1247,13 @@ Similar to a Random Walk and can fit a wide range of data
 <br/>
 <br/>
 \begin{align*}
-x_t & \sim \text{Normal}( \alpha + \phi * x_{t-1}, \sigma) \\
+z_t & \sim \text{Normal}( \alpha + \phi * z_{t-1}, \sigma) \\
 \end{align*}
 
 Where: 
 - $\sigma$ determines the spread (or flexibility) of the process
 - $\alpha$ is an optional intercept or *drift* parameter
-- $\phi$ is a coefficient estimating correlation between $x_t$ and $x_{t-1}$
+- $\phi$ is a coefficient estimating correlation between $z_t$ and $z_{t-1}$
 
 Process at time $t$ is *a function* of it's own value at time $t-1$
 
@@ -1265,7 +1264,7 @@ As with AR1, but with additional autoregressive terms
 <br/>
 <br/>
 \begin{align*}
-x_t & \sim \text{Normal}( \alpha + \phi_1 * x_{t-1} + \phi_2 * x_{t-2} + \phi_3 * x_{t-3}, \sigma) \\
+z_t & \sim \text{Normal}( \alpha + \phi_1 * z_{t-1} + \phi_2 * z_{t-2} + \phi_3 * z_{t-3}, \sigma) \\
 \end{align*}
 
 ---
@@ -1643,7 +1642,7 @@ myhist(arsig, xlim = c(0, 1), xlab = expression(sigma[error]),
 ---
 class: middle center
 
-### It is straightforward to fit latent dynamic models with RW or AR models up to order 3 in `mvgam`. Bayesian regularizations helps shrink un-needed AR coefficients toward 0
+### It is straightforward to fit latent dynamic models with RW or AR models up to order 3 in `mvgam`. Bayesian regularization helps shrink un-needed AR coefficients toward 0
 <br>
 ### In `brms`, only AR1 can be fit for non-Gaussian observations (though can also handle ARMA(1,1)) models. However, implementation is different and much slower
 <br>
@@ -1660,13 +1659,13 @@ class: inverse middle center big-subsection
 "*A Gaussian Process defines a probability distribution over functions; in other words every sample from a Gaussian Process is an entire function from the covariate space X to the real-valued output space.*" (Betancourt; [Robust Gaussian Process Modeling](https://betanalpha.github.io/assets/case_studies/gaussian_processes.html)) 
 
 \begin{align*}
-x & \sim \text{MVNormal}(0, \Sigma) \\
+z & \sim \text{MVNormal}(0, \Sigma) \\
 \Sigma_{t_i, t_j} & = \alpha^2 * exp(-0.5 * ((|t_i - t_j| / \rho))^2)
 \end{align*}
 
 Where: 
 - $\alpha$ controls the marginal variability (magnitude) of the function
-- $\rho$ controls how correlations decay as a function of distance
+- $\rho$ controls how correlations decay as a function of time lag
 - $\Sigma$ is the kernel, in this case a squared exponential kernel
 
 ---
