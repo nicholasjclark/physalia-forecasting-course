@@ -874,21 +874,17 @@ plot(as.vector(AirPassengers), bty = 'l', lwd = 3.5,
      xlim = c(0, 160),
      ylim = c(-50, 600))
 title(xlab = 'Time', line = 0.75)
-year <- as.numeric(substr(time(AirPassengers), 1, 4))
-season <- as.numeric(cycle(AirPassengers))
-time <- 1:length(AirPassengers)
-library(mgcv)
-mod <- gam(AirPassengers ~ s(time, k = 20) +
-                       s(season, bs = 'cc'))
-trend <- predict(mod, exclude = 's(season)',
-                 type = 'iterms') + coef(mod)[1]
+
+# STL decomposition
+decomp <- stl(AirPassengers, s.window = 9)
+
 ## plot the trend
+trend <- as.vector(decomp$time.series[,2])
 lines(trend, lwd = 3.5, col = 'white')
 lines(trend, lwd = 2.5, col = 'darkred')
 
 # plot the cycle
-cycle <- predict(mod, exclude = 's(time)',
-                 type = 'terms')
+cycle <-  as.vector(decomp$time.series[,1])
 lines(cycle, lwd = 3.5, col = 'white')
 lines(cycle, lwd = 2.5, col = 'darkblue')
 box(bty = 'l', lwd = 2)
@@ -907,7 +903,7 @@ text(x = 145, y = 5, labels = 'Seasonality',
 
 ```{r echo=FALSE, fig.height = 5.5, fig.width = 1.9 * 5.1}
 data("AirPassengers")
-plot(stl(AirPassengers, 'periodic'),
+plot(stl(AirPassengers, s.window = 9),
      lwd = 2, col = 'darkred', bty = 'l',
      col.range = 'darkred')
 ```
@@ -948,7 +944,7 @@ Hyndman’s tools in the [`forecast` 📦](https://pkg.robjhyndman.com/forecast/
   
 [ETS](https://pkg.robjhyndman.com/forecast/reference/ets.html) handles many types of seasonality and nonlinear trends 
   
-[(S)ARIMAX](https://pkg.robjhyndman.com/forecast/reference/auto.arima.html) includes additive fixed effects of predictors while capturing trends and seasonality
+[Regression with ARIMA errors](https://pkg.robjhyndman.com/forecast/reference/auto.arima.html) includes additive fixed effects of predictors while capturing trends and seasonality
 
 *Some* of these algorithms can handle missing data
 
