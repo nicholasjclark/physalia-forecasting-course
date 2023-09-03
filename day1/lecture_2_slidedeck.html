@@ -1576,98 +1576,50 @@ class: middle center
 ### How can we deal with this?
 
 ---
-## Adding a latent AR term
+## A smooth of time
 
 
 
 ```r
-year_temp_smooth_ar &lt;- mvgam(count ~ 
-                            s(year, bs = 'tp', k = 15) +
-                            s(mintemp, bs = 'tp', k = 8),
+temp_time_smooth &lt;- mvgam(count ~ 
+                            s(mintemp, bs = 'tp', k = 8) +
+*                           s(time, bs = 'tp', k = 50),
                           family = poisson(),
-*                         trend_model = 'AR1',
                           data = model_data,
                           burnin = 500,
                           samples = 500,
                           chains = 4)
 ```
 
-A latent (unobserved) dynamic model for residuals
+Replace the spline of `year` with a complex spline of `time` to capture autocorrelation
 ---
 
-## The latent trend
-.panelset[
-.panel[.panel-name[Code]
-
-
-
-
-```r
-# use mvgam's plot to view the trend
-plot(year_temp_smooth_ar, type = 'trend')
-```
-]
-
-.panel[.panel-name[Plot]
-.center[![](lecture_2_slidedeck_files/figure-html/year_temp_smooth_ar_trend-1.svg)]
-
-]
-]
-
----
-
-## AR parameters
-.panelset[
-.panel[.panel-name[Code]
-
-
-```r
-# extract AR estimates
-ar_params &lt;- as.data.frame(year_temp_smooth_ar, 
-                            variable = c('ar1[1]',
-                                         'sigma[1]'))
-
-# plot as histograms
-hist(ar_params$`ar1[1]`, main = expression(AR1[error]))
-
-hist(ar_params$`sigma[1]`, main = expression(sigma[error]))
-```
-
-
-
-
-]
-
-.panel[.panel-name[AR1s]
-.center[![](lecture_2_slidedeck_files/figure-html/year_temp_smooth_ars-1.svg)]
-
-]
-
-.panel[.panel-name[SDs]
-.center[![](lecture_2_slidedeck_files/figure-html/year_temp_smooth_sigmas-1.svg)]
-
-]
-]
+## Updated smooths
+&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-50-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## Diagnostics
+&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-51-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Hindcast predictions <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm177.6 62.1C192.8 334.5 218.8 352 256 352s63.2-17.5 78.4-33.9c9-9.7 24.2-10.4 33.9-1.4s10.4 24.2 1.4 33.9c-22 23.8-60 49.4-113.6 49.4s-91.7-25.5-113.6-49.4c-9-9.7-8.4-24.9 1.4-33.9s24.9-8.4 33.9 1.4zm40-89.3l0 0 0 0-.2-.2c-.2-.2-.4-.5-.7-.9c-.6-.8-1.6-2-2.8-3.4c-2.5-2.8-6-6.6-10.2-10.3c-8.8-7.8-18.8-14-27.7-14s-18.9 6.2-27.7 14c-4.2 3.7-7.7 7.5-10.2 10.3c-1.2 1.4-2.2 2.6-2.8 3.4c-.3 .4-.6 .7-.7 .9l-.2 .2 0 0 0 0 0 0c-2.1 2.8-5.7 3.9-8.9 2.8s-5.5-4.1-5.5-7.6c0-17.9 6.7-35.6 16.6-48.8c9.8-13 23.9-23.2 39.4-23.2s29.6 10.2 39.4 23.2c9.9 13.2 16.6 30.9 16.6 48.8c0 3.4-2.2 6.5-5.5 7.6s-6.9 0-8.9-2.8l0 0 0 0zm160 0l0 0-.2-.2c-.2-.2-.4-.5-.7-.9c-.6-.8-1.6-2-2.8-3.4c-2.5-2.8-6-6.6-10.2-10.3c-8.8-7.8-18.8-14-27.7-14s-18.9 6.2-27.7 14c-4.2 3.7-7.7 7.5-10.2 10.3c-1.2 1.4-2.2 2.6-2.8 3.4c-.3 .4-.6 .7-.7 .9l-.2 .2 0 0 0 0 0 0c-2.1 2.8-5.7 3.9-8.9 2.8s-5.5-4.1-5.5-7.6c0-17.9 6.7-35.6 16.6-48.8c9.8-13 23.9-23.2 39.4-23.2s29.6 10.2 39.4 23.2c9.9 13.2 16.6 30.9 16.6 48.8c0 3.4-2.2 6.5-5.5 7.6s-6.9 0-8.9-2.8l0 0 0 0 0 0z"/></svg>
 &lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-52-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
-## Updated smooths
-&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-53-1.svg" style="display: block; margin: auto;" /&gt;
-
----
-
-## Hindcast predictions
-&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-54-1.svg" style="display: block; margin: auto;" /&gt;
-
-
+class: middle center
+### Using an *additive* combination of smooth functions, we have captured a lot of the variation in the observed data
+&lt;br&gt;
+### But we are dealing with a time series, so we'd like our model to generate sensible forecast predictions
+&lt;br&gt;
+### As we'll see in the next lecture, this one has some problems
 ---
 
 ## In the next lecture, we will cover
+
+Extrapolating splines
 
 Latent autoregressive processes
 
