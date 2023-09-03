@@ -434,6 +434,22 @@ class: middle center
 ---
 
 ## Ok. Can we just do this?
+A linear model with an autoregressive term
+&lt;br/&gt;
+&lt;br/&gt;
+`\begin{align*}
+\boldsymbol{Y}_t &amp; \sim \text{Normal}(\mu_t, \sigma) \\
+\mu_t &amp; = \alpha + \beta_1 \boldsymbol{Y}_{t-1} + \cdots
+\end{align*}`
+
+Where: 
+- `\(\alpha\)` is an intercept coefficient
+- `\(\beta_1\)` is a .emphasize[*first-order autoregressive coefficient*]
+
+Can sometimes work because of identity link; but missingness, measurement error will still cause problems
+---
+
+## What about Poisson?
 A Poisson GLM with an autoregressive term
 &lt;br/&gt;
 &lt;br/&gt;
@@ -446,23 +462,6 @@ Where:
 - `\(\alpha\)` is an intercept coefficient
 - `\(\beta_1\)` is a .emphasize[*first-order autoregressive coefficient*]
 
-
----
-
-## Not if our data have these
-Temporal autocorrelation
-
-Lagged effects
-
-Non-Gaussian data and missing observations
-
-Measurement error
-
-Time-varying effects
-
-Nonlinearities
-
-Multi-series clustering
 
 ---
 
@@ -758,7 +757,7 @@ A dynamic Poisson GLM can use .emphasize[*autocorrelated latent residuals*]
 &lt;br/&gt;
 &lt;br/&gt;
 `\begin{align*}
-\boldsymbol{Y}_t &amp; \sim \text{Poisson}(\lambda_i) \\
+\boldsymbol{Y}_t &amp; \sim \text{Poisson}(\lambda_t) \\
 log(\lambda_t) &amp; = \alpha + \cdots + z_t \\
 z_t &amp; \sim \text{Normal}(z_{t-1}, \sigma) \\
 \sigma &amp; \sim \text{Exponential}(2)
@@ -1048,7 +1047,7 @@ Simple stochastic processes that can fit a wide range of data
 &lt;br/&gt;
 &lt;br/&gt;
 `\begin{align*}
-x_t &amp; \sim \text{Normal}(\alpha + x_{t-1}, \sigma) \\
+z_t &amp; \sim \text{Normal}(\alpha + z_{t-1}, \sigma) \\
 \end{align*}`
 
 Where: 
@@ -1097,13 +1096,13 @@ Similar to a Random Walk and can fit a wide range of data
 &lt;br/&gt;
 &lt;br/&gt;
 `\begin{align*}
-x_t &amp; \sim \text{Normal}( \alpha + \phi * x_{t-1}, \sigma) \\
+z_t &amp; \sim \text{Normal}( \alpha + \phi * z_{t-1}, \sigma) \\
 \end{align*}`
 
 Where: 
 - `\(\sigma\)` determines the spread (or flexibility) of the process
 - `\(\alpha\)` is an optional intercept or *drift* parameter
-- `\(\phi\)` is a coefficient estimating correlation between `\(x_t\)` and `\(x_{t-1}\)`
+- `\(\phi\)` is a coefficient estimating correlation between `\(z_t\)` and `\(z_{t-1}\)`
 
 Process at time `\(t\)` is *a function* of it's own value at time `\(t-1\)`
 
@@ -1114,7 +1113,7 @@ As with AR1, but with additional autoregressive terms
 &lt;br/&gt;
 &lt;br/&gt;
 `\begin{align*}
-x_t &amp; \sim \text{Normal}( \alpha + \phi_1 * x_{t-1} + \phi_2 * x_{t-2} + \phi_3 * x_{t-3}, \sigma) \\
+z_t &amp; \sim \text{Normal}( \alpha + \phi_1 * z_{t-1} + \phi_2 * z_{t-2} + \phi_3 * z_{t-3}, \sigma) \\
 \end{align*}`
 
 ---
@@ -1371,7 +1370,7 @@ No divergences encountered, but bad convergence
 ---
 class: middle center
 
-### It is straightforward to fit latent dynamic models with RW or AR models up to order 3 in `mvgam`. Bayesian regularizations helps shrink un-needed AR coefficients toward 0
+### It is straightforward to fit latent dynamic models with RW or AR models up to order 3 in `mvgam`. Bayesian regularization helps shrink un-needed AR coefficients toward 0
 &lt;br&gt;
 ### In `brms`, only AR1 can be fit for non-Gaussian observations (though can also handle ARMA(1,1)) models. However, implementation is different and much slower
 &lt;br&gt;
@@ -1388,13 +1387,13 @@ class: inverse middle center big-subsection
 "*A Gaussian Process defines a probability distribution over functions; in other words every sample from a Gaussian Process is an entire function from the covariate space X to the real-valued output space.*" (Betancourt; [Robust Gaussian Process Modeling](https://betanalpha.github.io/assets/case_studies/gaussian_processes.html)) 
 
 `\begin{align*}
-x &amp; \sim \text{MVNormal}(0, \Sigma) \\
+z &amp; \sim \text{MVNormal}(0, \Sigma) \\
 \Sigma_{t_i, t_j} &amp; = \alpha^2 * exp(-0.5 * ((|t_i - t_j| / \rho))^2)
 \end{align*}`
 
 Where: 
 - `\(\alpha\)` controls the marginal variability (magnitude) of the function
-- `\(\rho\)` controls how correlations decay as a function of distance
+- `\(\rho\)` controls how correlations decay as a function of time lag
 - `\(\Sigma\)` is the kernel, in this case a squared exponential kernel
 
 ---
