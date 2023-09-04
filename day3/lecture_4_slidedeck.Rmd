@@ -858,7 +858,7 @@ title(main = 'Y ~ Normal(5, 2); Mean(Y) = 5')
 \begin{align*}
 \boldsymbol{Y}_t & \sim \text{Poisson}(\lambda_t) \\
 log(\lambda_t) & =  \alpha + \boldsymbol{X}_t\beta + z_t &&\color{darkred}{\leftarrow} \color{darkred}{\text{type = 'link'}}  \\
-\mathbb{E}(\boldsymbol{Y}_t|\lambda_t) & =  exp(\lambda_t)  &&\color{darkred}{\leftarrow} \color{darkred}{\text{type = 'expected'}}  
+\mathbb{E}(\boldsymbol{Y}_t|\lambda_t) & =  \lambda_t  &&\color{darkred}{\leftarrow} \color{darkred}{\text{type = 'expected'}}  
 \end{align*}
 ---
 
@@ -1328,7 +1328,7 @@ class: inverse middle center big-subsection
 # Probabilistic forecast evaluation
 
 ---
-## Interval scores
+## Scaled Interval Score
 A common step to evaluate a forecast distribution is to [compute how well it's prediction intervals perform](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008618):
 
 $$SIS = (U_{t} - L_{t}) + \frac{2}{\alpha}(L_{t} - y_{t})\mathcal{1}(y_{t} < L_{t}) + \frac{2}{\alpha}(y_{t} - U_{t})\mathcal{1}(y_{t} > U_{t})$$
@@ -1463,7 +1463,7 @@ Where:
 - $F(\hat{y})$ is the forecast CDF evaluated at many points
 - $\mathcal{1}(\hat{y}\geq y)$ gives the true observed CDF
 
-MSIS converges to CRPS when evaluating an increasing number of equally spaced intervals
+SIS converges to CRPS when evaluating an increasing number of equally spaced intervals
 
 ---
 ## CRPS
