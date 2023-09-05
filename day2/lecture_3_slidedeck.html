@@ -1188,7 +1188,7 @@ plot(series, type = 'l', bty = 'l', lwd = 2,
 
 `\(\phi = 1\)` and `\(\alpha \neq 0\)`, process is a Random Walk with drift
 
-`\(|\phi| &lt; 0\)`, process oscillates around `\(\alpha\)` and is .emphasize[*stationary*]
+`\(|\phi| &lt; 1\)`, process oscillates around `\(\alpha\)` and is .emphasize[*stationary*]
 
 ---
 
@@ -1212,12 +1212,12 @@ Stationary time series are useful for inferring properties of .emphasize[*stabil
 ## Enforcing AR stationarity
 For AR processes up to order 3 (AR1, AR2 or AR3), process remains stationary as long as:
 
-`\(|\phi| &lt; 0\)` for all `\(\phi\)`
+`\(|\phi| &lt; 1\)` for all `\(\phi\)`
 
 
 ---
 ## Enforcing AR stationarity
-Enforcing stationarity (by restricting `\(|\phi| &lt; 0\)`) is the default behaviour in [`brms` 📦](https://paul-buerkner.github.io/brms/reference/ar.html)
+Enforcing stationarity (by restricting `\(|\phi| &lt; 1\)`) is the default behaviour in [`brms` 📦](https://paul-buerkner.github.io/brms/reference/ar.html)
 
 
 ```r
