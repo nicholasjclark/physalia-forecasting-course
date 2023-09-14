@@ -409,7 +409,7 @@ plot_mvgam_series(data = simdat$data_train, series = 'all')
 ```
 
 ---
-## Simlar seasonal patterns
+## Similar seasonal patterns
 ```{r echo=FALSE}
 ggplot(simdat$data_train, aes(x = season, y = y, col = series,
                        fill = series)) +
@@ -471,7 +471,7 @@ plot(y = exp(preds$fit[,1] + attr(preds, "constant")),
      col = '#C79999',
      ylab = '',
      xlab = '',
-     main = 'Global smooth')
+     main = 'Shared smooth')
 box(bty = 'l', lwd = 2)
 
 plot(y = exp(preds$fit[,2] + attr(preds, "constant")),
@@ -493,7 +493,7 @@ plot(y = exp(preds$fit[,1] + attr(preds, "constant")),
      col = '#C79999',
      ylab = '',
      xlab = '',
-     main = 'Global smooth + deviation smooth')
+     main = 'Shared smooth + deviation smooth')
 box(bty = 'l', lwd = 2)
 
 lines(x = seq(1, 12, length.out = 200),
@@ -552,7 +552,7 @@ mod <- mvgam(y ~
              family = poisson())
 ```
 
-A .emphasize[*global*] smooth of seasonality
+A .emphasize[*shared*] smooth of seasonality
 
 This is a group-level smooth, similar to what we might expect the average seasonal function to be in this set of series
 ---
@@ -569,7 +569,7 @@ mod <- mvgam(y ~
 
 Series-level .emphasize[*deviation*] smooths of seasonality, which all share a common smoothing penalty
 
-These are individual-level smooths that capture how each series' seasonal pattern differs from the global smooth
+These are individual-level smooths that capture how each series' seasonal pattern differs from the shared smooth
 - There are a number of ways to do this using splines
 - See [Pedersen et al 2019](https://peerj.com/articles/6876/) for useful guidance
 
@@ -597,7 +597,7 @@ plot_predictions(hiermod,
 ---
 
 ## Hierarchical GAMs (HGAMs)
-By decomposing the linear predictor into a set of additive smooths, HGAMs offer a number of very useful ways model multivariate data
+By decomposing the linear predictor into a set of additive smooths, HGAMs offer a number of very useful ways to model multivariate data
 
 Each of these strategies allows us to:
 - Learn smooth functions for each series using data from .emphasize[*all series in the data*]
@@ -626,7 +626,7 @@ mvgam(y ~
 
 Here each series is given a [tensor product smooth](https://onlinelibrary.wiley.com/doi/10.1111/j.1541-0420.2006.00574.x) of two covariates
 
-But we learn the series-specific smooth as a deviation from the "global" smooth
+But we learn the series-specific smooth as a deviation from the "shared" smooth
 
 More on this example in [Tutorial 4](https://nicholasjclark.github.io/physalia-forecasting-course/day4/tutorial_4_physalia)
 
@@ -847,7 +847,7 @@ Propagate a set of latent factors and allow each observed series to .emphasize[*
 <br/>
 <br/>
 \begin{align*}
-x_t & = z_t*\theta \\
+x_t & = \theta*z_t \\
 \end{align*}
 
 Where: 
