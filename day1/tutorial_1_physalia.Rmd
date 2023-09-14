@@ -420,7 +420,7 @@ model1 <- mvgam(count ~ s(year, bs = 're') - 1,
 The model can be described mathematically for each timepoint $t$ as follows:
 \begin{align*}
 \boldsymbol{count}_t & \sim \text{Poisson}(\lambda_t) \\
-log(\lambda_t) & = \beta_{year[year_t]} * \boldsymbol{year}_{t} \\
+log(\lambda_t) & = \beta_{year[year_t]} \\
 \beta_{year} & \sim \text{Normal}(\mu_{year}, \sigma_{year}) \end{align*}
 
 Where the $\beta_{year}$ effects are drawn from a *population* distribution that is parameterized by a common mean $(\mu_{year})$ and variance $(\sigma_{year})$. Once the model has finished, the first step is to inspect the `summary` to ensure no major diagnostic warnings have been produced and to quickly summarise posterior distributions for key parameters
@@ -594,7 +594,7 @@ model2 <- mvgam(count ~ s(year, bs = 're') +
 The model can be described mathematically as follows:
 \begin{align*}
 \boldsymbol{count}_t & \sim \text{Poisson}(\lambda_t) \\
-log(\lambda_t) & = \beta_{year[year_t]} * \boldsymbol{year}_{t} + \beta_{ndvi} * \boldsymbol{ndvi}_t \\
+log(\lambda_t) & = \beta_{year[year_t]} + \beta_{ndvi} * \boldsymbol{ndvi}_t \\
 \beta_{year} & \sim \text{Normal}(\mu_{year}, \sigma_{year}) \\
 \beta_{ndvi} & \sim \text{Normal}(0, 1) \end{align*}
 
