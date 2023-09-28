@@ -178,71 +178,61 @@ data("all_neon_tick_data")
 Below is a convenience function to prepare the NEON *Ixodes scapularis* nymph survey data for modelling by filtering to the correct sites and getting data into the right long-format structure that we are used to using for `mvgam` models
 ```{r}
 prep_neon_data = function(split_prop = 0.8){
-    plotIDs <- c('SCBI_013','SCBI_002',
-                 'SERC_001','SERC_005',
-                 'SERC_006','SERC_012',
-                 'BLAN_012', 'BLAN_005')
-    
-    # Filter to the correct plot IDs
-    model_dat <- all_neon_tick_data %>%
-      dplyr::mutate(target = ixodes_scapularis) %>%
-      dplyr::filter(plotID %in% plotIDs) %>%
-      dplyr::select(Year, epiWeek, plotID, target) %>%
-      dplyr::mutate(epiWeek = as.numeric(epiWeek)) %>%
-      dplyr::filter(Year > 2014 & Year < 2021) %>%
-      dplyr::mutate(Year_orig = Year)
-    
-    # Fill in missing observations with NAs
-    model_dat %>%
-      dplyr::full_join(expand.grid(plotID = unique(model_dat$plotID),
-                                   Year_orig = unique(model_dat$Year_orig),
-                                   epiWeek = seq(1, 52))) %>%
-      dplyr::left_join(all_neon_tick_data %>%
-                         dplyr::select(siteID, plotID) %>%
-                         dplyr::distinct()) %>%
-      dplyr::mutate(series = plotID,
-                    season = epiWeek,
-                    year = as.vector(scale(Year_orig)),
-                    y = target) %>%
-      dplyr::select(-Year, -epiWeek, -target) %>%
-      dplyr::ungroup() %>%
-      dplyr::arrange(Year_orig, season, series) -> model_dat
-    
-    model_dat %>%
-      dplyr::left_join(all_neon_tick_data %>%
-                         dplyr::ungroup() %>%
-                         dplyr::select(Year, siteID, cum_sdd, cum_gdd) %>%
-                         dplyr::mutate(Year_orig = Year) %>%
-                         dplyr::select(-Year) %>%
-                         dplyr::distinct()) -> model_dat
-    
-    # Convert ids to factors
-    model_dat = model_dat %>%
-      dplyr::filter(Year_orig <= 2019) %>%
-      dplyr::mutate(plotID = factor(plotID),
-                    siteID = factor(siteID),
-                    series = factor(series))
+  plotIDs <- c('SCBI_013','SCBI_002',
+               'SERC_001','SERC_005',
+               'SERC_006','SERC_012',
+               'BLAN_012', 'BLAN_005')
   
-  # Scale the environmental covariate and store the mean and sd for later plotting
-  sd_gdd <- sd(model_dat$cum_gdd)
-  mean_gdd <- mean(model_dat$cum_gdd)
-  model_dat$cum_gdd <- (model_dat$cum_gdd - mean_gdd) / sd_gdd
+  # Filter to the correct plot IDs
+  model_dat <- all_neon_tick_data %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(target = ixodes_scapularis) %>%
+    dplyr::filter(plotID %in% plotIDs) %>%
+    dplyr::select(Year, epiWeek, plotID, target) %>%
+    dplyr::mutate(epiWeek = as.numeric(epiWeek)) %>%
+    dplyr::filter(Year > 2014 & Year < 2021)
   
-  # Add time column
+  # Fill in missing observations with NAs
+  model_dat %>%
+    # Create all possible combos of plotID, Year and epiWeek; 
+    # missing outcomes will be filled in as NA
+    dplyr::full_join(expand.grid(plotID = unique(model_dat$plotID),
+                                 Year = unique(model_dat$Year),
+                                 epiWeek = seq(1, 52))) %>%
+    
+    # left_join back to original data so plotID and siteID will
+    # match up, in case you need the siteID for anything else later on
+    dplyr::left_join(all_neon_tick_data %>%
+                       dplyr::select(siteID, plotID) %>%
+                       dplyr::distinct()) -> model_dat
+  
+  # Create the series variable needed for mvgam modelling
+  model_dat %>%
+    dplyr::mutate(series = plotID,
+                  y = target) %>%
+    dplyr::mutate(siteID = factor(siteID),
+                  series = factor(series)) %>%
+    dplyr::select(-target) %>%
+    dplyr::arrange(Year, epiWeek, series) -> model_dat 
+  
+  # Now create the time variable, which needs to track Year and epiWeek for 
+  # each unique series. The n function from dplyr is often useful if 
+  # generating a time index for grouped dataframes:
   model_dat %>%
     dplyr::ungroup() %>%
     dplyr::group_by(series) %>%
-    dplyr::arrange(Year_orig, season) %>%
+    dplyr::arrange(Year, epiWeek) %>%
     dplyr::mutate(time = seq(1, dplyr::n())) %>%
     dplyr::ungroup() -> model_dat
   
   # Split into training and testing
-  data_train = model_dat[1:(floor(nrow(model_dat) * split_prop)),]
-  data_test = model_dat[((floor(nrow(model_dat) * split_prop)) + 1):nrow(model_dat),]
+  data_train = model_dat %>%
+    dplyr::filter(time <= floor(max(model_dat$time) * split_prop))
+  data_test = model_dat %>%
+    dplyr::filter(time > max(data_train$time))
   
   # Return needed objects in a list
-  list(data_train = data_train, data_test = data_test,
-       sd_gdd = sd_gdd, mean_gdd = mean_gdd)
+  list(data_train = data_train, data_test = data_test)
 }
 ```
 
@@ -251,7 +241,7 @@ Prep the data for hierarchical modelling in `mvgam` using the above function. He
 tick_data <- xfun::cache_rds(prep_neon_data(split_prop = 0.8))
 ```
 
-```{r eval=FALSE}
+```{r}
 tick_data <- prep_neon_data(split_prop = 0.8)
 ```
 
@@ -301,7 +291,7 @@ rbind(tick_data$data_train,
       tick_data$data_test) %>%
   
   # calculate a total count per plot, per year
-  dplyr::group_by(plotID, year) %>%
+  dplyr::group_by(plotID, Year) %>%
   dplyr::summarise(total_count = sum(y, na.rm = TRUE)) %>%
   
   # join back tot he original data
@@ -315,13 +305,13 @@ rbind(tick_data$data_train,
   
   # for each plotID, calculate the median proportion per
   # season to inspect overall seasonality
-  dplyr::group_by(plotID, season) %>%
+  dplyr::group_by(plotID, epiWeek) %>%
   dplyr::summarise(rel_count = median(rel_count, 
                                       na.rm = TRUE),
                    Site = unique(siteID)) -> seasonality
 
 # visualize the seasonal patterns for each plotID
-ggplot(seasonality, aes(x = season, y = rel_count, fill = Site)) +
+ggplot(seasonality, aes(x = epiWeek, y = rel_count, fill = Site)) +
   geom_smooth(size = 1.5, se = FALSE, aes(colour = Site)) +
   geom_point(shape = 21, colour = 'white', size = 2.5) + 
   ylim(c(0, 0.7)) +
@@ -351,10 +341,10 @@ We aim to build a model that can learn from all observed data and leverage the g
 Our first model will assume there is a single "global" smooth function that can adequately capture periodic seasonality in tick abundances. We use a cyclic smooth (`bs = 'cc'`) and supply a list of `knots` to ensure the smooth joins at the ends in the correct place. We also include a hierarchical intercept term to capture any variation in series-specific average counts. Finally, we use a Poisson observation model for initial models. This is because we'd like to capture as much of the dispersion in the data using our covariates, even though it not be possible to capture all of it. No dynamic trend component is included in this initial model, as we would like to describe as much of the variation as we can using the GAM linear predictor. Instead we use a non-wiggle smooth function of time for each plot. This should not only allow us to hone in on a useful model more quickly, it will make model diagnostics more useful to us because we avoid the perfect overfitting that can happen with flexible dynamic trend components
 ```{r model0, include = FALSE}
 model0 <- xfun::cache_rds(mvgam(y ~                  
-                  s(year, by = series, k = 4) +
+                  s(Year, by = series, k = 4) +
                   s(series, bs = 're') +
-                  s(season, bs = 'cc', k = 12),
-                knots = list(season = c(0.5, 52.5)),
+                  s(epiWeek, bs = 'cc', k = 12),
+                knots = list(epiWeek = c(0.5, 52.5)),
                 family = poisson(),
                 data = tick_data$data_train,
                 newdata = tick_data$data_test,
@@ -371,15 +361,15 @@ model0 <- mvgam(y ~
                   
                   # separate smooths of year to capture changing levels across
                   # the sampling period for each series (plotID)
-                  s(year, by = series, k = 4) +
+                  s(Year, by = series, k = 4) +
                   
-                  # a "global" smooth of season to capture the overall
+                  # a "global" smooth of epiWeek to capture the overall
                   # seasonal pattern
-                  s(season, bs = 'cc', k = 12),
+                  s(epiWeek, bs = 'cc', k = 12),
                 
                 # knots to ensure the seasonal smooth joins between the last 
                 # week and first week of the year
-                knots = list(season = c(0.5, 52.5)),
+                knots = list(epiWeek = c(0.5, 52.5)),
                 
                 # Poisson observations
                 family = poisson(),
@@ -417,15 +407,15 @@ plot(model0, type = 'smooths')
 
 But as we've seen previously, we're better off using targeted predictions to understand the model and think about how to make improvements. The `plot_predictions` function from `marginaleffects` can be used here to inspect conditional seasonal predictions for each series. This is a good first step to ensure the model's predictions seem sensible
 ```{r warning=FALSE, fig.asp = 1.2}
-plot_predictions(model0, condition = c('season', 'series', 'series'),
+plot_predictions(model0, condition = c('epiWeek', 'series', 'series'),
                  points = 0.5, rug = TRUE) +
   facet_wrap(~series, ncol = 2, scales = 'free_y') +
   theme(legend.position = 'none')
 ```
 
-### Plotting residuals vs season
+### Plotting residuals vs epiWeek
 
-The above plot shows us that the predictions seem to match the overall periodic patterns in the observations, but it is hard to get a sense of where the model might be failing. To do so, we can inspect posterior median residuals vs `season` to get a sense of any unmodelled seasonal variation across time series. This can be done using a very similar call to `ggplot2` as the one we used above to inspect seasonality in relative counts. Because we will be making such a plot for each model, it is better to wrap the code in a function:
+The above plot shows us that the predictions seem to match the overall periodic patterns in the observations, but it is hard to get a sense of where the model might be failing. To do so, we can inspect posterior median residuals vs `epiWeek` to get a sense of any unmodelled seasonal variation across time series. This can be done using a very similar call to `ggplot2` as the one we used above to inspect seasonality in relative counts. Because we will be making such a plot for each model, it is better to wrap the code in a function:
 ```{r}
 plot_season_resids = function(object){
   # Take 100 posterior draws of Dunn Smyth residuals in the correct
@@ -448,7 +438,7 @@ plot_season_resids = function(object){
   }))
   
   # Plot
-  ggplot(all_resids, aes(x = season, y = resid, fill = Site)) +
+  ggplot(all_resids, aes(x = epiWeek, y = resid, fill = Site)) +
     geom_jitter(shape = 16, colour = 'black', size = 1,
                 alpha = 0.1) +
     geom_smooth(size = 1.5, se = FALSE, colour = 'white',
@@ -487,7 +477,7 @@ plot_season_partials = function(object){
   all_terms <- unlist(lapply(seq_along(object$mgcv_model$smooth), function(x){
      object$mgcv_model$smooth[[x]]$label
   }))
-  non_season_terms <- all_terms[!grepl('season', all_terms, fixed = TRUE)]
+  non_season_terms <- all_terms[!grepl('epiWeek', all_terms, fixed = TRUE)]
   
   tick_data$data_train %>%
     dplyr::bind_cols(data.frame(smooth_pred = predict(object$mgcv_model,
@@ -504,10 +494,10 @@ plot_season_partials = function(object){
   }))
   
   # Plot
-  ggplot(all_partials, aes(x = season, y = smooth_pred, colour = Site)) +
+  ggplot(all_partials, aes(x = epiWeek, y = smooth_pred, colour = Site)) +
     geom_jitter(shape = 16, colour = 'black', size = 1,
                 alpha = 0.1,
-                mapping = aes(x = season, y = partial_resid)) +
+                mapping = aes(x = epiWeek, y = partial_resid)) +
         geom_smooth(size = 1.5, se = FALSE, colour = 'white',
                 method = 'gam', formula = y ~ s(x, bs = 'cc')) +
     geom_smooth(size = 1.25, se = FALSE, aes(colour = Site),
@@ -530,10 +520,10 @@ The next model will use hierarchical smooths to try and capture seasonality. As 
 ```{r model1, include = FALSE}
 model1 <- xfun::cache_rds(mvgam(y ~                  
     s(series, bs = 're') +
-    s(year, by = series, k = 4) +
-    s(season, bs = 'cc', k = 12) +
-    s(season, by = siteID, bs = 'cc', k = 12),
-  knots = list(season = c(0.5, 52.5)),
+    s(Year, by = series, k = 5) +
+    s(epiWeek, bs = 'cc', k = 12) +
+    s(epiWeek, by = siteID, bs = 'cc', k = 12),
+  knots = list(epiWeek = c(0.5, 52.5)),
   family = poisson(),
   data = tick_data$data_train,
   newdata = tick_data$data_test,
@@ -551,19 +541,19 @@ model1 <- mvgam(y ~
                   
                   # separate smooths of year to capture changing levels across
                   # the sampling period for each series (plotID)
-                  s(year, by = series, k = 4) +
+                  s(Year, by = series, k = 5) +
                   
-                  # a "global" smooth of season to capture the overall
+                  # a "global" smooth of epiWeek to capture the overall
                   # seasonal pattern
-                  s(season, bs = 'cc', k = 12) +
+                  s(epiWeek, bs = 'cc', k = 12) +
                   
                   # a set of "deviation" smooths to capture site-level 
                   # variation in seasonal patterns
-                  s(season, by = siteID, bs = 'cc', k = 12),
+                  s(epiWeek, by = siteID, bs = 'cc', k = 12),
                 
-                # knots to ensure the seasonal smooth joins between the last 
+                # knots to ensure the epiWeek smooth joins between the last 
                 # week and first week of the year
-                knots = list(season = c(0.5, 52.5)),
+                knots = list(epiWeek = c(0.5, 52.5)),
                 
                 # Poisson observations
                 family = poisson(),
@@ -574,7 +564,7 @@ model1 <- mvgam(y ~
                 trend_model = 'None')
 ```
 
-Note the use of the `by` argument in the site-level smooths. This implies that each site-level smooth has its own unique smoothing parameter, so we are not necessarly forcing all the deviations to have the same level of smoothness. This is find for our purposes as we don't have very many levels of `siteID`. But when fitting hierarchical smooths it can often make sense to use a different strategy, which will be shown in the next model below. But back to this model, which can be described mathematically as follows:
+Note the use of the `by` argument in the site-level smooths. This implies that each site-level smooth has its own unique smoothing parameter, so we are not necessarily forcing all the deviations to have the same level of smoothness. This is find for our purposes as we don't have very many levels of `siteID`. But when fitting hierarchical smooths it can often make sense to use a different strategy, which will be shown in the next model below. But back to this model, which can be described mathematically as follows:
 
 \begin{align*}
 \boldsymbol{ticks}_t & \sim \text{Poisson}(\lambda_t) \\
@@ -591,14 +581,14 @@ The model summary is shown below, which again indicates there was no evidence of
 summary(model1)
 ```
 
-A plot of the smooth functions from this model now shows the "global" smooth of `season` as well as the site-level deviation smooths:
+A plot of the smooth functions from this model now shows the "global" smooth of `epiWeek` as well as the site-level deviation smooths:
 ```{r}
 plot(model1, type = 'smooths')
 ```
 
 This plot shows that site-level deviations from the "global" smooth are strongly supported for site SCBI, but less so for the other sites. We can repeat the plots from above to see if the model does a better job of capturing seasonal variation:
 ```{r warning=FALSE, fig.asp = 1.2}
-plot_predictions(model1, condition = c('season', 'series', 'series'),
+plot_predictions(model1, condition = c('epiWeek', 'series', 'series'),
                  points = 0.5, rug = TRUE) +
   facet_wrap(~series, ncol = 2, scales = 'free_y') +
   theme(legend.position = 'none')
@@ -619,10 +609,10 @@ The next model is similar to `model1` as it also uses hierarchical smooths to tr
 ```{r model2, include = FALSE}
 model2 <- xfun::cache_rds(mvgam(y ~                  
                   s(series, bs = 're') +
-                  s(year, by = series, k = 4) +
-                  s(season, bs = 'cc', k = 12) +
-                  s(season, series, bs = 'fs', xt = list(bs = 'cc'), k = 12),
-                knots = list(season = c(0.5, 52.5)),
+                  s(Year, by = series, k = 5) +
+                  s(epiWeek, bs = 'cc', k = 12) +
+                  s(epiWeek, series, bs = 'fs', xt = list(bs = 'cc'), k = 12),
+                knots = list(epiWeek = c(0.5, 52.5)),
                 family = poisson(),
                 data = tick_data$data_train,
                 newdata = tick_data$data_test,
@@ -639,22 +629,22 @@ model2 <- mvgam(y ~
                     
                   # separate smooths of year to capture changing levels across
                   # the sampling period for each series (plotID)
-                  s(year, by = series, k = 4) +
+                  s(Year, by = series, k = 5) +
                   
-                  # a "global" smooth of season to capture the overall
+                  # a "global" smooth of epiWeek to capture the overall
                   # seasonal pattern
-                  s(season, bs = 'cc', k = 12) +
+                  s(epiWeek, bs = 'cc', k = 12) +
                   
                   # a set of "deviation" smooths to capture plot-level 
                   # variation in seasonal patterns; here we use the 
-                  # fs basis to foce each plot-level deviation smooth to 
+                  # fs basis to force each plot-level deviation smooth to 
                   # use the same smoothing penalty; this is more equivalent
                   # to a 'random effect'
-                  s(season, series, bs = 'fs', xt = list(bs = 'cc'), k = 12),
+                  s(epiWeek, series, bs = 'fs', xt = list(bs = 'cc'), k = 12),
                 
                 # knots to ensure the seasonal smooth joins between the last 
                 # week and first week of the year
-                knots = list(season = c(0.5, 52.5)),
+                knots = list(epiWeek = c(0.5, 52.5)),
                 
                 # Poisson observations
                 family = poisson(),
@@ -684,12 +674,12 @@ summary(model2)
 
 A plot of the smooth functions from this model now shows the "global" smooth of `season` as well as the eight plot-level deviation smooths. When plotting `fs` smooths, I find it much easier to visualize patterns using the `gratia::draw` plot method:
 ```{r, fig.asp = 0.6}
-gratia::draw(model2$mgcv_model, select = c('s(season)', 's(season,series)'))  
+gratia::draw(model2$mgcv_model, select = c('s(epiWeek)', 's(epiWeek,series)'))  
 ```
 
 This plot shows that plot-level deviations from the "global" smooth are supported for many of the plot-level time series. But as we add more and more smooths, it becomes harder to understand what the model is trying to tell us. We can again repeat the plots from above to see if the model does a better job of capturing seasonal variation:
 ```{r warning=FALSE, fig.asp = 1.2}
-plot_predictions(model2, condition = c('season', 'series', 'series'),
+plot_predictions(model2, condition = c('epiWeek', 'series', 'series'),
                  points = 0.5, rug = TRUE) +
   facet_wrap(~series, ncol = 2, scales = 'free_y') +
   theme(legend.position = 'none')
@@ -715,9 +705,9 @@ The above steps were useful to identify a model that is complex enough to both l
 ```{r model3, include = FALSE}
 model3 <- xfun::cache_rds(mvgam(y ~                  
                   s(series, bs = 're') +
-                  s(season, bs = 'cc', k = 12) +
-                  s(season, series, bs = 'fs', xt = list(bs = 'cc'), k = 12),
-                knots = list(season = c(0.5, 52.5)),
+                  s(epiWeek, bs = 'cc', k = 12) +
+                  s(epiWeek, series, bs = 'fs', xt = list(bs = 'cc'), k = 12),
+                knots = list(epiWeek = c(0.5, 52.5)),
                 family = poisson(),
                 data = tick_data$data_train,
                 newdata = tick_data$data_test,
@@ -725,7 +715,7 @@ model3 <- xfun::cache_rds(mvgam(y ~
                 # A dynamic factor trend
                 trend_model = 'GP',
                 use_lv = TRUE,
-                n_lv = 3),
+                n_lv = 4),
                 dir = 'cache_not_for_upload/')
 ```
 
@@ -734,30 +724,30 @@ model3 <- mvgam(y ~
                   #hierarchical intercepts per series (plotID)
                   s(series, bs = 're') +
                   
-                  # a "global" smooth of season to capture the overall
+                  # a "global" smooth of epiWeek to capture the overall
                   # seasonal pattern
-                  s(season, bs = 'cc', k = 12) +
+                  s(epiWeek, bs = 'cc', k = 12) +
                   
                   # a set of "deviation" smooths to capture plot-level 
                   # variation in seasonal patterns; here we use the 
                   # fs basis to foce each plot-level deviation smooth to 
                   # use the same smoothing penalty; this is more equivalent
                   # to a 'random effect'
-                  s(season, series, bs = 'fs', xt = list(bs = 'cc'), k = 12),
+                  s(epiWeek, series, bs = 'fs', xt = list(bs = 'cc'), k = 12),
                 
                 # knots to ensure the seasonal smooth joins between the last 
                 # week and first week of the year
-                knots = list(season = c(0.5, 52.5)),
+                knots = list(epiWeek = c(0.5, 52.5)),
                 
                 # Poisson observations
                 family = poisson(),
                 data = tick_data$data_train,
                 newdata = tick_data$data_test,
                 
-                # A dynamic factor trend with three latent factors
+                # A dynamic factor trend with four latent factors
                 trend_model = 'GP',
                 use_lv = TRUE,
-                n_lv = 3)
+                n_lv = 4)
 ```
 
 The model can be described mathematically as follows:
@@ -783,7 +773,7 @@ summary(model3)
 
 We can plot the smooth effects again to see that they haven't changed much from the inclusion of the dynamic factor Gaussian Process trends
 ```{r, fig.asp = 0.6}
-gratia::draw(model3$mgcv_model, select = c('s(season)', 's(season,series)'))  
+gratia::draw(model3$mgcv_model, select = c('s(epiWeek)', 's(epiWeek,series)'))  
 ```
 
 ### Examining dynamic factors
@@ -817,27 +807,19 @@ ggplot(mean_correlations,
   theme(axis.text.x = element_text(angle = 45, hjust=1))
 ```
 
-This plot shows there are is a lot of structure that is being captured with our dimension-reduced dynamic factor model. For example, series SERC_012 (series 8) and BLAN_005 (series 1) show a fairly strong *negative* correlation:
+This plot shows there are is a lot of structure that is being captured with our dimension-reduced dynamic factor model. For example, series SCBI_013 (series 4) and SERC_012 (series 8) show a fairly strong *positive* correlation:
 ```{r}
-plot(model3, type = 'trend', series = 1)
+plot(model3, type = 'trend', series = 4)
 ```
 
 ```{r}
 plot(model3, type = 'trend', series = 8)
 ```
 
-While two of the SERC plots (SERC_006 and SERC_012) show a fairly strong *positive* correlation:
-```{r}
-plot(model3, type = 'trend', series = 7)
-```
 
+Because of these positively correlated trends, the hindcasts and forecasts for these two series will be similar:
 ```{r}
-plot(model3, type = 'trend', series = 8)
-```
-
-Because of these positively correlated trends, the forecasts for these two series will be similar:
-```{r}
-plot(model3, type = 'forecast', series = 7)
+plot(model3, type = 'forecast', series = 4)
 ```
 
 ```{r}
@@ -846,30 +828,53 @@ plot(model3, type = 'forecast', series = 8)
 
 This is an extremely useful and practical property of dynamic factor models, the fact that we can learn complex correlation structures that are informed by all our data, giving us reasonable forecasts that will respect those correlation structures. 
 
-### Comparing forecasts
-But a key question is whether this more complex dynamic factor model can produce better forecasts than the much simpler model that used smooth functions of `year`. Here we will calculate the out of sample DRPS for each series and then simply take the sums as a measure of forecast performance. We don't have much choice for computing more complex multivariate scores in this example because many of the individual NEON plots were not sampled at the same time in the out of sample period. First, we use the `forecast.mvgam` and `score.mvgam_forecast` functions to compute the out of sample DRPS for the last three models:
+### Comparing predictions
+But a key question is whether this more complex dynamic factor model can produce better predictions than the much simpler model that used smooth functions of `year`. Here we will compare models in two ways. First, we use `loo` to compare approximate leave-one-out cross-validation performance, which is useful for comparing models based on their in-sample (hindcasting) performance. A higher value is perferred here:
 ```{r}
-model1_scores <- score(forecast(model1), score = 'drps')
-model2_scores <- score(forecast(model2), score = 'drps')
-model3_scores <- score(forecast(model3), score = 'drps')
+loo_compare(model3, model2, model1)
+```
+The dynamic factor model gives a better fit to the in-sample data, but what about forecasts? Next we will calculate the out of sample DRPS for each series and then simply take the sums as a measure of forecast performance. We don't have much choice for computing more complex multivariate scores in this example because many of the individual NEON plots were not sampled at the same time in the out of sample period. First, we use the `forecast.mvgam` and `score.mvgam_forecast` functions to compute the out of sample DRPS for the last three models:
+```{r}
+model1_scores <- score(forecast(model1, type = 'link'), score = 'elpd')
+model2_scores <- score(forecast(model2, type = 'link'), score = 'elpd')
+model3_scores <- score(forecast(model3, type = 'link'), score = 'elpd')
 ```
 
-Now we simply loop across each series, take the sum of all non-`NA` scores and then take an overall sum. The model that achieves the *lowest* score is the best in this case:
+Now we simply loop across each series, take the median of all non-`NA` scores and then take an overall sum. The model that achieves the *lowest* score is the best in this case:
 ```{r}
 sum(unlist(lapply(1:8, function(x){
-  sum(model1_scores[[x]]$score, na.rm = TRUE)
+  median(model1_scores[[x]]$score, na.rm = TRUE)
 })))
 
 sum(unlist(lapply(1:8, function(x){
-  sum(model2_scores[[x]]$score, na.rm = TRUE)
+  median(model2_scores[[x]]$score, na.rm = TRUE)
 })))
 
 sum(unlist(lapply(1:8, function(x){
-  sum(model3_scores[[x]]$score, na.rm = TRUE)
+  median(model3_scores[[x]]$score, na.rm = TRUE)
 })))
 ```
 
-The dynamic factor model (`model3`) gives the best out of sample forecast performance in this case, which should not be surprising given our understanding of how problematic it can sometimes be to use spline extrapolation for producing forecasts
+While the dynamic factor model (`model3`) gives the best in-sample forecast performance, it's out of sample performance is worse. Is this model overfitting? Probably not, in fact the main difference between forecasts comes down to a single series (series 1):
+```{r}
+plot(model2, type = 'forecast', newdata = tick_data$data_test)
+```
+
+```{r}
+plot(model3, type = 'forecast', newdata = tick_data$data_test)
+```
+
+The yearly spline in `model2` has correctly captured the declining abundances in the testing period for this series, but this is only because the spline is going down forever:
+```{r}
+plot_mvgam_smooth(model2, series = 1, newdata = data.frame(series = levels(tick_data$data_train$series)[1],
+                                                           Year = seq(min(tick_data$data_train$Year),
+                                                                      max(tick_data$data_test$Year),
+                                                                      length.out = 200),
+                                                           epiWeek = 1))
+abline(v = max(tick_data$data_train$Year), lty = 2, lwd = 2)
+```
+
+This will not always be a reasonable model, so we need to be careful using splines for extrapolation!
 
 ### Exercises
 1. Fit a version of `model3` that uses Negative Binomial observations in place of the Poisson. Look at the estimates for the overdispserion parameters *$\phi$ and comment on what they are capturing
@@ -885,7 +890,7 @@ A final example in this tutorial will use a different dataset to showcase one of
 Briefly, these models allow us to separately make inferences about the underlying dynamic *process model* that we are interested in (i.e. the evolution of a time series or a collection of time series) and the *observation model* (i.e. the way that we survey / measure this underlying process). This is extremely useful in ecology because our observations are always imperfect / noisy measurements of the thing we are interested in measuring. It is also helpful because we often know that some covariates will impact our ability to measure accurately (i.e. we cannot take accurate counts of rodents if there is a thunderstorm happening) while other covariate impact the underlying process (it is highly unlikely that rodent abundance responds to one storm, but instead probably responds to longer-term weather and climate variation). A State-Space model allows us to model both components in a single unified modelling framework. A major advantage of `mvgam` is that it can include nonlinear effects and random effects in BOTH model components while also capturing dynamic processes. I am not aware of any other packages that can easily do this, but of course there may be some.
 
 ### Lake Washington plankton data
-The data we will use to illustrate how we can fit State-Space models in `mvgam` are from a long-term monitoring study of plankton counts (cells per mL) taken from Lake Washington in Washington, USA. The data are available as part of the `MARSS` package and can be downloaed using the following: 
+The data we will use to illustrate how we can fit State-Space models in `mvgam` are from a long-term monitoring study of plankton counts (cells per mL) taken from Lake Washington in Washington, USA. The data are available as part of the `MARSS` package and can be downloaded using the following: 
 ```{r}
 load(url('https://github.com/atsa-es/MARSS/raw/master/data/lakeWAplankton.rda'))
 ```
@@ -1040,7 +1045,7 @@ Now time to fit some models. This requires a bit of thinking about how we can be
 
 ### Capturing seasonality
 
-First we will fit a model that does not include a dynamic component, just to see if it can reproduce the seasonal variation in the observations. This model builds from our hierarchical GAMs above by introducing hierarchical multidimensional smooths. It includes a "global" tensor product of the `month` and `temp` variables, capturing our expectation that algal seasonality responds to temperature variation. But this response should depend on when in the year these temperatures are recorded (i.e. a response to warm temperatures in Spring should be different to a response to warm temperatures in Autumn). The model also fits series-specific deviation smooths (i.e. one tensor product per series) to capture how each algal group's seasonality differs from the overal "global" seasonality. Note that we do not include series-specific intercepts in this model because each series was z-scored to have a mean of 0.
+First we will fit a model that does not include a dynamic component, just to see if it can reproduce the seasonal variation in the observations. This model builds from our hierarchical GAMs above by introducing hierarchical multidimensional smooths. It includes a "global" tensor product of the `month` and `temp` variables, capturing our expectation that algal seasonality responds to temperature variation. But this response should depend on when in the year these temperatures are recorded (i.e. a response to warm temperatures in Spring should be different to a response to warm temperatures in Autumn). The model also fits series-specific deviation smooths (i.e. one tensor product per series) to capture how each algal group's seasonality differs from the overall "global" seasonality. Note that we do not include series-specific intercepts in this model because each series was z-scored to have a mean of 0.
 ```{r notrend_mod, include = FALSE}
 notrend_mod <- xfun::cache_rds(mvgam(y ~ 
                        te(temp, month, k = c(4, 4)) +
@@ -1136,28 +1141,24 @@ plot(notrend_mod, type = 'residuals', series = 4)
 plot(notrend_mod, type = 'residuals', series = 5)
 ```
 
-Now it is time to get into multivariate State-Space models. We will fit two models that can both incorporate lagged cross-dependencies in the latent process models. The first model assumes that the process errors operate independnetly from one another, while the second assumes that there may be contemporaneous correlations in the process errors. Both models include a Vector Autoregressive component for the process means, and so both can model complex community dynamics. The models can be described mathematically as follows:
+Now it is time to get into multivariate State-Space models. We will fit two models that can both incorporate lagged cross-dependencies in the latent process models. The first model assumes that the process errors operate independently from one another, while the second assumes that there may be contemporaneous correlations in the process errors. Both models include a Vector Autoregressive component for the process means, and so both can model complex community dynamics. The models can be described mathematically as follows:
 
 \begin{align*}
 \boldsymbol{count}_t & \sim \text{Normal}(\mu_{obs[t]}, \sigma_{obs}) \\
-\mu_{obs[t]} & = \alpha + process_t \\
-\sigma_{obs} & \sim \text{Uniform}(0.15, 1) \\
+\mu_{obs[t]} & = process_t \\
 process_t & \sim \text{MVNormal}(\mu_{process[t]}, \Sigma_{process}) \\
 \mu_{process[t]} & = VAR * process_{t-1} + f_{global}(\boldsymbol{month},\boldsymbol{temp})_t + f_{series}(\boldsymbol{month},\boldsymbol{temp})_t \\
 f_{global}(\boldsymbol{month},\boldsymbol{temp}) & = \sum_{k=1}^{K}b_{global} * \beta_{global} \\
-f_{series}(\boldsymbol{month},\boldsymbol{temp}) & = \sum_{k=1}^{K}b_{series} * \beta_{series} \\
-VAR & \sim \text{Normal}(0, 1) \\
-\Sigma_{process} & = \text{diag}(\sigma_{process}) * \text{R} * \text{diag}(\sigma_{process}) \\
-\text{R} & \sim \text{LKJcorr}(2) \end{align*}
+f_{series}(\boldsymbol{month},\boldsymbol{temp}) & = \sum_{k=1}^{K}b_{series} * \beta_{series} \end{align*}
 
-Here you can see that we assume independent observation processes (there is no covariance structure in the observation errors $\sigma_{obs}$) but there is a log going on in the underlying process model. This component has a Vector Autoregressive part (where the process mean at time $t$ $(\mu_{process[t]})$) is a vector that evolves as a function of where the vector-valued process model was at time $t-1$. The $VAR$ matrix captures these dynamics with self-dependencies on the diagonal and possibly assymetric cross-dependencies on the off-diagonals. The contemporaneous process errors are captured by $\Sigma_{process}$, which can be constrained so that process errors are independent (i.e. setting the off-diagonals to 0) or can be fully parameterized using a Cholesky decomposition (using `Stan`'s $LKJcorr$ distribution to place a prior on the strength of inter-species correlations). 
+Here you can see that there are no terms in the observation model apart from the underlying process model. But we could easily add covariates into the observation model if we felt that they could explain some of the systematic observation errors. We also assume independent observation processes (there is no covariance structure in the observation errors $\sigma_{obs}$).  At present, `mvgam` does not support multivariate observation models. But this feature will be added in future versions. However the underlying process model is multivariate, and there is a lot going on here. This component has a Vector Autoregressive part, where the process mean at time $t$ $(\mu_{process[t]})$ is a vector that evolves as a function of where the vector-valued process model was at time $t-1$. The $VAR$ matrix captures these dynamics with self-dependencies on the diagonal and possibly asymmetric cross-dependencies on the off-diagonals, while also incorporating the nonlinear smooth functions that capture seasonality for each series. The contemporaneous process errors are modeled by $\Sigma_{process}$, which can be constrained so that process errors are independent (i.e. setting the off-diagonals to 0) or can be fully parameterized using a Cholesky decomposition (using `Stan`'s $LKJcorr$ distribution to place a prior on the strength of inter-species correlations). For those that are interested in the inner-workings, `mvgam` makes use of a recent breakthrough by [Sarah Heaps to enforce stationarity of Bayesian VAR processes](https://www.tandfonline.com/doi/full/10.1080/10618600.2022.2079648). This is advantageous as we often don't expect forecast variance to increase without bound forever into the future, but many estimated VARs tend to behave this way. 
 
 <br>
-Ok that was a lot to take in. Let's fit some models to try and inspect what is going on and what they assume. But first, we need to update `mvgam`'s default priors for the observation errors. By default, `mvgam` uses a fairly wide Student-T prior on this parameter because the package doesn't know what range the observations will be on. But our observations are z-scored and so we do not expect very large observation errors. However, we also do not expect very small observation errors. And I can tell you that if the sampler starts exploring these values, wacky things can happen! So let's update the prior for this parameter. In doing so, you will get to see how the formula for the latent process (i.e. trend) model is used in `mvgam`:
+Ok that was a lot to take in. Let's fit some models to try and inspect what is going on and what they assume. But first, we need to update `mvgam`'s default priors for the observation and process errors. By default, `mvgam` uses a fairly wide Student-T prior on these parameters to avoid being overly informative. But our observations are z-scored and so we do not expect very large process or observation errors. However, we also do not expect very small observation errors either as we know these measurements are not perfect. So let's update the priors for these parameters. In doing so, you will get to see how the formula for the latent process (i.e. trend) model is used in `mvgam`:
 ```{r}
 priors <- get_mvgam_priors(
-  # observation formula, which just uses an intercept
-  y ~ 1,
+  # observation formula, which has no terms in it
+  y ~ -1,
   
   # process model formula, which includes the smooth functions
   trend_formula = ~ te(temp, month, k = c(4, 4)) +
@@ -1167,17 +1168,29 @@ priors <- get_mvgam_priors(
   trend_model = 'VAR1',
   family = gaussian(),
   data = plankton_train)
-priors[,2:3]
 ```
 
-Update the sigma_obs prior so that it avoids very small and very large values that are nonsensical
+Get names of all parameters whose priors can be modified:
 ```{r}
-priors <- prior(uniform(0.1, 1), class = sigma_obs, lb = 0.1, ub = 1)
+priors[, 3]
 ```
+
+And their default prior distributions:
+```{r}
+priors[, 4]
+```
+
+Setting priors is easy in `mvgam` as you can use `brms` routines. Here we use more informative Normal priors for both error components, but we impose a lower bound of 0.2 for the observation errors:
+```{r}
+priors <- c(prior(normal(0.5, 0.1), class = sigma_obs, lb = 0.2),
+            prior(normal(0.5, 0.25), class = sigma))
+```
+
+You may have noticed something else unique about this model: there is no intercept term in the observation formula. This is because a shared intercept parameter can sometimes be unidentifiable with respect to the latent VAR process, particularly if our series have similar long-run averages (which they do in this case because they were z-scored). We will often get better convergence in these State-Space models if we drop this parameter. `mvgam` accomplishes this by fixing the coefficient for the intercept to zero. Now we can fit the first model, which assumes that process errors are contemporaneously uncorrelated
 
 Now we can fit the first model, which assumes that process errors are contemporaneously uncorrelated
 ```{r var_mod, include = FALSE}
-var_mod <- xfun::cache_rds(mvgam(y ~ 1,
+var_mod <- xfun::cache_rds(mvgam(y ~ -1,
                  trend_formula = ~
                    # tensor of temp and month should capture
                    # seasonality
@@ -1189,14 +1202,15 @@ var_mod <- xfun::cache_rds(mvgam(y ~ 1,
                  data = plankton_train,
                  newdata = plankton_test,
                  trend_model = 'VAR1',
-                 priors = priors),
+                 priors = priors, 
+                 burnin = 1000),
                 dir = 'cache_not_for_upload/')
 ```
 
 ```{r eval=FALSE}
 var_mod <- mvgam(  
-  # observation formula, which just uses an intercept
-  y ~ 1,
+  # observation formula, which is empty
+  y ~ -1,
   
   # process model formula, which includes the smooth functions
   trend_formula = ~ te(temp, month, k = c(4, 4)) +
@@ -1213,9 +1227,9 @@ var_mod <- mvgam(
 ```
 
 ### Inspecting SS models
-This model's summary is a bit different to the ones we have seen previously. It separates parameters based on whether they belong to the observation model or to the latent process model. This is because we may often have covariates that impact the observations but not the latent process, so we can have fairly complex models for each component. You will notice that some parameters have not fully converged, particularly for the VAR coefficients (called `A` in the output) and for the process errors (`Sigma`)
+This model's summary is a bit different to other `mvgam` summaries. It separates parameters based on whether they belong to the observation model or to the latent process model. This is because we may often have covariates that impact the observations but not the latent process, so we can have fairly complex models for each component. You will notice that some parameters have not fully converged, particularly for the VAR coefficients (called `A` in the output) and for the process errors (`Sigma`). Note that we set `include_betas = FALSE` to stop the summary from printing output for all of the spline coefficients, which can be dense and hard to interpret:
 ```{r, class.output="scroll-300"}
-summary(var_mod)
+summary(var_mod, include_betas = FALSE)
 ```
 
 We can again plot the smooth functions, which this time operate on the process model. The coefficients for this model are now accessible through the `trend_mgcv_model` slot in the model object:
@@ -1246,7 +1260,7 @@ mcmc_plot(var_mod,
           type = 'hist')
 ```
 
-There is a lot happening in this matrix. Each cell captures the lagged effect of the process in the column on the process in the row in the next timestep. So for example, the effect in cell [3,1], which is quite strongly negative, means that an *increase* in the process for series 3 (Greens) at time $t$ is expected to lead to a subsequent *decrease* in the process for series 1 (Bluegreens) at time $t+1$. The latent process model is now capturing these effects and the smooth seasonal effects, so the trend plot shows our best estimate of what the *true* count should have been at each time point:
+There is a lot happening in this matrix. Each cell captures the lagged effect of the process in the column on the process in the row in the next timestep. So for example, the effect in cell [1,3], which is quite strongly negative, means that an *increase* in the process for series 3 (Greens) at time $t$ is expected to lead to a subsequent *decrease* in the process for series 1 (Bluegreens) at time $t+1$. The latent process model is now capturing these effects and the smooth seasonal effects, so the trend plot shows our best estimate of what the *true* count should have been at each time point:
 ```{r}
 plot(var_mod, type = 'trend', series = 1)
 ```
@@ -1273,34 +1287,19 @@ The observation error estimates $(\sigma_{obs})$ represent how much the model th
 mcmc_plot(var_mod, variable = 'sigma_obs', regex = TRUE, type = 'hist')
 ```
 
-These are still a bit hard to identify overall. 
+These are still a bit hard to identify overall, especially when trying to estimate both process and observation error. Often we need to make some strong assumptions about which of these is more important for determining unexplained variation in our observations.  
 
 ### Correlated process errors
 
-Let's see if the estimates improve when we allow the process errors to be correlatedOnce again, we need to first update the priors for the observation errors:
+Let's see if these estimates improve when we allow the process errors to be correlated. Once again, we need to first update the priors for the observation errors:
 ```{r}
-priors <- get_mvgam_priors(
-  # observation formula, which just uses an intercept
-  y ~ 1,
-  
-  # process model formula, which includes the smooth functions
-  trend_formula = ~ te(temp, month, k = c(4, 4)) +
-    te(temp, month, k = c(4, 4), by = trend),
-  
-  # VAR1 model with correlated process errors
-  trend_model = 'VAR1cor',
-  family = gaussian(),
-  data = plankton_train)
-priors[,2:3]
-```
-
-```{r}
-priors <- prior(uniform(0.1, 1), class = sigma_obs, lb = 0.1, ub = 1)
+priors <- c(prior(normal(0.5, 0.1), class = sigma_obs, lb = 0.2),
+            prior(normal(0.5, 0.25), class = sigma))
 ```
 
 And now we can fit the correlated process error model. Note that I am using fewer posterior samples for this model so it is easier to work with for completing the exercises:
-```{r varcor_mod_full, include = FALSE, eval=FALSE}
-varcor_mod <- xfun::cache_rds(mvgam(y ~ 1,
+```{r varcor_mod_full, include = FALSE}
+varcor_mod <- xfun::cache_rds(mvgam(y ~ -1,
                  trend_formula = ~
                    # tensor of temp and month should capture
                    # seasonality
@@ -1312,12 +1311,13 @@ varcor_mod <- xfun::cache_rds(mvgam(y ~ 1,
                  data = plankton_train,
                  newdata = plankton_test,
                  trend_model = 'VAR1cor',
+                 burnin = 1000,
                  priors = priors),
                 dir = 'cache_not_for_upload/')
 ```
 
 ```{r varcor_mod, include = FALSE}
-varcor_mod <- xfun::cache_rds(mvgam(y ~ 1,
+varcor_mod <- xfun::cache_rds(mvgam(y ~ -1,
                  trend_formula = ~
                    # tensor of temp and month should capture
                    # seasonality
@@ -1330,13 +1330,14 @@ varcor_mod <- xfun::cache_rds(mvgam(y ~ 1,
                  newdata = plankton_test,
                  trend_model = 'VAR1cor',
                  samples = 100,
+                 burnin = 1000,
                  priors = priors))
 ```
 
 ```{r eval=FALSE}
 varcor_mod <- mvgam(  
-  # observation formula, which just uses an intercept
-  y ~ 1,
+  # observation formula, which is empty
+  y ~ -1,
   
   # process model formula, which includes the smooth functions
   trend_formula = ~ te(temp, month, k = c(4, 4)) +
@@ -1355,7 +1356,7 @@ varcor_mod <- mvgam(
   samples = 100)
 ```
 
-Plot convergence diagnostics for the two models, which shows that the more complex model with correlated errors has better convergence:
+Plot convergence diagnostics for the two models, which shows that both models display similar levels of convergence:
 ```{r}
 mcmc_plot(varcor_mod, type = 'rhat') +
   labs(title = 'VAR1cor')
@@ -1363,10 +1364,10 @@ mcmc_plot(varcor_mod, type = 'rhat') +
 
 The summary now also contains the estimates for the full process error matrix:
 ```{r, class.output="scroll-300"}
-summary(varcor_mod)
+summary(varcor_mod, include_betas = FALSE)
 ```
 
-This model has converged better than the first model (that assumed process errors were independent), possibly telling us that this is a more appropriate model. The $(\Sigma)$ matrix now captures any evidence of contemporaneously correlated process error:
+The $(\Sigma)$ matrix now captures any evidence of contemporaneously correlated process error:
 ```{r warning=FALSE, message=FALSE}
 Sigma_pars <- matrix(NA, nrow = 5, ncol = 5)
 for(i in 1:5){
@@ -1407,7 +1408,7 @@ mcmc_plot(varcor_mod,
 We still have some evidence of lagged cross-dependence, but some of these interactions have now been pulled more toward zero. But which model is better? We can compute the variogram score for out of sample forecasts to get a sense of which model does a better job of capturing the dependence structure in the true evaluation set:
 ```{r echo=FALSE}
 # read in the full model that has all posterior samples
-varcor_mod <- readRDS('./cache_not_for_upload/varcor_mod_72cc5c9e63bd179790e32d98d66f9bd4.rds')
+varcor_mod <- readRDS('./cache_not_for_upload/varcor_mod_full_6b72e63c8eec9b599292ce04136026f5.rds')
 ```
 
 ```{r}
@@ -1427,7 +1428,7 @@ plot(diff_scores, pch = 16, col = 'darkred',
 abline(h = 0, lty = 'dashed')
 ```
 
-The VAR1cor model seems to do a better job overall, but there are some horizons where the uncorrelated error model gives slightly better forecasts. This is often the case when comparing models: some models give better forecasts *some of the time*, while other models do better in other contexts. But overall, I'd choose the second model here as it converged better and tends to give better community-level forecasts
+The models tend to provide similar forecasts, though the correlated error model does slightly better overall. We would probably need to use a more extensive rolling forecast evaluation exercise if we felt like we needed to only choose one for production. `mvgam` offers some utilities for doing this (i.e. see `?lfo_cv` for guidance).
 
 ### Exercises
 1. Plot conditional effects of month and temperature for each algal group. Hint, see the documentation in `?marginaleffects::plot_predictions` for guidance
