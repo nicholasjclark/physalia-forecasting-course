@@ -157,6 +157,13 @@ abline('?' = 0, lty = 'dashed')
 ?mgcv::s
 ?mgcv::smooth.terms
 
+#    Inspect the resulting function estimates for both `ndvi` and `time`, 
+#    and consider using some of the strategies outlined in this blog post on
+#    interpreting nonlinear effects in GAMs with mgcv and marginaleffects
+#    https://ecogambler.netlify.app/blog/interpreting-gams/ to understand 
+#    the smooths in more depth
+
+
 
 # 2. Try increasing the complexity of the temporal smooth by changing 
 #   `k` to a larger number, something like 50. Do you get any sense that 
