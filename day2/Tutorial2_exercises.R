@@ -36,12 +36,13 @@ library(zoo)
 library(viridis)
 
 #### Forecasting with temporal smooths exercises ####
-# 1. Using advice from Gavin Simpson's blog post above, try changing the order 
+# 1. Using advice from Gavin Simpson's blog post, try changing the order 
 #   of the penalty in the temporal smooth to see how the resulting predictions 
 #   change. Hint, use the following template code and replace the ? with 
 #   the correct value(s)
 #   Using ?b.spline you will see examples in the Description and Details 
 #   sections about how these splines can handle multiple penalties
+#   https://fromthebottomoftheheap.net/2020/06/03/extrapolating-with-gams/
 ?b.spline
 model0 <- mvgam(count ~ s(time, bs = 'bs', k = 15,
                           m = c('?')) + 
@@ -57,44 +58,42 @@ model0 <- mvgam(count ~ s(time, bs = 'bs', k = 15,
 
 
 #### Residual correlation strcuture exercises ####
-# 1. Compare estimates for the latent residual error terms sigma_[error] from 
-#   each model. In `mvgam`, this parameter is called `sigma[1]`, while in `brms`, 
-#   it is called `sderr`
+# 1. Compare estimates for the latent residual error terms from 
+#    model2 and model3. In `mvgam`, this parameter is called `sigma[1]`, 
+#    while in `brms`, it is called `sderr`
 
 
 # 2. Compare estimates for the parametric effect of minimum temperature 
-#   ($\beta_{mintemp}$) from each model. In `mvgam`, this parameter is 
+#   from model2 and model3. In `mvgam`, this parameter is 
 #   called `mintemp`, while in `brms`, it is called `b_mintemp`
 
 
-# 3. Look at the Dunn-Smyth residuals for model 3 and provide a few 
-#   comments describing what you see (use `plot.mvgam` with `type = residuals`). 
-#   Does this model seem to capture the relevant features of the autocorrelated 
-#   observed data?
+# 3. Look at the Dunn-Smyth residuals for model3 and provide a few 
+#    comments describing what you see (use `plot.mvgam()` with `type = residuals`). 
+#    Does this model seem to capture the relevant features of the autocorrelated 
+#    observed data?
 
 
-# 4. Inspect posterior hindcasts and forecasts from model 3 using the steps 
-#   we carried out in Tutorial 1
+# 4. Inspect posterior hindcasts and forecasts from model3 using the steps 
+#    we carried out in Tutorial 1
 
 
 #### Gaussian Process trend exercises ####
-# 1. Plot the 1st derivatives for the GP trends from models 5 and 6 and 
-#   describe how their forecasts differ (hint, pay attention to how quickly 
-#   they converge toward flat functions at the end of the forecast horizon). 
-#   Take a few notes describing how these GP predictions differ from the spline 
-#   extrapolations from model0 and model0b
+# 1. Fit a model that uses a spline of time (using `bs = 'bs'`) and 
+#    a Negative Binomial family in `mvgam` for comparisons. Plot the 
+#    1st derivative of this temporal spline and describe how (or if) it
+#    differs from that of model5
 
 
-# 2. Plot the GP covariance kernel for model 6 and compare its shape to the 
-#   kernels we estimated from model 5 above
+# 2. Plot extrapolations from the spline model and take a few notes describing 
+#    how these differ from the GP predictions in model5
 
 
-# 3. Fit an `mvgam` model that uses a GP trend and a Poisson observation 
-#   model in place of the Negative Binomial. How do predictions from 
-#   this model differ?
+# 3. Compare the in-sample predictive accuracies of the two models using 
+#    `loo_compare()`. Is either model favoured over the other?
+?loo_compare.mvgam
 
-
-#   4. Consider watching the below lecture by Richard McElreath
-#   on Gaussian Processes and their wide uses in statistical modelling:
-#   https://www.youtube.com/watch?v=Y2ZLt4iOrXU&t=1s
+# 4. Consider watching the below lecture by Richard McElreath
+#    on Gaussian Processes and their wide uses in statistical modelling:
+#    https://www.youtube.com/watch?v=Y2ZLt4iOrXU&t=1s
 
