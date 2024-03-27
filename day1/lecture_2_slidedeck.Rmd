@@ -785,6 +785,8 @@ class: inverse middle center big-subsection
 
 ## Modelling with the [`mvgam` 📦](https://nicholasjclark.github.io/mvgam/)
 
+<img src="resources/mvgam_logo.png" style="position:fixed; right:8%; top:4%; width:100px; height:117px; border:none;" />
+
 Bayesian framework to fit Dynamic GLMs and Dynamic GAMs
 - Hierarchical intercepts, slopes *and smooths*
 - Latent dynamic processes
