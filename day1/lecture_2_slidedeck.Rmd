@@ -3,7 +3,7 @@ title: "Ecological forecasting in R"
 subtitle: "Lecture 2: dynamic GLMs and GAMs"
 institute: "School of Veterinary Science, University of Queensland"
 author: "Nicholas Clark"
-date: "0900&ndash;1200 CET Monday 4th September, 2023"
+date: "0900&ndash;1200 CET Monday 27th May, 2024"
 output:
   xaringan::moon_reader:
     css: ['default','https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css', 'slides.css']
@@ -231,7 +231,7 @@ Access the [tutorial html here](https://nicholasjclark.github.io/physalia-foreca
 Relevant open-source materials include:
 - [An introduction to Bayesian multilevel modeling with `brms`](https://youtu.be/1qeXD4NQ4To)
 - [Introduction to Generalized Additive Models with `r fontawesome::fa("r-project", fill = "steelblue")` and `mgcv`](https://www.youtube.com/watch?v=sgw4cu8hrZM)
-- [Statistical Rethinking 2023 - 04 - Categories & Curves](https://www.youtube.com/watch?v=F0N4b7K_iYQ&list=PLDcUM9US4XdPz-KxHM4XHt7uUVGWWVSus&index=4)
+- [Forecasting with Dynamic Generalized Additive Models](https://www.youtube.com/watch?v=0zZopLlomsQ)
 - [Statistical Rethinking 2023 - 12 - Multilevel Models](https://www.youtube.com/watch?v=iwVqiiXYeC4&list=PLDcUM9US4XdPz-KxHM4XHt7uUVGWWVSus&index=12)
 
 ---
@@ -305,7 +305,7 @@ Where:
 - $\sigma$ controls the spread of the errors about $\mu_t$
 
 ---
-## ETS(A,A,A)
+## ETS(A,A,A) *skip*
 
 Exponential smoothing with additive components for trend, seasonality and error assumes a Normal (Gaussian) distribution
 <br/>
@@ -319,7 +319,7 @@ Where:
 - ${m}$ represents the seasonal period
 ---
 
-## ARMA(*p*, *q*)
+## ARMA(*p*, *q*) *skip*
 
 ARMA processes also assume Normality
 <br/>
@@ -500,62 +500,6 @@ portal_data %>%
 ```
 
 ---
-## Beta
-
-$$\boldsymbol{Y_t}\sim \text{Beta}(\mu_t,\phi)$$
-Properties
-- Real-valued continuous observations (including any decimal)
-- Both lower and upper bounds (supports $0$ to $1$, noninclusive)
-- mean = $\mu_t$
-- precision = $\phi$ (higher $\phi$ = a tighter spread about $\mu_t$)
-
-.emphasize[*Virtually no time series models support this distribution*]
-- Most analysts would use [`logit`](http://strata.uga.edu/8370/rtips/proportions.html) transformation
-
----
-
-## Beta
-$$\boldsymbol{Y_t}\sim \text{Beta}(0.5,1)$$
-```{r echo=FALSE}
-beta_shapes = function(mu, phi) {
-  return(list(shape1 = mu * phi,
-              shape2 = (1 - mu) * phi))
-}
-myhist(rbeta(10000, shape1 = beta_shapes(0.5, 1)$shape1,
-             shape2 = beta_shapes(0.5, 1)$shape2),
-       xlim = c(0, 1))
-```
-
----
-
-## Beta
-$$\boldsymbol{Y_t}\sim \text{Beta}(0.5,15)$$
-```{r echo=FALSE}
-beta_shapes = function(mu, phi) {
-  return(list(shape1 = mu * phi,
-              shape2 = (1 - mu) * phi))
-}
-myhist(rbeta(10000, shape1 = beta_shapes(0.5, 15)$shape1,
-             shape2 = beta_shapes(0.5, 15)$shape2),
-       xlim = c(0, 1))
-```
-
-
----
-
-## Beta
-$$\boldsymbol{Y_t}\sim \text{Beta}(0.75,4)$$
-```{r echo=FALSE}
-beta_shapes = function(mu, phi) {
-  return(list(shape1 = mu * phi,
-              shape2 = (1 - mu) * phi))
-}
-myhist(rbeta(10000, shape1 = beta_shapes(0.75, 4)$shape1,
-             shape2 = beta_shapes(0.75, 4)$shape2),
-       xlim = c(0, 1))
-```
-
----
 
 # Beta GLM
 A Beta GLM models the conditional mean with a $logit$ link
@@ -655,7 +599,7 @@ theme_set(theme_classic(base_size = 17, base_family = 'serif'))
 basis_funs <- basis(s(x, bs = 'cr', k = 12), 
                     data = data)
 ggplot(basis_funs,
-       aes(x = x, y = value, colour = bf)) +
+       aes(x = x, y = .value, colour = .bf)) +
   geom_borderline(linewidth=1.5, bordercolour = "white") +
   scale_color_viridis(discrete = TRUE) +
   theme(legend.position = 'none',
@@ -686,7 +630,7 @@ theme_set(theme_classic(base_size = 17, base_family = 'serif'))
 basis_funs <- basis(gam(y ~ s(x, bs = 'cr', k = 12) - 1, 
                     data = data))
 ggplot(basis_funs,
-       aes(x = x, y = value, colour = bf)) +
+       aes(x = x, y = .value, colour = .bf)) +
   geom_borderline(linewidth=1.5, bordercolour = "white") +
   scale_color_viridis(discrete = TRUE) +
   theme(legend.position = 'none',
@@ -786,7 +730,7 @@ class: inverse middle center big-subsection
 class: middle center
 ### Hierarchical models *learn from all groups at once* to inform group-level estimates
 <br>
-### This induces *regularization*, where noisy estimates are pulled towards the overall mean
+### Induce *regularization*, where noisy estimates are pulled towards the overall mean
 <br>
 ### The regularization is known as [partial pooling](https://www.jstor.org/stable/25471160)
 
@@ -833,7 +777,13 @@ Where we have multiple time points per year, and:
 
 ---
 
-## Modelling with the [`mvgam` 📦](https://github.com/nicholasjclark/mvgam/tree/master)
+class: inverse middle center big-subsection
+
+# Live code example
+
+---
+
+## Modelling with the [`mvgam` 📦](https://nicholasjclark.github.io/mvgam/)
 
 Bayesian framework to fit Dynamic GLMs and Dynamic GAMs
 - Hierarchical intercepts, slopes *and smooths*
@@ -865,12 +815,10 @@ model <- mvgam(
   trend_model = 'AR1',
   burnin = 500,
   samples = 500,
-  chains = 4,
-  parallel = TRUE
-  )
+  chains = 4)
 ```
 
-Where `y` = response,`x`'s = covariates, and `series` = a grouping term
+Where `y` = response, `x`'s = covariates, and `series` = a grouping term
 ---
 ## Typical formula syntax
 
@@ -887,9 +835,7 @@ model <- mvgam(
   trend_model = 'AR1',
   burnin = 500,
   samples = 500,
-  chains = 4,
-  parallel = TRUE
-  )
+  chains = 4)
 ```
 
 ---
@@ -909,9 +855,7 @@ model <- mvgam(
   trend_model = 'AR1',
   burnin = 500,
   samples = 500,
-  chains = 4,
-  parallel = TRUE
-  )
+  chains = 4)
 ```
 
 ---
@@ -931,9 +875,7 @@ model <- mvgam(
   trend_model = 'AR1',
   burnin = 500,
   samples = 500,
-  chains = 4,
-  parallel = TRUE
-  )
+  chains = 4)
 ```
 
 ---
@@ -952,9 +894,7 @@ model <- mvgam(
   trend_model = 'AR1',
   burnin = 500,
   samples = 500,
-  chains = 4,
-  parallel = TRUE
-  )
+  chains = 4)
 ```
 
 ---
@@ -974,9 +914,7 @@ model <- mvgam(
   trend_model = 'AR1',
   burnin = 500,
   samples = 500,
-  chains = 4,
-  parallel = TRUE
-  )
+  chains = 4)
 ```
 
 ---
@@ -996,9 +934,7 @@ model <- mvgam(
   trend_model = 'AR1',
   burnin = 500,
   samples = 500,
-  chains = 4,
-  parallel = TRUE
-  )
+  chains = 4)
 ```
 
 ---
@@ -1018,9 +954,7 @@ model <- mvgam(
   trend_model = 'AR1',
   burnin = 500,
   samples = 500,
-  chains = 4,
-  parallel = TRUE
-  )
+  chains = 4)
 ```
 
 ---
@@ -1040,9 +974,7 @@ model <- mvgam(
   trend_model = 'AR1', #<<
   burnin = 500,
   samples = 500,
-  chains = 4,
-  parallel = TRUE
-  )
+  chains = 4)
 ```
 
 ---
@@ -1062,9 +994,7 @@ model <- mvgam(
   trend_model = 'AR1', 
   burnin = 500, #<<
   samples = 500, #<<
-  chains = 4, #<<
-  parallel = TRUE #<<
-  )
+  chains = 4)
 ```
 
 ---
@@ -1441,11 +1371,11 @@ plot(year_smooth, type = 'smooth')
 library(ggplot2); library(viridis); library(gratia)
 theme_set(theme_classic())
 ggplot(basis(year_smooth$mgcv_model), 
-       aes(x = year, y = value, color = bf)) +
+       aes(x = year, y = .value, color = .bf)) +
   geom_borderline(linewidth = 1.25, bordercolour = "white") +
   geom_borderline(data = smooth_estimates(year_smooth$mgcv_model),
                   inherit.aes = FALSE,
-                  mapping = aes(x = year, y = est), linewidth = 2) +
+                  mapping = aes(x = year, y = .estimate), linewidth = 2) +
   scale_color_viridis(discrete = TRUE) +
   theme(legend.position = 'none', axis.line = element_line(size = 1),
         axis.ticks = element_line(colour = "black", size = 1)) +
