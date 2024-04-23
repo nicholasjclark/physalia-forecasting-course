@@ -3,7 +3,7 @@ title: "Ecological forecasting in R"
 subtitle: "Lecture 3: latent AR and GP models"
 institute: "School of Veterinary Science, University of Queensland"
 author: "Nicholas Clark"
-date: "0900&ndash;1200 CET Tuesday 5th September, 2023"
+date: "0900&ndash;1200 CET Tuesday 28th May, 2024"
 output:
   xaringan::moon_reader:
     css: ['default','https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css', 'slides.css']
@@ -253,7 +253,7 @@ Access the [tutorial html here](https://nicholasjclark.github.io/physalia-foreca
 
 Relevant open-source materials include:
 - [Introduction to Generalized Additive Models with `r fontawesome::fa("r-project", fill = "steelblue")` and `mgcv`](https://www.youtube.com/watch?v=sgw4cu8hrZM)
-- [Qualitative difference between stationary and non-stationary AR(1)s](https://www.youtube.com/watch?v=v70-kLB3BLM)
+- [Temporal autocorrelation in Generalized Additive Models](https://ecogambler.netlify.app/blog/autocorrelated-gams/)
 - [Statistical Rethinking 2023 - 16 - Gaussian Processes](https://www.youtube.com/watch?v=Y2ZLt4iOrXU)
 
 ---
@@ -500,7 +500,7 @@ theme_set(theme_classic(base_size = 17, base_family = 'serif'))
 basis_funs <- basis(gam(y ~ s(x, bs = 'cr', k = 12) - 1, 
                     data = data))
 ggplot(basis_funs,
-       aes(x = x, y = value, colour = bf)) +
+       aes(x = x, y = .value, colour = .bf)) +
   geom_borderline(linewidth=1.5, bordercolour = "white") +
   scale_color_viridis(discrete = TRUE) +
   theme(legend.position = 'none',
@@ -722,7 +722,7 @@ Where:
 
 ---
 
-## A motivating example
+## Motivating example (skip)
 ```{r}
 # set seed for reproducibility
 set.seed(222)
@@ -745,7 +745,7 @@ head(sim_data$data_train, 4) %>%
 ```
 
 ---
-## The simulated data
+## Simulated data (skip)
 ```{r echo = FALSE}
 set.seed(222)
 sim_data <- sim_mvgam(T = 100, n_series = 1, 
@@ -757,7 +757,7 @@ plot_mvgam_series(data = sim_data$data_train)
 
 ---
 
-## Use the `tscount` 📦?
+## Use `tscount` 📦? (skip)
 ```{r eval=FALSE}
 # attempt a tscount time series model
 # which can fit autoregressive models for count time series
@@ -782,7 +782,7 @@ tsglm(sim_data$data_train$y, model = list(past_obs = 1))
 `NA`s cause big problems in autoregressive models
 ---
 
-## `NA`s compound over lags
+## `NA`s compound (skip)
 
 ```{r echo=FALSE}
 set.seed(222)
@@ -801,7 +801,7 @@ head(mod_dat, 8) %>%
 ```
 
 ---
-## Only 2/8 rows complete
+## 2/8 rows complete (skip)
 
 ```{r echo=FALSE}
 set.seed(222)
@@ -905,7 +905,7 @@ load('cache_not_for_upload/mod_example.rds')
 
 ```{r eval = FALSE}
 mod_example <- mvgam(y ~ 1,
-                     trend_model = 'AR1',#<<
+                     trend_model = AR(p = 1),#<<
                      data = sim_data$data_train,
                      newdata = sim_data$data_test,
                      family = poisson())
@@ -959,7 +959,7 @@ sim_data2 <- sim_mvgam(T = 100, n_series = 1,
 <br>
 ```{r eval = FALSE}
 mod_example2 <- mvgam(y ~ 1,
-                     trend_model = 'AR1',
+                     trend_model = AR(p = 1),
                      data = sim_data2$data_train,
                      newdata = sim_data2$data_test,
                      family = poisson())
@@ -1011,11 +1011,18 @@ portal_data %>%
 
 ---
 
+
+class: inverse middle center big-subsection
+
+# Live code example
+
+---
+
 ## Dynamic Beta GAM
 ```{r eval = FALSE}
 mod_beta <- mvgam(relabund ~ 
                     te(mintemp, ndvi),
-                  trend_model = 'AR3',
+                  trend_model = AR(p = 3),
                   family = betar(), #<<
                   data = dm_data)
 ```
@@ -1032,7 +1039,7 @@ Beta regression using the `mgcv` 📦's `betar` family
 ```{r eval = FALSE}
 mod_beta <- mvgam(relabund ~ 
                     te(mintemp, ndvi),
-                  trend_model = 'AR3',#<<
+                  trend_model = AR(p = 3),#<<
                   family = betar(), 
                   data = dm_data)
 ```
@@ -1051,7 +1058,7 @@ AR3 dynamic trend model
 ```{r eval = FALSE}
 mod_beta <- mvgam(relabund ~ 
                     te(mintemp, ndvi),#<<
-                  trend_model = 'AR3',
+                  trend_model = AR(p = 3),
                   family = betar(), 
                   data = dm_data)
 ```
@@ -1171,6 +1178,66 @@ class: middle center
 ### We do not need to regress the outcome on its own past values
 <br>
 ### Very advantageous for ecological time series. But what kinds of dynamic processes are available in the `mvgam` and `brms` 📦's?
+
+---
+
+## Piecewise linear...
+```{r echo=FALSE}
+# set seed for reproducibility
+set.seed(4321)
+
+# simulate a piecewise linear trend
+n_changes <- 7
+change_times <- c(10, 18, 25, 45, 60, 63, 89)
+lambda <- 0.25
+deltas_new <- extraDistr::rlaplace(n_changes,
+                                   mu = 0,
+                                   sigma = lambda)
+trend <- mvgam:::piecewise_linear(
+  t = 1:100, 
+  deltas = deltas_new, 
+  k = 0.02,
+  m = 1, 
+  changepoint_ts = change_times)
+series <- rnorm(100, mean = scale(trend),
+                sd = 0.001)
+
+# plot the time series as a line
+mypar()
+plot(series, type = 'l', bty = 'l', lwd = 2, 
+     col = 'darkred', ylab = 'z', xlab = 'Time')
+```
+
+
+---
+
+## ...or logistic with upper saturation
+```{r echo=FALSE}
+# set seed for reproducibility
+set.seed(4321)
+
+# simulate a piecewise logistic trend
+n_changes <- 7
+change_times <- c(10, 18, 25, 45, 60, 63, 89)
+lambda <- 0.25
+deltas_new <- extraDistr::rlaplace(n_changes,
+                                   mu = 0,
+                                   sigma = lambda)
+trend <- mvgam:::piecewise_logistic(
+  t = 1:100, 
+  cap = 9, 
+  deltas = deltas_new, 
+  k = 0.02,
+  m = 1, 
+  changepoint_ts = change_times)
+series <- rnorm(100, mean = trend - mean(trend),
+                sd = 0.001)
+
+# plot the time series as a line
+mypar()
+plot(series, type = 'l', bty = 'l', lwd = 2, 
+     col = 'darkred', ylab = 'z', xlab = 'Time')
+```
 
 ---
 
@@ -1320,44 +1387,6 @@ plot(series, type = 'l', bty = 'l', lwd = 2,
 ]
 
 ---
-
-## Alternative AR1 simulation
-.panelset[
-.panel[.panel-name[Code]
-
-```{r ar_sim2, echo=FALSE,fig.show='hide', fig.height=4.25, fig.width=1.9*4.25,echo=FALSE}
-set.seed(1111)
-T <- 100
-series <- arima.sim(model = list(ar = 0.7), n = T, sd = 1)
-
-mypar()
-plot(series, type = 'l', bty = 'l', lwd = 2, 
-     col = 'darkred', ylab = 'x', xlab = 'Time')
-```
-
-```{r eval=FALSE}
-# set seed for reproducibility
-set.seed(1111)
-
-# number of timepoints
-T <- 100
-
-# use arima.sim to simulate from a AR1 model (phi = 0.7)
-series <- arima.sim(model = list(ar = 0.7), n = T, sd = 1)
-
-# plot the time series as a line
-plot(series, type = 'l', bty = 'l', lwd = 2, 
-     col = 'darkred', ylab = 'x', xlab = 'Time')
-```
-]
-
-.panel[.panel-name[Plot]
-.center[![](lecture_3_slidedeck_files/figure-html/ar_sim2-1.svg)]
-
-]
-]
-
----
 ## Properties of an AR1
 $\phi = 0$ and $\alpha = 0$, process is white noise
 
@@ -1452,193 +1481,6 @@ abline(v = 10, lwd = 2, lty = 'dashed')
 box(bty = 'l', lwd = 2)
 ```
 
----
-
-## Enforcing AR stationarity
-For AR processes up to order 3 (AR1, AR2 or AR3), process remains stationary as long as:
-
-$|\phi| < 1$ for all $\phi$
-
-
----
-## Enforcing AR stationarity
-Enforcing stationarity (by restricting $|\phi| < 1$) is the default behaviour in [`brms` 📦](https://paul-buerkner.github.io/brms/reference/ar.html)
-
-```{r eval = FALSE}
-library(brms)
-brm(y ~ x + ... +
-      ar(p = 1, time = time, cov = TRUE), #<<
-    family = poisson(),
-    data = data)
-```
-
----
-
-## Enforcing AR stationarity
-This .emphasize[*is not*] the default behaviour in `mvgam` 📦. 
-
-Instead, $|\phi| < 1.5$ to allow nonstationary residual processes if they are supported by the data
-
-```{r eval = FALSE}
-mvgam(y ~ x + ...,
-      trend_model = 'AR1',#<<
-      data = data)
-```
-
----
-
-## Enforcing AR stationarity
-This can be modified by changing upper and lower boundaries in the prior
-
-```{r eval = FALSE}
-priors <- get_mvgam_priors(y ~ x + ...,
-                 trend_model = 'AR1',
-                 data = data)
-priors$new_lowerbound[1] <- 1
-priors$new_upperbound[1] <- 1
-
-mvgam(y ~ x + ...,
-      trend_model = 'AR1',
-      priors = priors,#<<
-      data = data)
-```
-
----
-
-## An example
-Simulate a time series with heavy-tailed Student-T observations over a latent Random Walk process that also has seasonal variation
-
-```{r eval = FALSE}
-set.seed(555)
-t_data <- sim_mvgam(T = 100, n_series = 1,
-                    family = student_t(),
-                    trend_model = 'RW',
-                    trend_rel = 0.6)
-```
-
----
-## Simulated data
-
-```{r echo = FALSE}
-library(mvgam)
-load('cache_not_for_upload/t_data.rds')
-multipar()
-plot_mvgam_series(data = t_data$data_train,
-                  newdata = t_data$data_test)
-```
-
----
-## Fit RW and AR1 models
-```{r eval = FALSE}
-t_mod_rw <- mvgam(
-                  y ~ s(season, bs = 'cc', k = 6), #<<
-                  knots = list(season = c(0.5, 12.5)), #<<
-                  trend_model = 'RW', family = student_t(),
-                  data = t_data$data_train, newdata = t_data$data_test)
-
-t_mod_ar1 <- mvgam(
-                  y ~ s(season, bs = 'cc', k = 6),#<<
-                  knots = list(season = c(0.5, 12.5)),#<<
-                  trend_model = 'AR1', family = student_t(),
-                  data = t_data$data_train, newdata = t_data$data_test)
-
-```
-
-In both models, a [cyclic smooth captures repeated periodic variation by forcing the smooth to join at the boundaries](https://stats.stackexchange.com/questions/522960/gam-set-knot-locations-for-first-but-not-second-smooth-term)
-
----
-## RW MCMC diagnostics `r fontawesome::fa("face-smile")`
-
-.small[
-```{r echo = FALSE}
-mvgam:::check_all_diagnostics(t_mod_rw$model_output)
-```
-
-]
-
-Good convergence, no divergences encountered
----
-
-## AR1 MCMC diagnostics `r fontawesome::fa("face-sad-tear")`
-
-.small[
-```{r echo = FALSE}
-mvgam:::check_all_diagnostics(t_mod_ar1$model_output)
-```
-
-]
-
-No divergences encountered, but bad convergence
-
----
-
-## Similar smooth inferences
-```{r echo = FALSE}
-layout(matrix(1:2, nrow = 2))
-mypar()
-plot_mvgam_smooth(t_mod_rw)
-title(main = 'RW', line = 0.5)
-plot_mvgam_smooth(t_mod_ar1)
-title(main = 'AR1', line = 0.5)
-```
-
----
-
-## AR1 mostly stationary ...
-
-```{r echo = FALSE}
-mypar()
-ar <- mvgam:::mcmc_chains(t_mod_ar1$model_output, 'ar1')
-myhist(ar, xlab = expression(phi[1]),
-       main = 'AR1')
-abline(v = 1, lwd = 3.5, col = 'white')
-abline(v = 1, lwd = 2.75)
-```
-
----
-
-## ... so trends differ ...
-```{r echo = FALSE, message = FALSE}
-layout(matrix(1:2, nrow = 2))
-mypar()
-plot(t_mod_rw, type = 'trend', newdata = t_data$data_test,
-     ylab = '', xlab = '')
-title(main = 'RW', line = 0.5)
-plot(t_mod_ar1, type = 'trend', newdata = t_data$data_test,
-     ylab = '')
-title(main = 'AR1', line = 0.5)
-mtext('Trend', side = 2, outer = TRUE, line = -2.5, las = 0, cex = 1.5)
-```
-
----
-
-## ... as do forecasts
-```{r echo = FALSE, results='hide'}
-layout(matrix(1:2, nrow = 2))
-mypar()
-plot(t_mod_rw, type = 'forecast', newdata = t_data$data_test,
-     ylab = '', xlab = '')
-title(main = 'RW', line = 0.5)
-plot(t_mod_ar1, type = 'forecast', newdata = t_data$data_test,
-     ylab = '')
-title(main = 'AR1', line = 0.5)
-mtext('Predictions', side = 2, outer = TRUE, line = -2.5, las = 0, cex = 1.5)
-```
-
----
-
-## Process error must compromise
-
-```{r echo = FALSE}
-layout(matrix(1:2, nrow = 2))
-mypar()
-rwsig <- mvgam:::mcmc_chains(t_mod_rw$model_output, 'sigma')
-arsig <- mvgam:::mcmc_chains(t_mod_ar1$model_output, 'sigma')
-myhist(rwsig, xlim = c(0, 1), xlab = '',
-       main = 'RW')
-myhist(arsig, xlim = c(0, 1), xlab = expression(sigma[error]),
-       main = 'AR1')
-```
 ---
 class: middle center
 
@@ -1897,30 +1739,22 @@ Details not focus of this lecture, but can be found in this reference
 Both packages use automatic, [informative priors for length scales $\rho$](https://betanalpha.github.io/assets/case_studies/gaussian_processes.html#323_Informative_Prior_Model), but these can be changed (more on this in [Tutorial 2](https://nicholasjclark.github.io/physalia-forecasting-course/day2/tutorial_2_physalia#Gaussian_Processes))
 ---
 
-## Estimation in `brms`
-In `brms`📦, use the [`gp` function](https://paul-buerkner.github.io/brms/reference/gp.html) with `time` as the covariate
+## Estimation in `brms` and `mvgam`
+Use the [`gp` function](https://paul-buerkner.github.io/brms/reference/gp.html) with `time` as the covariate
 
 ```{r eval = FALSE}
 brm(y ~ x + ... +
       gp(time, c = 5/4, k = 20, scale = FALSE), #<<
     family = poisson(),
     data = data)
+
+mvgam(y ~ x + ... +
+        gp(time, c = 5/4, k = 20, scale = FALSE), #<<
+      family = poisson(),
+      data = data)
 ```
 
 Requires arguments to determine behaviour of the approximation (`c` and `k`). Good defaults are `5/4` and `20`, but depends on number of timepoints and expected smoothness
----
-
-## Estimation in `mvgam`
-In `mvgam`📦, use `trend_model = 'GP'`
-
-```{r eval = FALSE}
-mvgam(y ~ x + ... +
-      trend_model = "GP", #<<
-    family = poisson(),
-    data = data)
-```
-
-Doesn't require arguments, but the number of basis functions `k` can be altered by changing the priors
 ---
 class: middle center
 ### No examples here as we will go deeper into GPs in the tutorial
@@ -1928,6 +1762,14 @@ class: middle center
 ### But if you want extra detail, watch this lecture: - [Statistical Rethinking 2023 - 16 - Gaussian Processes](https://www.youtube.com/watch?v=Y2ZLt4iOrXU)
 
 ---
+
+
+class: inverse middle center big-subsection
+
+# Live code example
+
+---
+
 class: inverse middle center big-subsection
 
 # Dynamic coefficient models
@@ -1957,14 +1799,14 @@ In `mvgam`📦, use `dynamic` to set up time-varying effects
 
 ```{r eval = FALSE}
 mod_beta_dyn <- mvgam(relabund ~ s(mintemp, k = 6) +
-                    dynamic(ndvi, rho = 28), #<<
-                  family = betar(),
-                  data = dm_data)
+                        dynamic(ndvi, scale = FALSE, k = 20), #<<
+                      family = betar(),
+                      data = dm_data)
 ```
 
-Requires user to set the length scale $\rho$, as the function is approximated using a low-rank GP smooth from the `mgcv`📦
+Requires user to set $k$, as the function is approximated using a low-rank GP smooth from the `brms`📦
 
-No uncertainty in the GP parameters will be estimated, but function will resemble a squared exponential GP
+Estimates full uncertainty in GP parameters to yield a squared exponential GP
 
 ---
 
@@ -2026,7 +1868,7 @@ brm_beta_dyn <- brm(relabund ~ s(mintemp, k = 6) +
 library(brms)
 ```
 
-A GP specifying time-varying effects of `ndvi`. This estimates a full GP, so is more flexible than the `mvgam` / `mgcv` version
+A GP specifying time-varying effects of `ndvi`
 
 ---
 

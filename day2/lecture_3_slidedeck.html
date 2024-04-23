@@ -37,7 +37,7 @@ class: inverse, middle, left, my-title-slide, title-slide
 ### School of Veterinary Science, University of Queensland
 ]
 .date[
-### 0900–1200 CET Tuesday 5th September, 2023
+### 0900–1200 CET Tuesday 28th May, 2024
 ]
 
 ---
@@ -67,7 +67,7 @@ Access the [tutorial html here](https://nicholasjclark.github.io/physalia-foreca
 
 Relevant open-source materials include:
 - [Introduction to Generalized Additive Models with <svg aria-hidden="true" role="img" viewBox="0 0 581 512" style="height:1em;width:1.13em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:steelblue;overflow:visible;position:relative;"><path d="M581 226.6C581 119.1 450.9 32 290.5 32S0 119.1 0 226.6C0 322.4 103.3 402 239.4 418.1V480h99.1v-61.5c24.3-2.7 47.6-7.4 69.4-13.9L448 480h112l-67.4-113.7c54.5-35.4 88.4-84.9 88.4-139.7zm-466.8 14.5c0-73.5 98.9-133 220.8-133s211.9 40.7 211.9 133c0 50.1-26.5 85-70.3 106.4-2.4-1.6-4.7-2.9-6.4-3.7-10.2-5.2-27.8-10.5-27.8-10.5s86.6-6.4 86.6-92.7-90.6-87.9-90.6-87.9h-199V361c-74.1-21.5-125.2-67.1-125.2-119.9zm225.1 38.3v-55.6c57.8 0 87.8-6.8 87.8 27.3 0 36.5-38.2 28.3-87.8 28.3zm-.9 72.5H365c10.8 0 18.9 11.7 24 19.2-16.1 1.9-33 2.8-50.6 2.9v-22.1z"/></svg> and `mgcv`](https://www.youtube.com/watch?v=sgw4cu8hrZM)
-- [Qualitative difference between stationary and non-stationary AR(1)s](https://www.youtube.com/watch?v=v70-kLB3BLM)
+- [Temporal autocorrelation in Generalized Additive Models](https://ecogambler.netlify.app/blog/autocorrelated-gams/)
 - [Statistical Rethinking 2023 - 16 - Gaussian Processes](https://www.youtube.com/watch?v=Y2ZLt4iOrXU)
 
 ---
@@ -141,10 +141,6 @@ Use `newdata` argument to generate automatic probabilistic forecasts
 
 &lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-6-1.svg" style="display: block; margin: auto;" /&gt;
 
-```
-## No non-missing values in test_observations; cannot calculate forecast score
-```
-
 ---
 
 ## Extrapolate 2-steps ahead <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm177.6 62.1C192.8 334.5 218.8 352 256 352s63.2-17.5 78.4-33.9c9-9.7 24.2-10.4 33.9-1.4s10.4 24.2 1.4 33.9c-22 23.8-60 49.4-113.6 49.4s-91.7-25.5-113.6-49.4c-9-9.7-8.4-24.9 1.4-33.9s24.9-8.4 33.9 1.4zM144.4 208a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm192-32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>
@@ -206,10 +202,6 @@ Using `m = 1` sets the penalty on the first derivative
 ## Hindcasts <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm177.6 62.1C192.8 334.5 218.8 352 256 352s63.2-17.5 78.4-33.9c9-9.7 24.2-10.4 33.9-1.4s10.4 24.2 1.4 33.9c-22 23.8-60 49.4-113.6 49.4s-91.7-25.5-113.6-49.4c-9-9.7-8.4-24.9 1.4-33.9s24.9-8.4 33.9 1.4zM144.4 208a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm192-32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>
 
 &lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-12-1.svg" style="display: block; margin: auto;" /&gt;
-
-```
-## No non-missing values in test_observations; cannot calculate forecast score
-```
 
 ---
 
@@ -390,7 +382,7 @@ gam.check(model$mgcv_model)
 ## indicate that k is too low, especially if edf is close to k'.
 ## 
 ##           k'  edf k-index p-value
-## s(time) 49.0 10.4     0.9     0.2
+## s(time) 49.0 10.4     0.9    0.19
 ```
 ]
 ---
@@ -465,7 +457,7 @@ Where:
 
 ---
 
-## A motivating example
+## Motivating example (skip)
 
 ```r
 # set seed for reproducibility
@@ -477,7 +469,7 @@ sim_data &lt;- sim_mvgam(T = 100, n_series = 1,
 *                     prop_missing = 0.2)
 ```
 
-&lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
+&lt;table class=" lightable-minimal" style='color: black; font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
  &lt;thead&gt;
   &lt;tr&gt;
    &lt;th style="text-align:right;"&gt; y &lt;/th&gt;
@@ -489,28 +481,28 @@ sim_data &lt;- sim_mvgam(T = 100, n_series = 1,
  &lt;/thead&gt;
 &lt;tbody&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
@@ -520,12 +512,12 @@ sim_data &lt;- sim_mvgam(T = 100, n_series = 1,
 &lt;/table&gt;
 
 ---
-## The simulated data
+## Simulated data (skip)
 &lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-31-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
-## Use the `tscount` 📦?
+## Use `tscount` 📦? (skip)
 
 ```r
 # attempt a tscount time series model
@@ -547,9 +539,9 @@ tsglm(sim_data$data_train$y,
 `NA`s cause big problems in autoregressive models
 ---
 
-## `NA`s compound over lags
+## `NA`s compound (skip)
 
-&lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
+&lt;table class=" lightable-minimal" style='color: black; font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
  &lt;thead&gt;
   &lt;tr&gt;
    &lt;th style="text-align:right;"&gt; time &lt;/th&gt;
@@ -564,72 +556,72 @@ tsglm(sim_data$data_train$y,
 &lt;tbody&gt;
   &lt;tr&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:right;"&gt; 8 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 8 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
@@ -638,9 +630,9 @@ tsglm(sim_data$data_train$y,
 &lt;/table&gt;
 
 ---
-## Only 2/8 rows complete
+## 2/8 rows complete (skip)
 
-&lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
+&lt;table class=" lightable-minimal" style='color: black; font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
  &lt;thead&gt;
   &lt;tr&gt;
    &lt;th style="text-align:right;"&gt; time &lt;/th&gt;
@@ -708,22 +700,22 @@ tsglm(sim_data$data_train$y,
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 7 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 7 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; series_1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 7 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 7 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; series_1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 8 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 8 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 0.13) !important;"&gt; series_1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 8 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 8 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; series_1 &lt;/td&gt;
   &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
@@ -812,7 +804,7 @@ The latent process model can take on a *huge variety* of forms
 
 ```r
 mod_example &lt;- mvgam(y ~ 1,
-*                    trend_model = 'AR1',
+*                    trend_model = AR(p = 1),
                      data = sim_data$data_train,
                      newdata = sim_data$data_test,
                      family = poisson())
@@ -857,7 +849,7 @@ sim_data2 &lt;- sim_mvgam(T = 100, n_series = 1,
 
 ```r
 mod_example2 &lt;- mvgam(y ~ 1,
-                     trend_model = 'AR1',
+                     trend_model = AR(p = 1),
                      data = sim_data2$data_train,
                      newdata = sim_data2$data_test,
                      family = poisson())
@@ -891,12 +883,19 @@ class: middle center
 
 ---
 
+
+class: inverse middle center big-subsection
+
+# Live code example
+
+---
+
 ## Dynamic Beta GAM
 
 ```r
 mod_beta &lt;- mvgam(relabund ~ 
                     te(mintemp, ndvi),
-                  trend_model = 'AR3',
+                  trend_model = AR(p = 3),
 *                 family = betar(),
                   data = dm_data)
 ```
@@ -912,7 +911,7 @@ Beta regression using the `mgcv` 📦's `betar` family
 ```r
 mod_beta &lt;- mvgam(relabund ~ 
                     te(mintemp, ndvi),
-*                 trend_model = 'AR3',
+*                 trend_model = AR(p = 3),
                   family = betar(), 
                   data = dm_data)
 ```
@@ -930,7 +929,7 @@ AR3 dynamic trend model
 ```r
 mod_beta &lt;- mvgam(relabund ~ 
 *                   te(mintemp, ndvi),
-                  trend_model = 'AR3',
+                  trend_model = AR(p = 3),
                   family = betar(), 
                   data = dm_data)
 ```
@@ -1042,6 +1041,17 @@ class: middle center
 
 ---
 
+## Piecewise linear...
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-56-1.svg" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+## ...or logistic with upper saturation
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-57-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
 ## Random walks
 Simple stochastic processes that can fit a wide range of data
 &lt;br/&gt;
@@ -1150,37 +1160,6 @@ plot(series, type = 'l', bty = 'l', lwd = 2,
 ]
 
 ---
-
-## Alternative AR1 simulation
-.panelset[
-.panel[.panel-name[Code]
-
-
-
-
-```r
-# set seed for reproducibility
-set.seed(1111)
-
-# number of timepoints
-T &lt;- 100
-
-# use arima.sim to simulate from a AR1 model (phi = 0.7)
-series &lt;- arima.sim(model = list(ar = 0.7), n = T, sd = 1)
-
-# plot the time series as a line
-plot(series, type = 'l', bty = 'l', lwd = 2, 
-     col = 'darkred', ylab = 'x', xlab = 'Time')
-```
-]
-
-.panel[.panel-name[Plot]
-.center[![](lecture_3_slidedeck_files/figure-html/ar_sim2-1.svg)]
-
-]
-]
-
----
 ## Properties of an AR1
 `\(\phi = 0\)` and `\(\alpha = 0\)`, process is white noise
 
@@ -1205,168 +1184,8 @@ Stationary time series are useful for inferring properties of .emphasize[*stabil
 ---
 
 ## Stationarity &amp;#8680; stability
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-59-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-60-1.svg" style="display: block; margin: auto;" /&gt;
 
----
-
-## Enforcing AR stationarity
-For AR processes up to order 3 (AR1, AR2 or AR3), process remains stationary as long as:
-
-`\(|\phi| &lt; 1\)` for all `\(\phi\)`
-
-
----
-## Enforcing AR stationarity
-Enforcing stationarity (by restricting `\(|\phi| &lt; 1\)`) is the default behaviour in [`brms` 📦](https://paul-buerkner.github.io/brms/reference/ar.html)
-
-
-```r
-library(brms)
-brm(y ~ x + ... +
-*     ar(p = 1, time = time, cov = TRUE),
-    family = poisson(),
-    data = data)
-```
-
----
-
-## Enforcing AR stationarity
-This .emphasize[*is not*] the default behaviour in `mvgam` 📦. 
-
-Instead, `\(|\phi| &lt; 1.5\)` to allow nonstationary residual processes if they are supported by the data
-
-
-```r
-mvgam(y ~ x + ...,
-*     trend_model = 'AR1',
-      data = data)
-```
-
----
-
-## Enforcing AR stationarity
-This can be modified by changing upper and lower boundaries in the prior
-
-
-```r
-priors &lt;- get_mvgam_priors(y ~ x + ...,
-                 trend_model = 'AR1',
-                 data = data)
-priors$new_lowerbound[1] &lt;- 1
-priors$new_upperbound[1] &lt;- 1
-
-mvgam(y ~ x + ...,
-      trend_model = 'AR1',
-*     priors = priors,
-      data = data)
-```
-
----
-
-## An example
-Simulate a time series with heavy-tailed Student-T observations over a latent Random Walk process that also has seasonal variation
-
-
-```r
-set.seed(555)
-t_data &lt;- sim_mvgam(T = 100, n_series = 1,
-                    family = student_t(),
-                    trend_model = 'RW',
-                    trend_rel = 0.6)
-```
-
----
-## Simulated data
-
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-64-1.svg" style="display: block; margin: auto;" /&gt;
-
----
-## Fit RW and AR1 models
-
-```r
-t_mod_rw &lt;- mvgam(
-*                 y ~ s(season, bs = 'cc', k = 6),
-*                 knots = list(season = c(0.5, 12.5)),
-                  trend_model = 'RW', family = student_t(),
-                  data = t_data$data_train, newdata = t_data$data_test)
-
-t_mod_ar1 &lt;- mvgam(
-*                 y ~ s(season, bs = 'cc', k = 6),
-*                 knots = list(season = c(0.5, 12.5)),
-                  trend_model = 'AR1', family = student_t(),
-                  data = t_data$data_train, newdata = t_data$data_test)
-```
-
-In both models, a [cyclic smooth captures repeated periodic variation by forcing the smooth to join at the boundaries](https://stats.stackexchange.com/questions/522960/gam-set-knot-locations-for-first-but-not-second-smooth-term)
-
----
-## RW MCMC diagnostics <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm177.6 62.1C192.8 334.5 218.8 352 256 352s63.2-17.5 78.4-33.9c9-9.7 24.2-10.4 33.9-1.4s10.4 24.2 1.4 33.9c-22 23.8-60 49.4-113.6 49.4s-91.7-25.5-113.6-49.4c-9-9.7-8.4-24.9 1.4-33.9s24.9-8.4 33.9 1.4zM144.4 208a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm192-32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>
-
-.small[
-
-```
-## n_eff / iter looks reasonable for all parameters
-## Rhat looks reasonable for all parameters
-## 0 of 2000 iterations ended with a divergence (0%)
-## 0 of 2000 iterations saturated the maximum tree depth of 10 (0%)
-## Chain 1: E-FMI = 0.1385
-## Chain 2: E-FMI = 0.1088
-## Chain 3: E-FMI = 0.0873
-## *E-FMI below 0.2 indicates you may need to reparameterize your model
-```
-
-]
-
-Good convergence, no divergences encountered
----
-
-## AR1 MCMC diagnostics <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M175.9 448c-35-.1-65.5-22.6-76-54.6C67.6 356.8 48 308.7 48 256C48 141.1 141.1 48 256 48s208 93.1 208 208s-93.1 208-208 208c-28.4 0-55.5-5.7-80.1-16zM0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zM128 369c0 26 21.5 47 48 47s48-21 48-47c0-20-28.4-60.4-41.6-77.7c-3.2-4.4-9.6-4.4-12.8 0C156.6 308.6 128 349 128 369zm128-65c-13.3 0-24 10.7-24 24s10.7 24 24 24c30.7 0 58.7 11.5 80 30.6c9.9 8.8 25 8 33.9-1.9s8-25-1.9-33.9C338.3 320.2 299 304 256 304zm47.6-96a32 32 0 1 0 64 0 32 32 0 1 0 -64 0zm-128 32a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg>
-
-.small[
-
-```
-## n_eff / iter looks reasonable for all parameters
-## Rhats above 1.05 found for 45 parameters
-## *Diagnose further to investigate why the chains have not mixed
-## 0 of 2000 iterations ended with a divergence (0%)
-## 0 of 2000 iterations saturated the maximum tree depth of 10 (0%)
-## Chain 1: E-FMI = 0.1215
-## Chain 2: E-FMI = 0.1225
-## Chain 3: E-FMI = 0.1438
-## Chain 4: E-FMI = 0.0758
-## *E-FMI below 0.2 indicates you may need to reparameterize your model
-```
-
-]
-
-No divergences encountered, but bad convergence
-
----
-
-## Similar smooth inferences
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-68-1.svg" style="display: block; margin: auto;" /&gt;
-
----
-
-## AR1 mostly stationary ...
-
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-69-1.svg" style="display: block; margin: auto;" /&gt;
-
----
-
-## ... so trends differ ...
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-70-1.svg" style="display: block; margin: auto;" /&gt;
-
----
-
-## ... as do forecasts
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-71-1.svg" style="display: block; margin: auto;" /&gt;
-
----
-
-## Process error must compromise
-
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-72-1.svg" style="display: block; margin: auto;" /&gt;
 ---
 class: middle center
 
@@ -1399,26 +1218,26 @@ Where:
 ---
 
 ## Random *functions*
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-73-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-61-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Length scale  &amp;#8680; *memory*
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-74-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-62-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## Kernel &amp;#8680; covariance decay
 
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-75-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-63-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Kernel &amp;#8680; covariance decay
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-76-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-64-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## Kernel &amp;#8680; covariance decay
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-77-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-65-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -1449,7 +1268,7 @@ class: middle center
 ---
 
 ## Global knowledge <svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg>
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-78-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-66-1.svg" style="display: block; margin: auto;" /&gt;
 ---
 
 ## Approximating GPs
@@ -1463,8 +1282,8 @@ Details not focus of this lecture, but can be found in this reference
 Both packages use automatic, [informative priors for length scales `\(\rho\)`](https://betanalpha.github.io/assets/case_studies/gaussian_processes.html#323_Informative_Prior_Model), but these can be changed (more on this in [Tutorial 2](https://nicholasjclark.github.io/physalia-forecasting-course/day2/tutorial_2_physalia#Gaussian_Processes))
 ---
 
-## Estimation in `brms`
-In `brms`📦, use the [`gp` function](https://paul-buerkner.github.io/brms/reference/gp.html) with `time` as the covariate
+## Estimation in `brms` and `mvgam`
+Use the [`gp` function](https://paul-buerkner.github.io/brms/reference/gp.html) with `time` as the covariate
 
 
 ```r
@@ -1472,23 +1291,14 @@ brm(y ~ x + ... +
 *     gp(time, c = 5/4, k = 20, scale = FALSE),
     family = poisson(),
     data = data)
+
+mvgam(y ~ x + ... +
+*       gp(time, c = 5/4, k = 20, scale = FALSE),
+      family = poisson(),
+      data = data)
 ```
 
 Requires arguments to determine behaviour of the approximation (`c` and `k`). Good defaults are `5/4` and `20`, but depends on number of timepoints and expected smoothness
----
-
-## Estimation in `mvgam`
-In `mvgam`📦, use `trend_model = 'GP'`
-
-
-```r
-mvgam(y ~ x + ... +
-*     trend_model = "GP",
-    family = poisson(),
-    data = data)
-```
-
-Doesn't require arguments, but the number of basis functions `k` can be altered by changing the priors
 ---
 class: middle center
 ### No examples here as we will go deeper into GPs in the tutorial
@@ -1496,6 +1306,14 @@ class: middle center
 ### But if you want extra detail, watch this lecture: - [Statistical Rethinking 2023 - 16 - Gaussian Processes](https://www.youtube.com/watch?v=Y2ZLt4iOrXU)
 
 ---
+
+
+class: inverse middle center big-subsection
+
+# Live code example
+
+---
+
 class: inverse middle center big-subsection
 
 # Dynamic coefficient models
@@ -1526,19 +1344,19 @@ In `mvgam`📦, use `dynamic` to set up time-varying effects
 
 ```r
 mod_beta_dyn &lt;- mvgam(relabund ~ s(mintemp, k = 6) +
-*                   dynamic(ndvi, rho = 28),
-                  family = betar(),
-                  data = dm_data)
+*                       dynamic(ndvi, scale = FALSE, k = 20),
+                      family = betar(),
+                      data = dm_data)
 ```
 
-Requires user to set the length scale `\(\rho\)`, as the function is approximated using a low-rank GP smooth from the `mgcv`📦
+Requires user to set `\(k\)`, as the function is approximated using a low-rank GP smooth from the `brms`📦
 
-No uncertainty in the GP parameters will be estimated, but function will resemble a squared exponential GP
+Estimates full uncertainty in GP parameters to yield a squared exponential GP
 
 ---
 
 ## Estimated smooths
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-82-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-69-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -1582,7 +1400,7 @@ brm_beta_dyn &lt;- brm(relabund ~ s(mintemp, k = 6) +
 
 
 
-A GP specifying time-varying effects of `ndvi`. This estimates a full GP, so is more flexible than the `mvgam` / `mgcv` version
+A GP specifying time-varying effects of `ndvi`
 
 ---
 
