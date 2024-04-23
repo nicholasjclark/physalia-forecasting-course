@@ -2979,6 +2979,8 @@
 <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 348.347656 300.46875 L 349.347656 300.46875 L 349.347656 301.46875 L 348.347656 301.46875 Z M 348.347656 300.46875 "/>
 <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 333.585938 306.617188 L 334.585938 306.617188 L 334.585938 307.617188 L 333.585938 307.617188 Z M 333.585938 306.617188 "/>
 <path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 306.808594 243.292969 L 307.808594 243.292969 L 307.808594 244.292969 L 306.808594 244.292969 Z M 306.808594 243.292969 "/>
+<path style="fill:none;stroke-width:0.75;stroke-linecap:round;stroke-linejoin:round;stroke:rgb(100%,100%,100%);stroke-opacity:1;stroke-miterlimit:10;" d="M 47.519531 28.800781 L 47.519531 316.601563 L 668.199219 316.601563 "/>
+<path style="fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 47.519531 28.800781 L 47.519531 316.601563 L 668.199219 316.601563 "/>
 <g style="fill:rgb(0%,0%,0%);fill-opacity:1;">
   <use xlink:href="#glyph3-1" x="47.519531" y="20.359375"/>
   <use xlink:href="#glyph3-2" x="53.513672" y="20.359375"/>
