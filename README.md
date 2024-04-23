@@ -24,7 +24,7 @@ Participants should be familiar with RStudio and have some fluency in programmin
 
 ## COURSE PREPARATION
 
-**Please be sure to have at least version 4.1 &mdash; and preferably version 4.2 or above &mdash; of `R` installed**. Note that `R` and `RStudio` are two different things: it is not sufficient to just update `RStudio`, you also need to update `R` by installing new versions as they are released.
+**Please be sure to have at least version 4.2 &mdash; and preferably version 4.3 or above &mdash; of `R` installed**. Note that `R` and `RStudio` are two different things: it is not sufficient to just update `RStudio`, you also need to update `R` by installing new versions as they are released.
 
 To download `R` go to the [CRAN Download](https://cran.r-project.org/) page and follow the links to download `R` for your operating system:
 
@@ -62,31 +62,31 @@ remotes::install_github('nicholasjclark/mvgam', force = TRUE)
 ```
 
 ### INSTALLING AND CHECKING STAN
-When working in R, there are two primary interfaces we can use to fit models with Stan (`rstan` and `CmdStan`). Either interface will work, however it is highly recommended that you use the `Cmdstan` backend, with the `cmdstanr` interface, rather than using `rstan`. More care, however, needs to be taken to ensure you have an up to date version of Stan. **For all `mvgam` and `brms` functionalities to work properly, please ensure you have at least version 2.29 of Stan installed**. The GitHub development versions of `rstan` and `CmdStan` are currently several versions ahead of this, and both of these development versions are stable.
+When working in R, there are two primary interfaces we can use to fit models with Stan (`rstan` and `CmdStan`). Either interface will work, however it is highly recommended that you use the `Cmdstan` backend, with the `cmdstanr` interface, rather than using `rstan`. More care, however, needs to be taken to ensure you have an up to date version of Stan. **For all `mvgam` and `brms` functionalities to work properly, please ensure you have at least version 2.29 of Stan installed**. The GitHub development versions of `rstan` and `CmdStan` are currently several versions ahead of this, and both of these development versions are stable. The exact version you have installed can be checked using either `rstan::stan_version()` or `cmdstanr::cmdstan_version()`
 
 Compiling a Stan program requires a modern C++ compiler and the GNU Make build utility (a.k.a. “gmake”). The correct versions of these tools to use will vary by operating system, but unfortunately most standard Windows and MacOS X machines do not come with them installed by default. The first step to installing Stan is to update your C++ toolchain so that you can compile models correctly. [There are detailed instructions by the Stan team on how to ensure you have the correct C++ toolchain to compile models](https://mc-stan.org/docs/cmdstan-guide/installation.html#cpp-toolchain), so please refer to those and follow the steps that are relevant to your own machine. Once you have the correct C++ toolchain, you'll need to install `Cmdstan` and the relevant R pacakge interface. First install the R package by running the following command in a fresh R environment:
 
-```{r install, eval=FALSE}
+```{r}
 install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
 ```
 `cmdstanr` requires a working installation of [CmdStan](https://mc-stan.org/users/interfaces/cmdstan.html), the shell interface to Stan. If you don't have CmdStan installed then `cmdstanr` can install it for you, assuming you have a suitable C++ toolchain. To double check that your toolchain is set up properly you can call
 the `check_cmdstan_toolchain()` function:
 
-```{r check-toolchain}
+```{r}
 check_cmdstan_toolchain()
 ```
 If your toolchain is configured correctly then CmdStan can be installed by calling the
 [`install_cmdstan()`](https://mc-stan.org/cmdstanr/reference/install_cmdstan.html) function:
 
-```{r install_cmdstan-2, eval=FALSE}
+```{r}
 install_cmdstan(cores = 2)
 ```
 You should now be able to follow the remaining instructions on the [Getting Started with CmdStanR page](https://mc-stan.org/cmdstanr/articles/cmdstanr.html) to ensure that Stan models can successfully compile on your machine. But issues can sometimes occur when:
 1. [you don't have write access to the folders that CmdStan uses to create model executables](https://discourse.mc-stan.org/t/problem-running-cmdstan-on-computing-cluster/34747/5)
 2. [you are using a university- or company-imposed syncing system such as One Drive, leading to confusion about where your make file and compilers are located](https://discourse.mc-stan.org/t/system-command-make-failed-models-wont-compile/30528)
-3. [you are using a university- or company-imposed firewall that is aggressively deleting the temporary executable files that CmdStanR creates when compiling](https://discourse.mc-stan.org/t/trouble-with-cmdstan-toolchain-with-rtools42-on-windows-10-enterprise/28444)
+3. [you are using a university- or company-imposed firewall that is aggressively deleting the temporary executable files that CmdStan creates when compiling](https://discourse.mc-stan.org/t/trouble-with-cmdstan-toolchain-with-rtools42-on-windows-10-enterprise/28444)
 
-If you run into any of these issues, it is best to consult with your IT department for help
+If you run into any of these issues, it is best to consult with your IT department for support.
 
 ## PROGRAM
 09:00 - 12:00 (Berlin time): live lectures and introduction to / review of the practicals
