@@ -324,7 +324,7 @@ model0 <- mvgam(count ~ s(time, bs = 'bs', k = 15,
 ## Residual correlation structures
 One useful strategy to deal with this is to fit models that [incorporate autocorrelated residual processes within the GAM](https://ecogambler.netlify.app/blog/autocorrelated-gams/){target="_blank"}. If our model's residuals are autocorrelated, our estimates of uncertainty around other regression parameters (such as the $\beta$ coefficients) can be biased and misleading. Failing to address this may lead to false inferences and perhaps to poor forecasts. Fortunately there are ways we can tackle this by modelling the autocorrelation in our model's errors. This can be done using `mgcv` functionality, as the blog post above explains. But we will use `brms` here as it is more flexible and provides an interface that is more consistent with `mvgam`. 
 
-### A standard Poisson GLM in `brms`
+### A standard Poisson GAM in `brms`
 First, we will fit a similar model to those used in [Tutorial 1](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia){target="_blank"} so to see how `brms` works. The interface is very familiar, relying on the usual `R` formula syntax (see `?brmsformula` for details and examples). But there are some key differences between `brms` and `mvgam`. For example, `brms` can handle a much larger diversity of response distributions (see `?brmsfamily` for details). But for now, we will stick a similar Poisson model as previously (a nonlinear function of `ndvi_lag12` and a parametric, linear function of `mintemp`):
 ```{r model1, include = FALSE}
 model1 <- xfun::cache_rds(brm(count ~ 
@@ -423,7 +423,7 @@ ggplot(residual_data, aes(sample = z_residual)) +
   theme_classic()
 ```
 
-### Autocorrelated error GLM in `brms`
+### Autocorrelated error GAM in `brms`
 This model is not doing well. Clearly we need to account for temporal autocorrelation *without* using a smooth of `time`. Now onto another great feature of `brms`: the ability to include (possibly latent) autocorrelated residuals with the `ar()` function (see `?brms::ar` for details). This model will use a separate sub-model for latent residuals that evolve as an AR1 process (i.e. the error in the current time point is a function of the error in the previous time point, plus stochastic noise). When using non-Gaussian observations, we can only select an order of 1 for the AR component (higher orders are only currently allowed for Gaussian observations). Note, this model takes much longer to fit than the previous model because it estimates a full temporal covariance for the residuals
 ```{r model2, include = FALSE}
 model2 <- xfun::cache_rds(brm(count ~ 
@@ -489,7 +489,7 @@ stancode(model2)
 </details>
 <br>
 
-### Autocorrelated error GLM in `mvgam`
+### Autocorrelated error GAM in `mvgam`
 The `brms` model is estimating autocorrelated errors for the full time period, even though some of these time points have missing observations. This is useful for getting more realistic estimates of the residual autocorrelation parameters. In contrast, if you were to attempt an AR error process in `mgcv` (which you can do using `gamm()` or `bam()`), the time points with missing data would be thrown out *before* constructing the model. This will cause problems, sometimes small but sometimes very big, for your inferences.
   
 `mvgam` can also fit the latent trend AR1 model, though it is considerably faster. Let's fit it (note that only 250 posterior samples per chain are taken to reduce the size of the model, which will make it easier to download for completing the exercises):
@@ -514,7 +514,7 @@ model3 <- mvgam(count ~
                 newdata = data_test,
                 priors = prior(normal(0, 2), class = b),
                 samples = 250,
-                trend_model = 'AR1')
+                trend_model = AR(p = 1))
 ```
 
 Inspect the `Stan` code for this model to see how it differs from the `brms` version
@@ -681,7 +681,7 @@ model3b <- mvgam(count ~
                 data = data_train,
                 newdata = data_test,
                 priors = prior(normal(0, 2), class = b),
-                trend_model = 'RW')
+                trend_model = RW())
 ```
 
 <details>
