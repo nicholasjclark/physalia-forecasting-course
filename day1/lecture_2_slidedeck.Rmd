@@ -814,7 +814,7 @@ model <- mvgam(
     te(x3, x4, bs = c('cr', 'tp')),
   data = data,
   family = poisson(),
-  trend_model = 'AR1',
+  trend_model = AR(p = 1),
   burnin = 500,
   samples = 500,
   chains = 4)
@@ -834,7 +834,7 @@ model <- mvgam(
     te(x3, x4, bs = c('cr', 'tp')), #<<
   data = data,
   family = poisson(),
-  trend_model = 'AR1',
+  trend_model = AR(p = 1),
   burnin = 500,
   samples = 500,
   chains = 4)
@@ -854,7 +854,7 @@ model <- mvgam(
     te(x3, x4, bs = c('cr', 'tp')), 
   data = data,
   family = poisson(),
-  trend_model = 'AR1',
+  trend_model = AR(p = 1),
   burnin = 500,
   samples = 500,
   chains = 4)
@@ -874,7 +874,7 @@ model <- mvgam(
     te(x3, x4, bs = c('cr', 'tp')), 
   data = data,
   family = poisson(),
-  trend_model = 'AR1',
+  trend_model = AR(p = 1),
   burnin = 500,
   samples = 500,
   chains = 4)
@@ -893,7 +893,7 @@ model <- mvgam(
     te(x3, x4, bs = c('cr', 'tp')), 
   data = data,
   family = poisson(),
-  trend_model = 'AR1',
+  trend_model = AR(p = 1),
   burnin = 500,
   samples = 500,
   chains = 4)
@@ -913,7 +913,7 @@ model <- mvgam(
     te(x3, x4, bs = c('cr', 'tp')), 
   data = data,
   family = poisson(),
-  trend_model = 'AR1',
+  trend_model = AR(p = 1),
   burnin = 500,
   samples = 500,
   chains = 4)
@@ -933,7 +933,7 @@ model <- mvgam(
     te(x3, x4, bs = c('cr', 'tp')), #<<
   data = data,
   family = poisson(),
-  trend_model = 'AR1',
+  trend_model = AR(p = 1),
   burnin = 500,
   samples = 500,
   chains = 4)
@@ -953,7 +953,7 @@ model <- mvgam(
     te(x3, x4, bs = c('cr', 'tp')), 
   data = data, #<<
   family = poisson(), #<<
-  trend_model = 'AR1',
+  trend_model = AR(p = 1),
   burnin = 500,
   samples = 500,
   chains = 4)
@@ -973,7 +973,7 @@ model <- mvgam(
     te(x3, x4, bs = c('cr', 'tp')), 
   data = data,
   family = poisson(), 
-  trend_model = 'AR1', #<<
+  trend_model = AR(p = 1), #<<
   burnin = 500,
   samples = 500,
   chains = 4)
@@ -993,7 +993,7 @@ model <- mvgam(
     te(x3, x4, bs = c('cr', 'tp')), 
   data = data,
   family = poisson(), 
-  trend_model = 'AR1', 
+  trend_model = AR(p = 1),
   burnin = 500, #<<
   samples = 500, #<<
   chains = 4)
@@ -1264,8 +1264,7 @@ mcmc_plot(year_random, type = 'areas',
 # use marginaleffects utilities to plot conditional predictions
 library(ggplot2)
 plot_predictions(year_random, 
-                 condition = 'year',
-                 n_cores = 2) +
+                 condition = 'year') +
   theme_classic()
 
 ```
@@ -1427,8 +1426,7 @@ plot(year_smooth, type = 'smooth', derivatives = TRUE)
 library(ggplot2)
 plot_predictions(year_smooth, 
                  condition = 'year',
-                 points = 0.5,
-                 n_cores = 2) +
+                 points = 0.5) +
   theme_classic()
 
 ```

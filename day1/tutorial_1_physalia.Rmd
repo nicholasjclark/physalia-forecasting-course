@@ -383,12 +383,12 @@ model_data %>%
 levels(model_data$year)
 ```
 
-We are now ready for our first `mvgam` model. The syntax will be familiar to users who have built models with `mgcv`. But for a refresher, see `?mvgam_formulae` and the examples in `?gam.models`. Random effects can be specified using the `s()` wrapper with the `re` basis. Note that we can also suppress the primary intercept using the usual `R` formula syntax `- 1`. `mvgam` has a number of possible observation families that can be used, see `?mvgam_families` for more information. We will use `Stan` as the fitting engine, which deploys Hamiltonian Monte Carlo (HMC) for full Bayesian inference. By default, 4 HMC chains will be run using a warmup of 500 iterations and collecting 250 posterior samples from each chain. Ordinarily we would take more posterior samples per chain but 250 give us an object that will be easier to download for completing the exercises. Interested users should consult the [`Stan` user's guide](https://mc-stan.org/docs/stan-users-guide/index.html){target="_blank"} for more information about the software and the enormous variety of models that can be tackled with HMC.
+We are now ready for our first `mvgam` model. The syntax will be familiar to users who have built models with `mgcv`. But for a refresher, see `?mvgam_formulae` and the examples in `?gam.models`. Random effects can be specified using the `s()` wrapper with the `re` basis. Note that we can also suppress the primary intercept using the usual `R` formula syntax `- 1`. `mvgam` has a number of possible observation families that can be used, see `?mvgam_families` for more information. We will use `Stan` as the fitting engine, which deploys Hamiltonian Monte Carlo (HMC) for full Bayesian inference. By default, 4 HMC chains will be run using a warmup of 500 iterations and collecting 250 posterior samples from each chain. Ordinarily we would take more posterior samples per chain but 225 give us an object that will be easier to download for completing the exercises. Interested users should consult the [`Stan` user's guide](https://mc-stan.org/docs/stan-users-guide/index.html){target="_blank"} for more information about the software and the enormous variety of models that can be tackled with HMC.
 ```{r model1, include=FALSE}
 model1 <- xfun::cache_rds(mvgam(count ~ s(year, bs = 're') - 1,
                 family = poisson(),
                 data = model_data, 
-                samples = 250))
+                samples = 225))
 ```
 
 ```{r eval=FALSE}
@@ -515,7 +515,8 @@ model_data %>%
 model1b <- xfun::cache_rds(mvgam(count ~ s(year, bs = 're') - 1,
                 family = poisson(),
                 data = data_train,
-                newdata = data_test),
+                newdata = data_test,
+                samples = 500),
                 dir = 'cache_not_for_upload/')
 ```
 
@@ -547,7 +548,8 @@ model2 <- xfun::cache_rds(mvgam(count ~ s(year, bs = 're') +
                 family = poisson(),
                 priors = prior(normal(0, 1), class = b),
                 data = data_train,
-                newdata = data_test),
+                newdata = data_test,
+                samples = 500),
                 dir = 'cache_not_for_upload/')
 ```
 
@@ -688,7 +690,8 @@ model3 <- xfun::cache_rds(mvgam(count ~ s(time, bs = 'bs', k = 15) +
                 family = poisson(),
                 priors = prior(normal(0, 1), class = b),
                 data = data_train,
-                newdata = data_test),
+                newdata = data_test,
+                samples = 500),
                 dir = 'cache_not_for_upload/')
 ```
 
