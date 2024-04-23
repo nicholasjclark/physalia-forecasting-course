@@ -55,8 +55,10 @@ mod <- gam(logcount ~ s(yearfac, bs = 're'),
            family = Gamma(link = 'inverse'),
            method = 'REML')
 
-# Oops; turns but it does contain actual zeros;
-# Tweedie may be best here
+# Oops; turns but it does contain actual zeros
+any(model_data$logcount == 0L)
+
+# A Tweedie model may be best here
 mod <- gam(logcount ~ s(yearfac, bs = 're'),
            data = model_data,
            family = Tweedie(p = 1.5),
@@ -103,7 +105,7 @@ ggplot(data.frame(model_data %>%
   facet_wrap(~region)
 
 # Better, but still obvious problems 
-# (the trend is not the same per region)
+# (the trend is not the same per region, how can we model this?)
 
 #### Bonus tasks ####
 # 1. Calculate residual ACF and pACF functions for each region using
@@ -121,5 +123,5 @@ model_data %>%
 #    for each region
 
 # 4. Compare the model with random slopes against mod2 using a 
-#    Generalized Likelihood Ratio test (hing, see anova.gam() for help)
+#    Generalized Likelihood Ratio test (hint, see anova.gam() for help)
 ?anova.gam
