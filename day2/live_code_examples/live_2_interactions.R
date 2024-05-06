@@ -58,9 +58,33 @@ mod1 <- gam(y ~ s(x0, x1, k = 100, bs = 'tp'),
             data = simdat, family = gaussian(),
             method = 'REML')
 summary(mod1)
+
+# Plot the interaction using gratia
 draw(mod1)
-plot_predictions(mod1, condition = c('x0', 'x1'))  
-plot_predictions(mod1, condition = c('x1', 'x0'))  
+
+# Now  using argeted visuals with marginaleffects' plot_predictions(); 
+# use custom functions to determinehow the underlying data_grid() will 
+# be set up. This can be useful when plotting many effects
+summary_round = function(x){
+  round(fivenum(x, na.rm = TRUE), 4)
+}
+seq_even = function(x){
+  seq(min(x, na.rm = TRUE), max(x, na.rm = TRUE), 
+      length.out = 100)
+}
+
+plot_predictions(mod1, by = c('x0', 'x1'),
+                 newdata = datagrid(model = mod1, 
+                                    x0 = seq(min(simdat$x0), 
+                                             max(simdat$x0),
+                                             length.out = 50),
+                                    x1 = summary_round))  
+plot_predictions(mod1, by = c('x1', 'x0'),
+                 newdata = datagrid(model = mod1, 
+                                    x1 = seq(min(simdat$x1), 
+                                             max(simdat$x1),
+                                             length.out = 50),
+                                    x0 = summary_round))
 
 # Option 2: including multiple terms in te()
 # This does not assume covariates are on the same scale, or that 
@@ -72,9 +96,22 @@ mod2 <- gam(y ~ te(x0, x1, k = c(10, 10), bs = c('tp', 'tp')),
             data = simdat, family = gaussian(),
             method = 'REML')
 summary(mod2)
+
+# Plot again
 draw(mod2)
-plot_predictions(mod2, condition = c('x0', 'x1'))  
-plot_predictions(mod2, condition = c('x1', 'x0')) 
+
+plot_predictions(mod2, by = c('x0', 'x1'),
+                 newdata = datagrid(model = mod1, 
+                                    x0 = seq(min(simdat$x0), 
+                                             max(simdat$x0),
+                                             length.out = 50),
+                                    x1 = summary_round))  
+plot_predictions(mod2, by = c('x1', 'x0'),
+                 newdata = datagrid(model = mod1, 
+                                    x1 = seq(min(simdat$x1), 
+                                             max(simdat$x1),
+                                             length.out = 50),
+                                    x0 = summary_round))
 
 # Option 3: ANOVA decomposition with te() and ti()
 # Same assumptions as with te() but this allows the 'main' effects
@@ -90,9 +127,19 @@ summary(mod3)
 # i.e. the total effect of x0 is now spread among two different terms
 draw(mod3)
 
-# Using plot_predictions remedies this to show the total effects as before
-plot_predictions(mod3, condition = c('x0', 'x1'))  
-plot_predictions(mod3, condition = c('x1', 'x0'))
+# plot_predictions() shows only the 'total' effects, as before
+plot_predictions(mod3, by = c('x0', 'x1'),
+                 newdata = datagrid(model = mod1, 
+                                    x0 = seq(min(simdat$x0), 
+                                             max(simdat$x0),
+                                             length.out = 50),
+                                    x1 = summary_round))  
+plot_predictions(mod3, by = c('x1', 'x0'),
+                 newdata = datagrid(model = mod1, 
+                                    x1 = seq(min(simdat$x1), 
+                                             max(simdat$x1),
+                                             length.out = 50),
+                                    x0 = summary_round))
 
 # mod2 and mod3 are roughly equivalent, but mod3 is much more flexible and 
 # can allow you to accommodate highly complex models with many interactions
@@ -122,16 +169,7 @@ summary(mod4)
 # Now draw() gets even more difficult to interpret
 draw(mod4)
 
-# Targeted visuals with plot_predictions(); use custom functions to determine
-# how the underlying data_grid() will be set up. This can be useful when plotting
-# many effects
-summary_round = function(x){
-  round(fivenum(x, na.rm = TRUE), 4)
-}
-seq_even = function(x){
-  seq(min(x, na.rm = TRUE), max(x, na.rm = TRUE), 
-      length.out = 100)
-}
+# Some more targeted plots with plot_predictions()
 plot_predictions(mod4, by = c('x0', 'x1', 'x2'),
                  newdata = datagrid(x0 = seq_even,
                                     x1 = summary_round,
@@ -157,6 +195,7 @@ mod5 <- gam(y ~ te(x0, x1, x2,
 
 # Diagnostics and some plots
 summary(mod5)
+appraise(mod5, method = 'simulate')
 draw(mod5)
 plot_predictions(mod5, by = c('x0', 'x1', 'x2'),
                  newdata = datagrid(x0 = seq_even,
@@ -165,3 +204,6 @@ plot_predictions(mod5, by = c('x0', 'x1', 'x2'),
 
 # Model comparisons
 anova(mod1, mod2, mod3, mod4, mod5, test = 'Chisq')
+
+#### Bonus tasks ####
+# 1. Plot residuals of mod4 against each predictor variable
