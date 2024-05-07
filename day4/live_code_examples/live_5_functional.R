@@ -31,8 +31,8 @@ aic <- reml <- rho <- seq(0.9, 0.99, by = 0.01)
 for(i in 1:length(rho)){
   # Fit models using a grid of possible AR1 parameters
   b <- bam(T ~ s(region, bs = 're') + 
-             s(doy, k = 20, bs = "cr", by = region) +
-             s(doy, k = 40, bs = "cr", by = latitude),
+             s(doy, k = 10, bs = "cr", by = region) +
+             s(doy, k = 20, bs = "cr", by = latitude),
            data = CanWeather, 
            
            # Tell bam() where each time series begins
@@ -46,13 +46,13 @@ for(i in 1:length(rho)){
   aic[i] <- AIC(b)
   reml[i] <- b$gcv.ubre
 }
-plot(x = rho, y = reml)
-plot(x = rho, y = aic)
+plot(x = rho, y = reml, pch = 16)
+plot(x = rho, y = aic, pch = 16)
 
 # 0.97 seems optimal; refit this model
 mod1 <- bam(T ~ s(region, bs = 're') + 
-              s(doy, k = 20, bs = "cr", by = region) +
-              s(doy, k = 40, bs = "cr", by = latitude),
+              s(doy, k = 10, bs = "cr", by = region) +
+              s(doy, k = 20, bs = "cr", by = latitude),
             data = CanWeather, 
             AR.start = time==1, 
             rho = .97,
@@ -85,14 +85,23 @@ acf(mod1$std)
 #### Bonus tasks ####
 # 1. Clearly there is still some autocorrelation left at lag 2. If you have
 #    mvgam installed, fit a model that will deal with this directly
+#   (but note, this model will be SLOW)
 library(mvgam)
 CanWeather$series <- CanWeather$place
-mod2 <- mvgam(formula = T ~ s(region, bs = 're'),
-              trend_formula = ~ s(doy, k = 10, bs = "cr", by = region) +
+mod2 <- mvgam(formula = T ~ 1,
+              # Use a State-Space model and change 'region' to a parametric
+              # effect to speed up sampling
+              trend_formula = ~ region + 
+                s(doy, k = 10, bs = "cr", by = region) +
                 s(doy, k = 20, bs = "cr", by = latitude),
               data = CanWeather,
               trend_model = AR(p = 2),
-              family = gaussian(),
-              # Consider meanfield variational inference for faster
-              # estimation
-              algorithm = 'meanfield')
+              # Use an informative prior on AR1 to speed up sampling
+              priors = prior(normal(0.8, 0.1), ub = 1, lb = 0.5,
+                             class = ar1),
+              family = gaussian())
+summary(mod2, include_betas = FALSE)
+plot(mod2, type = 'smooths', trend_effects = TRUE)
+plot_predictions(mod2, by = c('doy', 'region'))
+
+
