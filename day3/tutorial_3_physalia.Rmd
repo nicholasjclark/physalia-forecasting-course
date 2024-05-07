@@ -8,6 +8,20 @@ output:
     toc_float: true
 ---
 
+```{r setup1, echo=FALSE}
+mypar = function(...){
+  par(mar = c(4,4.1,2,2),
+      mgp = c(2,0.5,0),
+      bty = "l", 
+      cex.axis = 1, 
+      cex.lab = 1.25, 
+      cex.main = 1.25,
+      xaxs = 'r',
+      yaxs = 'r',
+      pch = 16)
+}
+```
+
 ```{css, echo=FALSE}
 details > summary {
   padding: 4px;
@@ -81,7 +95,7 @@ if(!requireNamespace('klippy')){
 klippy::klippy(position = c('top', 'right'), color = 'darkred')
 ```
 
-```{r setup, include=FALSE}
+```{r setup2, include=FALSE}
 knitr::opts_chunk$set(
   echo = TRUE,   
   dpi = 150,
@@ -127,10 +141,9 @@ download_file(
 This tutorial relates to content covered in [Lecture 4](https://nicholasjclark.github.io/physalia-forecasting-course/day3/lecture_4_slidedeck){target="_blank"}, and relies on the following packages for manipulating data, shaping time series, fitting dynamic regression models and plotting:
 ```{r include = FALSE}
 library(dplyr)
-#remotes::install_github('nicholasjclark/mvgam',force = TRUE)
 library(mvgam) 
 library(tidybayes)
-library(ggplot2)
+library(ggplot2); theme_set(theme_classic())
 library(marginaleffects)
 ```
 
@@ -138,7 +151,7 @@ library(marginaleffects)
 library(dplyr)
 library(mvgam) 
 library(tidybayes)
-library(ggplot2)
+library(ggplot2); theme_set(theme_classic())
 library(marginaleffects)
 ```
 
@@ -233,7 +246,12 @@ axis(3, at = seq(0,1, len = NCOL(model_data)), labels = colnames(model_data))
 ```
 
 Plot properties of the time series, which indicate some overdispersion in the recruit count values that we'll have to address
-```{r}
+```{r, eval=FALSE}
+plot_mvgam_series(data = model_data, y = 'recruits')
+```
+
+```{r, echo=FALSE}
+mypar()
 plot_mvgam_series(data = model_data, y = 'recruits')
 ```
 
@@ -257,6 +275,8 @@ model1 <- mvgam(recruits ~ offset(log_spawners),
               samples = 250)
 ```
 
+<details>
+<summary>Check here to see a mathematical description of the model</summary>
 The model can be described mathematically as follows:
 \begin{align*}
 \boldsymbol{recruits}_t & \sim \text{NegBinomial}(\lambda_t, \phi) \\
@@ -265,7 +285,9 @@ log(\lambda_t) & = \alpha + 1*log(\boldsymbol{spawners_{t}}) \\
 \alpha & \sim \text{Normal}(0, 1) \\
 \phi^1 & \sim \text{StudentT}(3, 0, 0.1) \end{align*}
 
-Note that this is not a classic density-dependent stock-recruitment model such as the [Ricker or Beverton Holt models](http://derekogle.com/fishR/examples/oldFishRVignettes/StockRecruit.pdf){target="_blank"}. Rather, this model very simplistically assumes recruits can increase without bound as a function of the number of spawners.   
+Note that this is not a classic density-dependent stock-recruitment model such as the [Ricker or Beverton Holt models](http://derekogle.com/fishR/examples/oldFishRVignettes/StockRecruit.pdf){target="_blank"}. Rather, this model very simplistically assumes recruits can increase without bound as a function of the number of spawners. 
+</details>
+<br>  
   
 The inclusion of the offset is important if we wish to make predictions on the scale of the observations. This is because there will be no regression coefficient assigned to this variable (it's coefficient is fixed at 1). If you wish to manually make predictions, you'll need to take care to include the offset. This is returned as an attribute of the linear predictor matrix when we call `predict.gam` on the underlying `mgcv` model:
 ```{r}
@@ -307,7 +329,7 @@ hist(linpreds,
      lwd = 2)
 ```
 
-This same type of process underlies many of `mvgam`'s prediction / plotting functions. For example, to plot partial effects of smooth terms, the `plot_mvgam_smooth` function will set up a grid of evenly-spaced hypothetical values as `newdata` to predict the contribution of the smooth term to the linear predictor. It does this by essentially ignoring the contributions of all other predictors (setting their values to 0 in the linear predictor matrix). The same process also underlies the functions used to plot conditional effects and posterior contrasts (you can learn a great deal about how these `newdata` grids are set up by looking over the documentation in the [`marginaleffects` book](https://vincentarelbundock.github.io/marginaleffects/){target="_blank"} and by calling `?marginaleffects::datagrid`  
+This same type of process underlies many of `mvgam`'s prediction / plotting functions. For example, to plot partial effects of smooth terms, the `plot_mvgam_smooth` function will set up a grid of evenly-spaced hypothetical values as `newdata` to predict the contribution of the smooth term to the linear predictor. It does this by essentially ignoring the contributions of all other predictors (setting their values to 0 in the linear predictor matrix). The same process also underlies the functions used to plot conditional effects and posterior contrasts (you can learn a great deal about how these `newdata` grids are set up by looking over the documentation in the [`marginaleffects` book](https://vincentarelbundock.github.io/marginaleffects/){target="_blank"} and by calling `?marginaleffects::datagrid`)   
   
 Once these predictions are made for the linear predictor, you could then compute *posterior expectations* (in this case by exponentiating the values with `exp(linpreds)` to "undo" the log link). Or you could compute *posterior predictions* by incorporating the uncertainty in the observation model:
 ```{r}
@@ -341,7 +363,7 @@ hist(ypreds,
      lwd = 2)
 ```
 
-`mvgam` attempts to make this process less error-prone and more straightforward using the `predict.mvgam`, `hindcast.mvgam` and `forecast.mvgam` functions. For example, we could replicate the linear prediction calculations using the following:
+`mvgam` makes this process straightforward using the `predict.mvgam`, `hindcast.mvgam` and `forecast.mvgam` functions. For example, we could replicate the linear prediction calculations using the following:
 ```{r}
 linpreds2 <- predict(model1, 
                      type = 'link', 
@@ -349,8 +371,7 @@ linpreds2 <- predict(model1,
 all.equal(linpreds, linpreds2)
 ```
 
-Notice how we explicitly set `process_error to FALSE` so that the calculations of the linear predictor will ignore
-any contributions of dynamic trends. This isn't applicable in this example, but it becomes important to consider when making predictions from dynamic models. We could also compute expectations using `predict.mvgam`:
+Notice how we explicitly set `process_error to FALSE` so that the calculations of the linear predictor will ignore any contributions of dynamic trends. This isn't applicable in this example, but it becomes important to consider when making predictions from dynamic models. We could also compute expectations using `predict.mvgam`:
 ```{r}
 linpreds3 <- predict(model1, type = 'expected', process_error = FALSE)
 all.equal(exp(linpreds), linpreds3)
@@ -381,27 +402,30 @@ summary(model1)
 Note though that the `hindcast.mvgam` and `forecast.mvgam` functions simply extract any predictions that were made in the original model, so will always include uncertainty in any underlying dynamic components.
 
 ### Posterior predictive checks
-Plot a posterior predictive check that is designed specifically for count-valued observations, namely the [rootogram](https://arxiv.org/pdf/1605.01311.pdf){target="_blank"}. These graphical checks are particularly useful for diagnosing issues such as a model's failure to capture overdispersion and/or excess zeros in observed count data. In the plot below, we bin the unique observed values into discrete bins to prevent overplotting and help with interpretation. This plot compares the frequencies of observed vs predicted values for each bin, which can help to identify aspects of poor model fit. For example, if the gray bars (representing observed frequencies) tend to stretch below zero, this suggests the model’s simulations predict the values in that particular bin less frequently than they are observed in the data. A well-fitting model that can generate realistic simulated data will provide a rootogram in which the lower boundaries of the grey bars are generally near zero
+Posterior predictive checks are useful for understanding how well your model can capture particular features of your observed data. In `mvgam`, the `pp_check()` function is particularly helpful as it relies on the very broad range of checking functions that are available in `bayesplot`. For example, we can plot a density kernel of our observed counts and overlay simulated kernels from our model. These simulated kernels are generated using `predict.mvgam()`, so they are informative for all `mvgam` models (regardless of whether or not the model included dynamic components).
 ```{r}
-ppc(model1, type = 'rootogram')
+pp_check(model1, type = 'dens_overlay', ndraws = 25)
 ```
 
-The model generally tends to underpredict. We can confirm this behaviour by inspecting a [PIT histogram](https://esajournals.onlinelibrary.wiley.com/doi/abs/10.1002/ecy.3431){target="_blank"} to again compare observed vs predicted values. For a well calibrated model fit, the PIT will have a standard uniform distribution
+The model generally tends to capture the shape of the observed data. We can confirm this behaviour by inspecting a [PIT histogram](https://esajournals.onlinelibrary.wiley.com/doi/abs/10.1002/ecy.3431){target="_blank"} to again compare observed vs predicted values. For a well calibrated model fit, uncertainty envelopes (in light red) around the observed CDF (in dark red) will be standard uniform.
 ```{r}
-ppc(model1, type = 'pit')
+pp_check(model1, type = 'pit_ecdf')
 ```
 
-The pattern suggests the model is failing to capture some aspects of the dispersion in the data. In general the variation in counts of recruits is not as smooth as the model is predicting, which we can see more clearly by plotting a posterior predictive check of the cumulative distribution function...
+The pattern suggests the model is fitting the data well, which we can further confirm by comparing observed vs simulated CDFs:
 ```{r}
-ppc(model1, type = 'cdf')
+pp_check(model1, type = 'ecdf_overlay')
 ```
 
-...or even by plotting a posterior predictive histogram:
+`pp_check()` even accepts custom functions. For example, if we want to know whether our model simulates counts that are `< 1000` as frequently as they tend to observe in the true data, we can use:
 ```{r}
-ppc(model1, type = 'cdf', n_bins = 40)
+prop_under1000 <- function(x){
+  length(which(x < 1000)) / length(x)
+}
+pp_check(model1, type = "stat", stat = "prop_under1000")
 ```
 
-There are many other types of posterior predictive checks that can be implemented, and it is highly recommended that you design some to suit your own specific needs (i.e., what aspect(s) of the data are you most concerned with your model being able to adequately capture?). See `?mvgam::ppc`  
+There are many other types of posterior predictive checks that can be implemented, and it is highly recommended that you design some to suit your own specific needs (i.e., what aspect(s) of the data are you most concerned with your model being able to adequately capture?). See `?mvgam::ppc_check`for details    
   
 Plot Dunn-Smyth residuals and posterior hindcasts to further inspect model fit
 ```{r Plot posterior residuals}
@@ -447,7 +471,7 @@ model2 <- xfun::cache_rds(mvgam(recruits ~ offset(log_spawners),
 ```{r eval = FALSE}
 model2 <- mvgam(recruits ~ offset(log_spawners),
               family = nb(),
-              trend_model = 'AR1',
+              trend_model = AR(),
               data = model_data)
 ```
 
@@ -456,7 +480,7 @@ Because this model has a dynamic trend component, it is worth quickly revisiting
 # calculate predictions for the training data by including the dynamic process
 # uncertainty
 ypreds <- predict(model2, type = 'response', 
-                  process_error = TRUE, n_cores = 2)
+                  process_error = TRUE, summary = FALSE)
 
 # calculate 95% empirical quantiles of predictions
 cred <- sapply(1:NCOL(ypreds),
@@ -482,7 +506,7 @@ polygon(c(pred_vals, rev(pred_vals)), c(cred[1,], rev(cred[2,])),
 
 # now repeat, but this time ignore uncertainty in the dynamic component
 ypreds2 <- predict(model2, type = 'response', 
-                   process_error = FALSE, n_cores = 2)
+                   process_error = FALSE, summary = FALSE)
 cred2 <- sapply(1:NCOL(ypreds),
                function(n) quantile(ypreds2[,n],
                                     probs = c(0.025, 0.975), na.rm = T))
@@ -568,16 +592,16 @@ However we must be cautious interpreting these residuals because the AR1 trend m
 plot(model2, type = 'forecast')
 ```
 
-PPCs can still give some valid insights into model inadequacy, though we still have to be a bit cautious due the flexibility of the AR1 process
+But PPCs can still give valid insights into model inadequacy:
 ```{r}
-ppc(model2, type = 'rootogram')
+pp_check(model2, type = 'dens_overlay')
 ```
 
 ```{r}
-ppc(model2, type = 'pit')
+pp_check(model2, type = 'pit_ecdf')
 ```
 
-These plots show some minor improvement in the PIT (a slightly more uniform plot). But there are some more worrying and pressing matters we can address with this model. Inspect the summary to see what I mean:
+These plots show that the model still tends to predict well. But there are some more worrying and pressing matters we can address with this model. Inspect the summary to see what I mean:
 ```{r class.output="scroll-300"}
 summary(model2)
 ```
@@ -616,11 +640,11 @@ model4 <- xfun::cache_rds(mvgam(recruits ~ offset(log_spawners),
 ```{r eval = FALSE}
 model4 <- mvgam(recruits ~ offset(log_spawners),
               family = poisson(),
-              trend_model = 'AR1',
+              trend_model = AR(),
               data = model_data)
 ```
 
-Neither of these models has any issues with sampling, which is a good sign!
+Neither of these models has any major issues with sampling, which is a good sign!
 ```{r class.output="scroll-300"}
 summary(model3)
 ```
@@ -629,7 +653,7 @@ summary(model3)
 summary(model4)
 ```
 
-Hindcasts and trend estimates are very different from the two models
+Hindcasts and trend estimates are very different for the two models:
 ```{r}
 plot(model3, type = 'trend')
 ```
@@ -646,105 +670,39 @@ plot(model3, type = 'forecast')
 plot(model4, type = 'forecast')
 ```
 
-Here the extreme flexibility of the AR1 trend is apparent in the hindcasts for `model4`. Hopefully this gives you more of an idea about why we can't put too much faith in residual or fitted value diagnostics for these flexible dynamic models
-
-### Stochastic trend extrapolation
-Ok so we cannot use in-sample fits or residual diagnostics to guide reasonable comparisons of these two models. It would be more appropriate to use 1-step ahead residuals for interrogation. But computing these is extremely computationally demanding. How then can we compare models? `mvgam` implements two different approximators of expanding window forecast evaluation. The first approximator targets each model’s ability to simulate temporal dynamics using the single model that has been fit. Briefly, we must choose a set of timepoints within the training data to forecast from, allowing us to simulate a situation where the model’s parameters had already been estimated but we have only observed data up to the evaluation timepoint and would like to generate forecasts from the latent trends. This is not a true estimate of h-step ahead forecasts, because the estimates for the state of the latent residuals at each timepoint has been informed by data from before this timepoint AND data from after this timepoint. But it does allow us to get a sense of which model would have given more reasonable forecasts if we happened to know what the state of the system was at a given timepoint in the past. Here we simulate scenarios where we forecast ahead for the next 3 years. We will use an evaluation sequence covering 19 different evenly spaced timepoints, ensuring a more in-depth evaluation of each competing model at the same set of timepoints 
+### Approximate Leave-One-Out CV
+Here the extreme flexibility of the AR1 trend is apparent in the hindcasts for `model4`. Hopefully this gives you more of an idea about why we can't put too much faith in residual or fitted value diagnostics for these flexible dynamic models. Ok so we cannot use in-sample fits or residual diagnostics to guide reasonable comparisons of these two models. It would be more appropriate to use 1-step ahead residuals for interrogation. But computing these is extremely computationally demanding. How then can we compare models? Using `loo_compare()`, we can ask which model would likely give better predictions for new data *within the training set*. This method of approximating leave-one-out prediction error (using a method called Pareto Smoothed Importance Sampling (PSIS)) is widely-used for comparing Bayesian models, and is generally interpreted in the same way that AIC comparisons can be interpreted. Here I use a modified `loo()` function that will be implemented in the next CRAN release of `mvgam` to compute in-sample LOO values (don't worry about these technicalities):
 ```{r}
-evaluation_seq <- seq.int(6, 42, by = 2)
-```
-
-```{r roll_gp, include = FALSE}
-roll_gp <- xfun::cache_rds(roll_eval_mvgam(object = model3, 
-                                          evaluation_seq = evaluation_seq,
-                                          n_samples = 1000, n_cores = 3, 
-                                          fc_horizon = 3),
-                dir = 'cache_not_for_upload/')
-```
-
-Run the approximator for the Gaussian Process / Negative Binomial model. Be aware that these runs can take several minutes to complete, depending on the size and complexity of the model
-```{r eval=FALSE}
-roll_gp <- roll_eval_mvgam(object = model3,
-                           evaluation_seq = evaluation_seq,
-                           n_samples = 1000, n_cores = 4, fc_horizon = 3)
-```
-
-```{r roll_ar, include = FALSE}
-roll_ar <- xfun::cache_rds(roll_eval_mvgam(object = model4, 
-                                          evaluation_seq = evaluation_seq,
-                                          n_samples = 1000, 
-                                          n_cores = 3, fc_horizon = 3),
-                dir = 'cache_not_for_upload/')
-```
-
-And now for the AR1 / Poisson model
-```{r eval=FALSE}
-roll_ar <- roll_eval_mvgam(object = model4,
-                           evaluation_seq = evaluation_seq,
-                           n_samples = 1000, n_cores = 4, fc_horizon = 3)
-```
-
-```{r message=FALSE, warning=FALSE}
-roll_gp$series_evals$sockeye$all_scores$model = 'GP'
-roll_ar$series_evals$sockeye$all_scores$model = 'AR1'
-all_score_data <- rbind(roll_gp$series_evals$sockeye$all_scores,
-                        roll_ar$series_evals$sockeye$all_scores) %>%
-  dplyr::mutate(log_score = log(score),
-                eval_horizon = paste0('Horizon = ', eval_horizon))
-ggplot(all_score_data, aes(x = model, y = log_score,
-                           fill = model)) +
-  geom_boxplot() +
-  facet_grid(~ eval_horizon) +
-  coord_flip() +
-  labs(y = expression(log[DRPS]),
-       x = 'Model') +
-  theme_bw() +
-  theme(legend.position = 'none')
-```
-
-Design a function to calculate the proportion of comparisons in which a model performed better (gave lower DRPS scores)
-```{r}
-prop_better = function(x){
-  length(which(x < 0)) / length(x)
+loo_hcs = function(x, ...){
+  x$series_names <- levels(x$obs_data$series)
+  logliks <- logLik(x, 
+                    linpreds = predict(x,
+                                       newdata = x$obs_data,
+                                       type = 'link',
+                                       summary = FALSE,
+                                       process_error = TRUE),
+                    newdata = x$obs_data,
+                    family_pars = mvgam:::extract_family_pars(x))
+  logliks <- logliks[,!apply(logliks, 2, function(x) all(!is.finite(x)))]
+  releffs <- loo::relative_eff(exp(logliks),
+                               chain_id = sort(rep(1:x$model_output@sim$chains,
+                                                   (NROW(logliks) /
+                                                      x$model_output@sim$chains))))
+  loo::loo(logliks, r_eff = releffs, ...)
 }
 ```
 
-Now calculate the proportion in which the Gaussian Process / Negative Binomial model gave better scores for each forecast horizon. First for horizon 1
-```{r}
-prop_better(roll_gp$series_evals$sockeye$all_score %>%
-  dplyr::filter(eval_horizon == 1) %>%
-  dplyr::pull(score) - 
-roll_ar$series_evals$sockeye$all_scores %>%
-  dplyr::filter(eval_horizon == 1) %>%
-  dplyr::pull(score))
+```{r message=FALSE, warning=FALSE}
+loo::loo_compare(list(model3 = loo_hcs(model3), 
+                      model4 = loo_hcs(model4)))
 ```
 
-Now for horizon 2
-```{r}
-prop_better(roll_gp$series_evals$sockeye$all_score %>%
-  dplyr::filter(eval_horizon == 2) %>%
-  dplyr::pull(score) - 
-roll_ar$series_evals$sockeye$all_scores %>%
-  dplyr::filter(eval_horizon == 2) %>%
-  dplyr::pull(score))
-```
-
-And for horizon 3
-```{r}
-prop_better(roll_gp$series_evals$sockeye$all_score %>%
-  dplyr::filter(eval_horizon == 3) %>%
-  dplyr::pull(score) - 
-roll_ar$series_evals$sockeye$all_scores %>%
-  dplyr::filter(eval_horizon == 3) %>%
-  dplyr::pull(score))
-```
-
-These summaries are informative. The AR1 / Poisson model tends to give similar approximate forecasts (lower Discrete Rank Probability Scores) at a horizon of 1, but does worse at increasing horizons. The `compare_mvgams` function can be used to automate this process by rolling along a set of timepoints for each model. But we have to be careful interpreting these comparisons, as the AR1 model is extending out from a well-estimated 'state' at each evaluation timepoint so it has an unfair advantage (the GP trend is smoother and so the starting 'state' for each rolling evaluation is not as unrealistically perfect). Overall we can't put too much faith in these comparisons, unfortunately.  
+The Gaussian Process / Negative Binomial model is strongly favoured here, yielding much higher values of the [Expected Log Predictive Density (ELPD; also known as the log score)](https://link.springer.com/article/10.1007/s11222-016-9696-4){target="_blank"}. This is one useful metric for choosing among models, but we'd also like to compare them on their abilities to predict *future* out of sample data. 
 
 ### Approximate Leave-Future-Out CV
-And now for the second approximator, which uses more conventional leave-future-out comparisons. Time series models are often evaluated using an expanding window training technique, where the model is initially trained on some subset of data from $t = 1$ to $t = n_{train}$, and then is used to produce forecasts for the next $h$ time steps $(t = n_{train} + h)$. In the next iteration, the size of training data is expanded by a single time point and the process repeated. This is obviously computationally challenging for Bayesian time series models, as the number of refits can be very large. `mvgam` uses an approximation based on importance sampling. Briefly, we refit the model using the first $min_t$ observations to perform a single exact $h~ahead$ forecast step. This forecast is evaluated against the $min_t + h$ out of sample observations using the [Expected Log Predictive Density (ELPD; also known as the log score)](https://link.springer.com/article/10.1007/s11222-016-9696-4){target="_blank"}. Next, we approximate each successive round of expanding window forecasts by moving forward one step at a time $for~i~in~1:N_{evaluations}$ and re-weighting draws from the model’s posterior predictive distribution using Pareto Smoothed Importance Sampling (PSIS). In each iteration $i$, PSIS weights are obtained for all observations that would have been included in the model if we had re-fit. If these importance ratios are stable, we consider the approximation adequate and use the re-weighted posterior’s forecast for evaluating the next holdout set of testing observations $((min_t + i + 1):(min_t + i + h))$. This is similar to the process of particle filtering to update forecasts in light of new data by re-weighting the posterior draws using importance weights. But at some point the importance ratio variability will become too large and importance sampling will be unreliable. This is indicated by the estimated shape parameter k of the generalized Pareto distribution crossing a certain threshold `pareto_k_threshold`. Only then do we refit the model using all of the observations up to the time of the failure. We then restart the process and iterate forward until the next refit is triggered. The process, which is implemented using the `lfo_cv` function, is computationally much more efficient, as only a fraction of the evaluations typically requires refits (the algorithm is described in detail by [Bürkner et al. 2020](https://www.tandfonline.com/doi/full/10.1080/00949655.2020.1783262){target="_blank"}).  
+`mvgam` includes functions that facilitate leave-future-out comparisons. Time series models are often evaluated using an expanding window training technique, where the model is initially trained on some subset of data from $t = 1$ to $t = n_{train}$, and then is used to produce forecasts for the next $h$ time steps $(t = n_{train} + h)$. In the next iteration, the size of training data is expanded by a single time point and the process repeated. This is obviously computationally challenging for Bayesian time series models, as the number of refits can be very large. `mvgam` uses an approximation based on importance sampling. Briefly, we refit the model using the first $min_t$ observations to perform a single exact $h~ahead$ forecast step. This forecast is evaluated against the $min_t + h$ out of sample observations using the ELPD as with the LOO comparisons above. Next, we approximate each successive round of expanding window forecasts by moving forward one step at a time $for~i~in~1:N_{evaluations}$ and re-weighting draws from the model’s posterior predictive distribution using PSIS. In each iteration $i$, PSIS weights are obtained for all observations that would have been included in the model if we had re-fit. If these importance ratios are stable, we consider the approximation adequate and use the re-weighted posterior’s forecast for evaluating the next holdout set of testing observations $((min_t + i + 1):(min_t + i + h))$. This is similar to the process of particle filtering to update forecasts in light of new data by re-weighting the posterior draws using importance weights. But at some point the importance ratio variability will become too large and importance sampling will be unreliable. This is indicated by the estimated shape parameter k of the generalized Pareto distribution crossing a certain threshold `pareto_k_threshold`. Only then do we refit the model using all of the observations up to the time of the failure. We then restart the process and iterate forward until the next refit is triggered. The process, which is implemented using the `lfo_cv` function, is computationally much more efficient, as only a fraction of the evaluations typically requires refits (the algorithm is described in detail by [Bürkner et al. 2020](https://www.tandfonline.com/doi/full/10.1080/00949655.2020.1783262){target="_blank"}).  
   
-Run the approximator for the first model, setting `min_t = 20` and using the same forecast horizon as previously
+Run the approximator for the first model, setting `min_t = 20` and using a forecast horizon of `fc_horizon = 3`
 ```{r lfo_gp, include = FALSE}
 lfo_gp <- xfun::cache_rds(lfo_cv(model3, min_t = 20, 
                                  pareto_k_threshold = 0.5,
@@ -759,7 +717,12 @@ lfo_gp <- lfo_cv(model3, min_t = 20,
 ```
 
 The `S3` plotting function for these `lfo_cv` objects will show the Pareto-k values and ELPD values over the evaluation time points. For the Pareto k plot, a dashed red line indicates the specified threshold chosen for triggering model refits. For the ELPD plot, a dashed red line indicates the bottom 10% quantile of ELPD values. Points below this threshold may represent outliers that were more difficult to forecast
-```{r}
+```{r, eval=FALSE}
+plot(lfo_gp)
+```
+
+```{r, echo=FALSE}
+mypar()
 plot(lfo_gp)
 ```
 
@@ -777,7 +740,12 @@ lfo_ar <- lfo_cv(model4, min_t = 20,
                  fc_horizon = 3, n_cores = 4)
 ```
 
-```{r}
+```{r, eval=FALSE}
+plot(lfo_ar)
+```
+
+```{r, echo=FALSE}
+mypar()
 plot(lfo_ar)
 ```
 
@@ -812,7 +780,7 @@ points(ifelse(gp_minus_ar > 0, gp_minus_ar, NA),
        pch = 16, cex = 0.85, col = 'darkred')
 ```
 
-The Gaussian Process / Negative Binomial model tends to give better probabilistic predictions throughout the leave-future-out exercise. This result differs sharply from the results from the first approximator above, and is probably due to the fact that the AR1 trend was given an unfair advantage in the first approximator. In-sample residuals for the Gaussian Process / Negative Binomial model look fairly good as well, suggesting we should stick with this model going forward:
+The Gaussian Process / Negative Binomial model tends to give better probabilistic predictions throughout the leave-future-out exercise. This result strongly agrees with the results from the leave-one-out approximator above, which makes model selection easy in this case. In-sample residuals for the Gaussian Process / Negative Binomial model look fairly good as well, suggesting we should definitely stick with this model going forward:
 ```{r}
 plot(model3, type = 'residuals')
 ```
