@@ -103,6 +103,8 @@ Lecture 1 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/d
 <br>
 Lecture 2 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day1/lecture_2_slidedeck) | [pdf](https://github.com/nicholasjclark/physalia-forecasting-course/raw/main/day1/lecture_2_slidedeck.pdf))
 <br>
+Live code examples ([Random effects](https://raw.githubusercontent.com/nicholasjclark/physalia-forecasting-course/main/day1/live_code_examples/live_1_randomeffects.R))
+<br>
 Tutorial 1 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia))
 * Introduction to time series and time series visualization
 * Some traditional time series models and their assumptions
@@ -112,6 +114,8 @@ Tutorial 1 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/
 
 ## Tuesday (day 2) 
 Lecture 3 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day2/lecture_3_slidedeck) | [pdf](https://github.com/nicholasjclark/physalia-forecasting-course/raw/main/day2/lecture_3_slidedeck.pdf))
+<br>
+Live code examples ([Interactions](https://raw.githubusercontent.com/nicholasjclark/physalia-forecasting-course/main/day2/live_code_examples/live_2_interactions.R) | [Time-varying](https://raw.githubusercontent.com/nicholasjclark/physalia-forecasting-course/main/day2/live_code_examples/live_3_timevarying.R))
 <br>
 Tutorial 2 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day2/tutorial_2_physalia))
 * Dynamic GLMs and Dynamic GAMs
@@ -123,6 +127,8 @@ Tutorial 2 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/
 ## Wednesday (day 3)
 Lecture 4 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day3/lecture_4_slidedeck) | [pdf](https://github.com/nicholasjclark/physalia-forecasting-course/raw/main/day3/lecture_4_slidedeck.pdf))
 <br>
+Live code examples ([Distributed lags](https://raw.githubusercontent.com/nicholasjclark/physalia-forecasting-course/main/day3/live_code_examples/live_4_distributedlags.R) | [Distributed MAs](https://raw.githubusercontent.com/nicholasjclark/physalia-forecasting-course/main/day3/live_code_examples/live_4_distributedmas.R))
+<br>
 Tutorial 3 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day3/tutorial_3_physalia))
 * Bayesian posterior predictive checks
 * Forecasting from dynamic models
@@ -132,6 +138,8 @@ Tutorial 3 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/
 
 ## Thursday (day 4)
 Lecture 5 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day4/lecture_5_slidedeck) | [pdf](https://github.com/nicholasjclark/physalia-forecasting-course/raw/main/day4/lecture_5_slidedeck.pdf))
+<br>
+Live code examples ([Functionals](https://raw.githubusercontent.com/nicholasjclark/physalia-forecasting-course/main/day4/live_code_examples/live_5_functional.R))
 <br>
 Tutorial 4 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day4/tutorial_4_physalia))
 * Multivariate ecological time series
