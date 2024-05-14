@@ -3,7 +3,7 @@ title: "Ecological forecasting in R"
 subtitle: "Lecture 4: evaluating dynamic models"
 institute: "School of Veterinary Science, University of Queensland"
 author: "Nicholas Clark"
-date: "0900&ndash;1200 CET Wednesday 6th September, 2023"
+date: "0900&ndash;1200 CET Wednesday 29th May, 2024"
 output:
   xaringan::moon_reader:
     css: ['default','https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css', 'slides.css']
@@ -30,7 +30,7 @@ knitr::opts_chunk$set(cache = FALSE, dev = 'svg', echo = TRUE,
 library('mgcv')
 library('mvgam')
 library('gratia')
-library('ggplot2')
+library('ggplot2'); theme_set(theme_classic())
 library('ggborderline')
 library('viridis')
 library('gamair')
@@ -122,6 +122,7 @@ simulate_ar1 = function(ar1 = 0.5, N = 50, shock = FALSE){
 multipar = function(...){
   par(family = "serif", 
     bty = "l", 
+    mar=c(4,4.1,2,2),
     cex.axis = 1.1, 
     cex.lab = 1.1, 
     cex.main = 1.3,
@@ -302,8 +303,8 @@ class: inverse middle center big-subsection
 
 ## Forecasting in `mvgam`
 Two options
-- Feed `newdata` into the `mvgam` function for automatic probabilistic forecasts through `Stan`
-- Produce forecasts outside of `Stan` by feeding `newdata` and the fitted model into the `forecast.mvgam` function
+- Feed `newdata` into the `mvgam()` function for automatic probabilistic forecasts through `Stan`
+- Produce forecasts outside of `Stan` by feeding `newdata` and the fitted model into the `forecast()` function
 
 Both require any out-of-sample covariates to be supplied
 
@@ -327,7 +328,7 @@ model <- mvgam(y ~
                  s(season, bs = 'cc', k = 8), #<<
                 data = data_train,
                 newdata = data_test, 
-                trend_model = 'GP', 
+                trend_model = GP(), 
                 family = poisson())
 ```
 
@@ -343,7 +344,7 @@ model <- mvgam(y ~
                  s(season, bs = 'cc', k = 8), 
                 data = data_train,
                 newdata = data_test, 
-                trend_model = 'GP', #<<
+                trend_model = GP(), #<<
                 family = poisson())
 ```
 
@@ -357,7 +358,7 @@ model <- mvgam(y ~
                  s(season, bs = 'cc', k = 8), 
                 data = data_train,
                 newdata = data_test, #<<
-                trend_model = 'GP',
+                trend_model = GP(),
                 family = poisson())
 ```
 
@@ -370,7 +371,7 @@ Forecasts will be computed automatically using the [`generated quantities` block
 model2 <- mvgam(y ~ 
                  s(season, bs = 'cc', k = 8), 
                 data = data_train,
-                trend_model = 'GP',
+                trend_model = GP(),
                 family = poisson())
 ```
 
@@ -437,35 +438,6 @@ model2$model_output@sim$chains
 ```{r}
 model2$model_output@sim$iter
 ```
----
-
-## Visualising chains
-
-.panelset[
-.panel[.panel-name[Code]
-
-```{r alpha, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25, message=FALSE,warning=FALSE}
-# use bayesplot to visualise posterior draws
-library(ggplot2)
-mcmc_plot(model2, 
-           
-           # view draws of the GP length scale
-           variable = 'rho_gp[1]',
-          
-          # visualise as a traceploit
-          type = 'trace') +
-  
-  # use ggplot2 to add informative labels
-  ylab(expression(rho[error]))
-```
-
-]
-
-.panel[.panel-name[Plot]
-.center[![](lecture_4_slidedeck_files/figure-html/alpha-1.svg)]
-
-]
-]
 
 ---
 ## Draws of `trend`
@@ -545,12 +517,12 @@ trend_draws <- as.matrix(model, variable = 'trend', regex = TRUE)
 alpha_draws <- as.matrix(model, variable = 'alpha_gp', regex = TRUE)
 rho_draws <- as.matrix(model, variable = 'rho_gp', regex = TRUE)
 plot(1, type = 'n', bty = 'l',
-     xlim = c(1, 120), ylim = range(trend_draws[1,]),
+     xlim = c(1, 120), ylim = range(trend_draws[2,]),
      ylab = 'One trend draw', xlab = 'Time')
-lines(trend_draws[1,], col = 'gray70', lwd = 3.5)
-forecast_draw = sim_gp(trend_draw = trend_draws[1,],
-                       alpha = alpha_draws[1,],
-                       rho = rho_draws[1,],
+lines(trend_draws[2,], col = 'gray70', lwd = 3.5)
+forecast_draw = sim_gp(trend_draw = trend_draws[2,],
+                       alpha = alpha_draws[2,],
+                       rho = rho_draws[2,],
                        h = 30)
 lines(x = 101:130, y = forecast_draw[101:130], 
       lwd = 3.5, col = 'darkred')
@@ -709,9 +681,9 @@ lines(linkpreds, col = 'darkred', lwd = 3.5)
 ---
 
 class: middle center
-### These covariate predictions are added to the trend predictions to give the full predictions *on the link scale*
+### Covariate predictions are added to the trend predictions to give the full predictions *on the link scale*
 <br>
-### Once again, `mvgam` does this *automatically* using the `forecast` function
+### `mvgam` does this *automatically* using the `forecast` function
 
 ---
 
@@ -723,6 +695,13 @@ plot(forecast(model, type = 'link', newdata = poisdat$data_test), realisations =
 ```
 
 ---
+
+class: inverse middle center big-subsection
+
+# Live code example
+
+---
+
 class: middle center
 ### Forecasting is easier if `newdata` are fed to `mvgam()`, but this results in a larger model object and requires test data be available now
 <br>
@@ -792,7 +771,7 @@ c(-3.801796, 5.165899)
 range(as.matrix(model, variable = 'mus', regex = TRUE))
 ```
 
-`predict` assumes the dynamic process has reached stationarity to tell us what we might expect if we see these same covariate values .emphasize[*sometime in the future*]
+`predict()` assumes the dynamic process has reached stationarity to tell us what we might expect if we see these same covariate values .emphasize[*sometime in the future*]
 
 `mus` includes estimates for where the trend was .emphasize[*at each point in the training data*] (hindcasts), so it is has less uncertainty
 
@@ -835,7 +814,7 @@ Gives the .emphasize[*average*] prediction on the observation (response) scale
 This is probably the most confusing type of prediction
 
 ---
-## Normal distribution
+## Normal distribution (skip)
 
 \begin{align*}
 \boldsymbol{Y}_t & \sim \text{Normal}(\mu_t, \sigma) \\
@@ -844,7 +823,7 @@ This is probably the most confusing type of prediction
 \end{align*}
 
 ---
-## Normal distribution
+## Normal distribution (skip)
 ```{r echo=FALSE}
 myhist(rnorm(10000, mean = 5, sd = 2))
 abline(v = 5, lwd = 5, col = 'white')
@@ -853,7 +832,7 @@ title(main = 'Y ~ Normal(5, 2); Mean(Y) = 5')
 ```
 ---
 
-## Poisson distribution
+## Poisson distribution (skip)
 
 \begin{align*}
 \boldsymbol{Y}_t & \sim \text{Poisson}(\lambda_t) \\
@@ -862,7 +841,7 @@ log(\lambda_t) & =  \alpha + \boldsymbol{X}_t\beta + z_t &&\color{darkred}{\left
 \end{align*}
 ---
 
-## Poisson distribution
+## Poisson distribution (skip)
 
 ```{r echo=FALSE}
 vals <- rpois(10000, lambda = 5)
@@ -874,7 +853,7 @@ title(main = 'Y ~ Poisson(5); Mean(Y) = 5')
 ---
 
 
-## LogNormal distribution
+## LogNormal distribution (skip)
 
 \begin{align*}
 \boldsymbol{Y}_t & \sim \text{LogNormal}(\mu_t, \sigma) \\
@@ -884,7 +863,7 @@ title(main = 'Y ~ Poisson(5); Mean(Y) = 5')
 
 ---
 
-## LogNormal distribution
+## LogNormal distribution (skip)
 ```{r echo=FALSE}
 set.seed(222)
 vals <- rlnorm(1000, log(exp(5)), log(exp(0.75)))
@@ -1072,30 +1051,18 @@ To generate new outcome data we can simulate from the model's posterior predicti
 "*The idea is simple: if a model is a good fit then we should be able to use it to generate data that looks a lot like the data we observed*" [Gabry & Mahr](https://mc-stan.org/bayesplot/reference/PPC-overview.html)
 
 ---
-## All `mvgams` use simulations
 
-Uses the extremely efficient [`generated quantities` block](https://mc-stan.org/docs/reference-manual/program-block-generated-quantities.html)
-
-```{r echo=FALSE}
-model$model_file[grep('generated quantities {', model$model_file, fixed = TRUE):
-                   (length(model$model_file)-1)]
-```
-
----
-## A PPC histogram
+## A PPC barplot
 .panelset[
 .panel[.panel-name[Code]
 
 ```{r ppc1, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25, echo=FALSE, results='hide'}
-mypar()
-ppc(model, type = 'hist')
-title(expression('Predictions ('*hat(y)*') vs true observations (y)'))
+pp_check(model, type = 'bars', ndraws = 25)
 ```
 
 ```{r eval=FALSE}
-# view a histogram of true data vs simulated predictions
-ppc(model, type = 'hist')
-title(expression('Predictions ('*hat(y)*') vs true observations (y)'))
+# view barplots of true data vs simulated predictions
+pp_check(model, type = 'bars', ndraws = 25)
 ```
 
 ]
@@ -1113,17 +1080,12 @@ title(expression('Predictions ('*hat(y)*') vs true observations (y)'))
 .panel[.panel-name[Code]
 
 ```{r ppc2, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25, echo=FALSE, results='hide'}
-mypar()
-ppc(model, type = 'cdf')
-title(expression('Predicted distribution ('*hat(y)*') vs true distribution (y)'))
-title(xlab = 'Count')
+pp_check(model, type = 'ecdf_overlay', ndraws = 25)
 ```
 
 ```{r eval=FALSE}
 # view the simulated vs true cumulative distribution functions
-ppc(model, type = 'cdf')
-title(expression('Predicted distribution ('*hat(y)*') vs true distribution (y)'))
-title(xlab = 'Count')
+pp_check(model, type = 'ecdf_overlay', ndraws = 25)
 ```
 
 ]
@@ -1136,20 +1098,17 @@ title(xlab = 'Count')
 
 ---
 
-## A PPC rootogram
+## A PIT CDF
 .panelset[
 .panel[.panel-name[Code]
 
 ```{r ppc3, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25, echo=FALSE, results='hide'}
-mypar()
-ppc(model, type = 'rootogram')
-title('True frequencies (grey) hanging from predicted frequencies (red)')
+pp_check(model, type = 'pit_ecdf')
 ```
 
 ```{r eval=FALSE}
 # view the simulated vs true count frequencies
-ppc(model, type = 'rootogram')
-title('True frequencies (grey) hanging from predicted frequencies (red)')
+pp_check(model, type = 'pit_ecdf')
 ```
 
 ]
@@ -1161,10 +1120,55 @@ title('True frequencies (grey) hanging from predicted frequencies (red)')
 ]
 
 ---
+
+## Comparing fits with `loo()`
+
+```{r eval = FALSE}
+model_good <- mvgam(y ~ s(season, bs = 'cc', k = 8) +
+                      gp(time, k = 20, c = 5/4, scale = FALSE), #<<
+                    data = poisdat$data_train,
+                    trend_model = 'None',
+                    family = poisson())
+```
+
+A GP of `time`, together with the cyclic seasonality, is a good model here
+
+---
+
+## Comparing fits with `loo()`
+```{r eval = FALSE}
+model_bad <- mvgam(y ~ 1, 
+                    data = poisdat$data_train,
+                    trend_model = RW(), #<<
+                    family = poisson())
+```
+
+A RW with no seasonality will fit the data *very well*, but gives *bad* predictions
+---
+`plot(hindcast(model_good))`
+```{r echo=FALSE, message=FALSE}
+plot(hindcast(model_good))
+```
+
+---
+
+`plot(hindcast(model_bad))`
+```{r echo=FALSE, message=FALSE}
+plot(hindcast(model_bad))
+```
+
+---
+
+`loo_compare(model_good, model_bad)`
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+loo_compare(model_good, model_bad)
+```
+
+---
 class: middle center
-### PPCs using the training covariates are a great first step to check model validity
+### PPCs and `loo()` using training covariates are a great first step to check model validity and begin comparing models
 <br>
-### But they can be misleading (very flexible dynamic processes mean predictions may be nearly perfect)
+### But they only assess how well the model predicts against the training data
 <br>
 ### How else can we verify models? Using `newdata` for response predictions &#8680; counterfactual .emphasize[*scenarios*]
 
@@ -1179,12 +1183,12 @@ This is often challenging because:
 - Most software emphasizes coefficients and *p*-values over meaningful interpretations
 
 ---
-## `predict.mvgam`
+## `predict.mvgam()`
 Feed `newdata` consisting of particular covariate values that represent scenarios you'd like to explore
 - Can be simple: predict a smooth function along a fine-spaced grid to explore the smooth's shape and / or derivatives
 - Or can be complex: integrate over a high-dimensional grid of predictors to understand the average impact of a predictor on the response
 
-Users can implement the wonderful `datagrid` function from `marginaleffects` 📦 to effortlessly generate a `data.frame` of covariate values for scenario predictions
+Users can implement the wonderful `datagrid()` function from `marginaleffects` 📦 to effortlessly generate a `data.frame` of covariate values for scenario predictions
 
 ---
 
@@ -1244,7 +1248,7 @@ post_contrasts %>% ggplot(aes(x = draw)) +
 
 ---
 class: middle center
-### The ability to readily interpret models from `mvgam` and `brms` 📦's is a .emphasize[*huge advantage*] over traditional time series models
+### The ability to readily interpret models from `mvgam` and `brms` 📦's is a .emphasize[*huge advantage*] over traditional time series models. See [my blogpost on interpeting GAMs for more examples](https://ecogambler.netlify.app/blog/interpreting-gams/)
 <br>
 ### But this is a forecasting course. So how can we evaluate forecast distributions?
 
@@ -1255,6 +1259,7 @@ class: middle center
 We must evaluate on data that was not used to train the model (i.e. .emphasize[*leave-future-out cross-validation*]) because:
 - Models that fit training data well do not always provide good forecasts
 - We can easily engineer a model that perfectly fits the training data, leading to overfitting
+- See [the `mvgam` forecasting vignette](https://nicholasjclark.github.io/mvgam/articles/forecast_evaluation.html) for more guidance
 
 ---
 ## Leave-future-out CV
@@ -1267,15 +1272,7 @@ Some points to consider:
 - Usually good to compare models against simpler .emphasize[*benchmark*] models to ensure added complexity improves forecasts
 
 ---
-## Approximate leave-future-out CV
-Re-fitting Bayesian models to obtain exact forecasts on different training sets can be computationally infeasible
-- Some models fit with `mvgam` and `brms` 📦's can take several hours to compute posterior distributions
-- Doing this even 5 or 6 times may be impractical, especially when comparing multiple models
 
-There are ways we can .emphasize[*approximate*] the leave-future-out forecast distribution using importance sampling of the posterior distribution
-- Won't discuss details here, but see [Bürkner et al 2020](https://www.tandfonline.com/doi/full/10.1080/00949655.2020.1783262) for in-depth information
-
----
 class: middle center
 ### We must obtain leave-future-out forecasts (ideally for many different training / testing splits) to compare ecological forecasting models
 <br>
@@ -1321,6 +1318,13 @@ class: middle center
 ### Point-based measures ignore far too much information in the forecast distribution
 <br>
 ### It is better to evaluate the *entire forecast distribution*
+---
+
+
+class: inverse middle center big-subsection
+
+# Live code example
+
 ---
 
 class: inverse middle center big-subsection
@@ -1447,7 +1451,7 @@ $\theta$ captures all unknown parameters:
 ---
 
 class: middle center
-### logging brings numerical stability and makes joint calculations easier
+### logging is stabile and makes joint calculations easier
 <br>
 ### But the log score can severly penalize over-confidence and is sensitive to outliers
 <br>
@@ -1518,14 +1522,14 @@ Uses an approximation of the forecast and true CDFs at a range of possible count
 Interpretation is similar
 
 ---
-## `score.mvgam_forecast`
+## `score.mvgam_forecast()`
 Once forecasts are computed and stored in an object of class `mvgam_forecast`, scores can be directly applied
 
 User chooses among the Scaled Interval Score (`sis`), log score (`elpd`), CRPS (`crps`), DRPS (`drps`) and two multivariate scores (`energy` or `variogram`; more on this in the next lecture)
 
 User also specifies an interval for calculating coverage and/or which interval to use for the Scaled Interval Score
 
-`return` is a `list` with scores for each series in the data and an overall score (usually just the sum of series-level scores)
+`return` is a `list()` with scores for each series in the data and an overall score (usually just the sum of series-level scores)
 
 ---
 ```{r }
