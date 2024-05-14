@@ -74,7 +74,17 @@ If your toolchain is configured correctly then CmdStan can be installed by calli
 ```{r}
 install_cmdstan(cores = 2)
 ```
-You should now be able to follow the remaining instructions on the [Getting Started with CmdStanR page](https://mc-stan.org/cmdstanr/articles/cmdstanr.html) to ensure that Stan models can successfully compile on your machine. But issues can sometimes occur when:
+You should now be able to follow the remaining instructions on the [Getting Started with CmdStanR page](https://mc-stan.org/cmdstanr/articles/cmdstanr.html) to ensure that Stan models can successfully compile on your machine. A quick way to check this would be to run this script:
+
+```{r}
+library(mvgam)
+simdat <- sim_mvgam()
+mod <- mvgam(y ~ s(season, bs = 'cc', k = 5) +
+               s(time, series, bs = 'fs', k = 8),
+             data = simdat$data_train)
+```
+
+But issues can sometimes occur when:
 1. [you don't have write access to the folders that CmdStan uses to create model executables](https://discourse.mc-stan.org/t/problem-running-cmdstan-on-computing-cluster/34747/5)
 2. [you are using a university- or company-imposed syncing system such as One Drive, leading to confusion about where your make file and compilers are located](https://discourse.mc-stan.org/t/system-command-make-failed-models-wont-compile/30528)
 3. [you are using a university- or company-imposed firewall that is aggressively deleting the temporary executable files that CmdStan creates when compiling](https://discourse.mc-stan.org/t/trouble-with-cmdstan-toolchain-with-rtools42-on-windows-10-enterprise/28444)
