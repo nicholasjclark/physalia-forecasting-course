@@ -48,17 +48,10 @@ update.packages(ask = FALSE, checkBuilt = TRUE)
 
 # packages to install for the course
 pkgs <- c("brms", "dplyr", "gratia", "ggplot2", "marginaleffects",
-          "tidybayes", "zoo", "viridis", "remotes")
+          "tidybayes", "zoo", "viridis", "mvgam")
 
 # install packages
 install.packages(pkgs)
-```
-
-We will make use of the development version of the `mvgam` package as it is not quite ready for CRAN. You can install this package using the following:
-
-```r
-# Download and install mvgam
-remotes::install_github('nicholasjclark/mvgam', force = TRUE)
 ```
 
 ### INSTALLING AND CHECKING STAN
