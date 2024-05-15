@@ -37,7 +37,7 @@ class: inverse, middle, left, my-title-slide, title-slide
 ### School of Veterinary Science, University of Queensland
 ]
 .date[
-### 0900–1200 CET Thursday 7th September, 2023
+### 0900–1200 CET Thursday 30th May, 2024
 ]
 
 ---
@@ -195,7 +195,7 @@ simdat &lt;- sim_mvgam(seasonality = 'hierarchical',
 ]
 
 .panel[.panel-name[Data]
-&lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
+&lt;table class=" lightable-minimal" style='color: black; font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
  &lt;thead&gt;
   &lt;tr&gt;
    &lt;th style="text-align:right;"&gt; y &lt;/th&gt;
@@ -228,7 +228,7 @@ simdat &lt;- sim_mvgam(seasonality = 'hierarchical',
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 8 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_4 &lt;/td&gt;
@@ -282,7 +282,7 @@ class: middle center
 ```r
 mod &lt;- mvgam(y ~ 
                s(season, bs = 'cc', k = 12) +
-               s(season, series, k = 4, bs = 'fs'),
+               s(season, series, k = 6, bs = 'fs'),
              data = data, 
              family = poisson())
 ```
@@ -295,7 +295,7 @@ mod &lt;- mvgam(y ~
 ```r
 mod &lt;- mvgam(y ~ 
 *              s(season, bs = 'cc', k = 12) +
-               s(season, series, k = 4, bs = 'fs'),
+               s(season, series, k = 6, bs = 'fs'),
              data = data, 
              family = poisson())
 ```
@@ -311,7 +311,7 @@ This is a group-level smooth, similar to what we might expect the average season
 ```r
 mod &lt;- mvgam(y ~ 
                s(season, bs = 'cc', k = 12) + 
-*              s(season, series, k = 4, bs = 'fs'),
+*              s(season, series, k = 6, bs = 'fs'),
              data = data, 
              family = poisson())
 ```
@@ -378,9 +378,9 @@ mvgam(y ~  s(ndvi_ma12, trend, bs = 're') +
       ...)
 ```
 
-Here the effect of minimum temperature [changes smoothly over lags](https://rpubs.com/NickClark47/mvgam3) for each series, using the `by` argument with a set of series-specific weights for deviations
+Here the effect of minimum temperature changes smoothly over lags for each series, using the `by` argument with a set of series-specific weights for deviations
 
-More on this example [on my Github account](https://github.com/nicholasjclark/portal_VAR)
+More on this type of example [in this recent blogpost](https://ecogambler.netlify.app/blog/distributed-lags-mgcv/)
 
 ---
 
@@ -392,6 +392,14 @@ class: middle center
 ### But how can we handle multivariate *dynamic components*?
 
 ---
+
+
+class: inverse middle center big-subsection
+
+# Live code example
+
+---
+
 class: inverse middle center big-subsection
 
 # Vector autoregressive processes
@@ -437,96 +445,10 @@ They allow for impulse response analyses, where the response of one variable to 
 They allow us to identify which other responses are most influential in driving our uncertainty in a focal response
 
 ---
-
-## Simulating VAR data
-
-.panelset[
-.panel[.panel-name[Code]
+## Some simulated data
 
 
-```r
-library(mvgam)
-
-# set a seed for reproducibility
-set.seed(650)
-
-# simulate four time series with very little 
-# seasonality and VAR1 dynamics (without correlated errors)
-vardat &lt;- sim_mvgam(family = gaussian(),
-                    n_series = 4,
-                    trend_model = 'VAR1',
-                    trend_rel = 1)
-```
-]
-
-.panel[.panel-name[A]
-&lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
-&lt;tbody&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 0.40 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.36 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; -0.23 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.74 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; -0.17 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.37 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.51 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; -0.02 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 0.09 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.49 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.36 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; -0.10 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 0.47 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.10 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; -0.26 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; -0.27 &lt;/td&gt;
-  &lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-
-]
-
-.panel[.panel-name[Sigma]
-&lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
-&lt;tbody&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 1.14 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1.05 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1.14 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.00 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.52 &lt;/td&gt;
-  &lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-
-]
-]
-
----
-## The series
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-16-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-14-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Latent VAR1s in `mvgam` 📦
@@ -534,15 +456,15 @@ vardat &lt;- sim_mvgam(family = gaussian(),
 
 ```r
 varmod &lt;- mvgam(y ~ 1,
-*               trend_model = 'VAR1',
-                data = vardat$data_train,
-                newdata = vardat$data_test,
+*               trend_model = VAR(),
+                data = data_train,
+                newdata = data_test,
                 family = gaussian())
 ```
 
 If multiple series are included in the data, we can use a VAR1 to estimate latent dynamics
-- `trend_model = 'VAR1'`: a VAR1 with uncorrelated process errors (off-diagonals in `\(\Sigma\)` set to zero)
-- `trend_model = 'VAR1cor'`: a VAR1 with possibly correlated process errors
+- `trend_model = VAR()`: a VAR1 with uncorrelated process errors (off-diagonals in `\(\Sigma\)` set to zero)
+- `trend_model = VAR(cor = TRUE)`: a VAR1 with possibly correlated process errors
 
 ---
 ## Enforcing stationarity
@@ -556,11 +478,11 @@ Not only will forecast variance increase indefinitely, but dynamics can become u
 
 ---
 ## Trend estimates
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-18-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-16-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Hindasts / forecasts
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-19-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-17-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 class: middle center
@@ -611,35 +533,35 @@ class: middle center
 dfmod &lt;- mvgam(y ~ 1,
 *               use_lv = TRUE,
 *               n_lv = 2,
-                trend_model = 'AR', 
-                data = vardat$data_train,
-                newdata = vardat$data_test,
+                trend_model = AR(), 
+                data = data_train,
+                newdata = data_test,
                 family = gaussian())
 ```
 
 If multiple series are included in the data, we can use a dynamic factor model to estimate latent dynamics
 - `n_lv`: the number of latent factors to estimate
-- `trend_model`: can be `RW`, `AR1`, `AR2`, `AR3` or `GP`
+- `trend_model`: can be `RW()`, `AR(p = 1, 2, or 3)` or `GP()`
 - variance parameters for all factors fixed to ensure identifiability
 
 ---
 
 ## Trend estimates
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-21-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-19-1.svg" style="display: block; margin: auto;" /&gt;
 ---
 
 ## Hindasts / forecasts
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-22-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-20-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
 `plot_mvgam_factors(dfmod)`
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-23-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-21-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
 `mcmc_hist(dfmod$model_output, regex_pars = 'lv_coefs')`
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-24-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-22-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -650,7 +572,7 @@ mean_corrs &lt;- lv_correlations(object = dfmod)$mean_correlations
 mean_corrs
 ```
 
-&lt;table class=" lightable-minimal" style='font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
+&lt;table class=" lightable-minimal" style='color: black; font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
  &lt;thead&gt;
   &lt;tr&gt;
    &lt;th style="text-align:left;"&gt;   &lt;/th&gt;
@@ -664,29 +586,29 @@ mean_corrs
   &lt;tr&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1.00 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.93 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.72 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.20 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.92 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.00 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.97 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:left;"&gt; series_2 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.93 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.92 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1.00 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.77 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.17 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.92 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.83 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:left;"&gt; series_3 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.72 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.77 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1.00 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; -0.09 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.92 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.00 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.96 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:left;"&gt; series_4 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.20 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.17 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; -0.09 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.97 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.83 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.96 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1.00 &lt;/td&gt;
   &lt;/tr&gt;
 &lt;/tbody&gt;
@@ -696,7 +618,7 @@ mean_corrs
 
 `heatmap(mean_corrs, distfun = function(c) as.dist(1 - c))`
 
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-27-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-25-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 class: middle center
@@ -705,6 +627,13 @@ class: middle center
 ### VARs can approximate Granger causality and allow for targeted hypotheses about interactions to be evaluated; Dynamic factors can capture time series correlations with fewer parameters
 &lt;br&gt;
 ### But how do we go about *evaluating* forecasts to choose among models?
+---
+
+
+class: inverse middle center big-subsection
+
+# Live code example
+
 ---
 
 class: inverse middle center big-subsection
