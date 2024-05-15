@@ -115,7 +115,7 @@ Tutorial 1 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/
 ## Tuesday (day 2) 
 Lecture 3 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day2/lecture_3_slidedeck) | [pdf](https://github.com/nicholasjclark/physalia-forecasting-course/raw/main/day2/lecture_3_slidedeck.pdf))
 <br>
-Live code examples ([Interactions](https://raw.githubusercontent.com/nicholasjclark/physalia-forecasting-course/main/day2/live_code_examples/live_2_interactions.R) | [Time-varying](https://raw.githubusercontent.com/nicholasjclark/physalia-forecasting-course/main/day2/live_code_examples/live_3_timevarying.R))
+Live code examples ([Interactions](https://raw.githubusercontent.com/nicholasjclark/physalia-forecasting-course/main/day2/live_code_examples/live_2_interactions.R) | [Time-varying effects](https://raw.githubusercontent.com/nicholasjclark/physalia-forecasting-course/main/day2/live_code_examples/live_3_timevarying.R))
 <br>
 Tutorial 2 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day2/tutorial_2_physalia))
 * Dynamic GLMs and Dynamic GAMs
@@ -139,7 +139,7 @@ Tutorial 3 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/
 ## Thursday (day 4)
 Lecture 5 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day4/lecture_5_slidedeck) | [pdf](https://github.com/nicholasjclark/physalia-forecasting-course/raw/main/day4/lecture_5_slidedeck.pdf))
 <br>
-Live code examples ([Functionals](https://raw.githubusercontent.com/nicholasjclark/physalia-forecasting-course/main/day4/live_code_examples/live_5_functional.R))
+Live code examples ([Functionals](https://raw.githubusercontent.com/nicholasjclark/physalia-forecasting-course/main/day4/live_code_examples/live_5_functional.R) | [Time-varying seasonality](https://raw.githubusercontent.com/nicholasjclark/physalia-forecasting-course/main/day4/live_code_examples/live_6_timevaryingseason.R))
 <br>
 Tutorial 4 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day4/tutorial_4_physalia))
 * Multivariate ecological time series
