@@ -6,6 +6,9 @@ library(ggplot2); theme_set(theme_bw())
 # Load the 'aphids' data from the ecostats package
 load(url('https://github.com/dwarton/ecostats/raw/main/data/aphids.RData'))
 
+# Read about the data here:
+# https://search.r-project.org/CRAN/refmans/ecostats/html/aphids.html
+
 # Bind the two datasets (experimental observations of aphid abundances
 # over time in oat and wheat crop plots, under two experimental treatments)
 aphid_dat <- aphids$oat %>%
