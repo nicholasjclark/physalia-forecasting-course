@@ -149,5 +149,5 @@ Tutorial 4 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/
 
 
 ## Friday (day 5)
-* Extended practical examples using `mvgam`
-* Review and open discussion
+* Group-based practical examples / case studies
+* Review, feedback and open discussion
