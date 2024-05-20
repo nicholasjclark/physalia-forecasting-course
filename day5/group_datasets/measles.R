@@ -34,6 +34,7 @@ box(bty = 'l', lwd = 2)
 # How might you fit a model that allows the seasonal pattern to change over
 # time AND that allows you to ask how cases dropped after the vaccine was
 # rolled out? Some useful resources:
+?mgcv::bam
 # https://www.rdocumentation.org/packages/mgcv/versions/1.9-1/topics/te
 # https://fromthebottomoftheheap.net/2014/05/09/modelling-seasonal-data-with-gam/
 # https://ecogambler.netlify.app/blog/interpreting-gams/
