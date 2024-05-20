@@ -116,26 +116,32 @@ plot_predictions(mod0, by = 'vaccine_era')
 # spline is then used to capture how the trend declined after vaccine
 # rollout
 measles %>%
-  dplyr::mutate(prevacc_time = ifelse(time <= 548, time, 548),
+  dplyr::mutate(prevacc_time = ifelse(time <= 597, time, 597),
                 year_since_vaccine = as.numeric(year_since_vaccine)) -> measles
 
 # There will be some divergences because the alpha parameter of the GP,
 # and the intercept and overdispersion parameters, are all competing a
 # bit to capture the variability in the data
-mvgam_test <- mvgam(cases ~ offset(population) +
+mvgam_test <- mvgam(cases ~ offset(population),
+                    trend_formula = ~
                       s(week, bs = 'cc', k = 10) +
-                      gp(prevacc_time, c = 5/4, k = 50, scale = FALSE) +
+                      gp(prevacc_time, c = 5/4, k = 70, scale = FALSE) +
                       s(year_since_vaccine, bs = 'mod', k = 8),
-                    knots = list(week = c(0.5, 52.5)),
+                    trend_model = AR(),
+                    priors = prior(beta(1, 10), 
+                                   class = ar1,
+                                   ub = 0.5),
+                    trend_knots = list(week = c(0.5, 52.5)),
                     family = nb(),
                     data = measles)
-summary(mvgam_test)
+summary(mvgam_test, include_betas = FALSE)
+plot(mvgam_test, type = 'forecast')
 
 # Ensure predictions look reasonable
 pp_check(mvgam_test, type = 'ribbon')
 
 # Look at the estimated nonlinear effects
-plot(mvgam_test, type = 'smooths')
+plot(mvgam_test, type = 'smooths', trend_effects = TRUE)
 conditional_effects(mvgam_test, type = 'link')
 
 # Look at the estimated effect of time since vaccination
@@ -149,9 +155,41 @@ avg_slopes(mvgam_test,
            variables = 'year_since_vaccine',
            type = 'expected')
 
-# Visualse the estimated slope
+# Visualise the estimated slope
 plot_slopes(mvgam_test, 
             by = 'year_since_vaccine', 
             variable = 'year_since_vaccine',
             newdata = datagrid(year_since_vaccine = seq(0, 8, by = 0.25)),
             type = 'expected')
+
+# Another approach: use a counterfactual forecast that extrapolates
+# the GP into the vaccine period but that 'pretends' that the rollout
+# of the vaccine never happened. This is possible becuase the GP is a 
+# proper time series model and won't give wacky extrapolations
+newdata <- measles
+newdata$prevacc_time <- newdata$time
+newdata$year_since_vaccine <- 0
+preds <- predict(mvgam_test, 
+                 newdata = newdata, 
+                 type = 'response',
+                 robust = TRUE)
+
+ggplot(measles %>%
+         dplyr::bind_cols(upper = preds[,4],
+                          lower = preds[,3],
+                          med = preds[,1]),
+       aes(time, med)) + 
+  geom_vline(xintercept = 597, linetype = 'dashed') +
+  geom_ribbon(aes(ymax = upper,
+                  ymin = lower),
+              alpha = 0.2,
+              fill = 'darkred') +
+  geom_line(col = 'darkred', linewidth = 0.75) +
+  geom_point(aes(y = cases)) +
+  ylab('Counterfactual predictions') +
+  xlab('Time') +
+  theme_classic()
+
+# Comparisons between the actual observations and this 
+# counterfactual forecast might give a more realistic and reasonable
+# estimate of the true effect of the vaccine rollout
