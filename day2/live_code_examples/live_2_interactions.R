@@ -62,7 +62,7 @@ summary(mod1)
 # Plot the interaction using gratia
 draw(mod1)
 
-# Now  using argeted visuals with marginaleffects' plot_predictions(); 
+# Now using targeted visuals with marginaleffects' plot_predictions(); 
 # use custom functions to determinehow the underlying data_grid() will 
 # be set up. This can be useful when plotting many effects
 summary_round = function(x){
