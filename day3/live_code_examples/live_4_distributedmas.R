@@ -44,6 +44,9 @@ mintemp_mat <- mv_mat(portal_ts$mintemp, 9)
 dim(mintemp_mat)
 head(mintemp_mat) # Note the NAs; these will be silently omitted when fitting a model
 
+# View the increasingly smoothed predictors
+matplot(mintemp_mat, type = 'l')
+
 # Carrying on from the interactions script, we can use a tensor product of this lag
 # matrix and another matrix that indexes by lag
 lag_mat <- matrix(0:8, nrow(portal_ts), 9, byrow = TRUE)
@@ -59,11 +62,11 @@ lag_data <- list(
 
 # Fit with bam() so we can include autocorrelated residuals as before
 mod <- bam(captures ~ 
-              te(mintemp_mat, lag_mat),
-            data = lag_data,
-            family = nb(),
-            rho = 0.8,
-            discrete = TRUE)
+             te(mintemp_mat, lag_mat),
+           data = lag_data,
+           family = nb(),
+           rho = 0.8,
+           discrete = TRUE)
 summary(mod)
 appraise(mod, method = 'simulate', type = 'deviance')
 draw(mod)
@@ -116,6 +119,15 @@ anova(mod, mod2, test = 'Chisq')
 #    very challenging!). Be sure to exclude the rows of data in which the lag matrices
 #    are NAs first
 library(mvgam)
+mintemp_mat <- mv_mat(portal_ts$mintemp, 9)
+lag_mat <- matrix(0:8, nrow(portal_ts), 9, byrow = TRUE)
+
+# Gather the data in list() format as before
+lag_data <- list(
+  captures = portal_ts$captures,
+  mintemp_mat = mintemp_mat,
+  lag_mat = lag_mat
+)
 idx <- which(complete.cases(mintemp_mat))
 lag_data_mvgam <- list(
   captures = portal_ts$captures[idx],
@@ -128,8 +140,9 @@ mod2 <- mvgam(captures ~ 1,
               trend_formula = ~ te(mintemp_mat, lag_mat),
               data = lag_data_mvgam,
               trend_model = AR(),
-              family = poisson())
-
+              family = nb())
+summary(mod2, include_betas = FALSE)
+plot(mod2, type = 'residuals')
 
 #    Plot the estimated distributed lag smooth
 plot(mod2, type = 'smooths', trend_effects = TRUE)
@@ -141,3 +154,9 @@ plot(hindcast(mod2))
 #    Use pp_check() to see how the model would predict if we 
 #    assumed the dynamic AR process was stationary
 pp_check(mod2, type = 'ribbon')
+
+# Some additional plots / investigations
+pp_check(mod2, type = 'dens_overlay', ndraws = 20)
+pp_check(mod2, type = 'ecdf_overlay', ndraws = 20)
+mcmc_plot(mod2, variable = 'ar', regex = TRUE, type = 'hist')
+mcmc_plot(mod2, variable = 'phi', regex = TRUE)
