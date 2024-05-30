@@ -84,24 +84,42 @@ acf(mod1$std)
 
 #### Bonus tasks ####
 # 1. Clearly there is still some autocorrelation left at lag 2. If you have
-#    mvgam installed, fit a model that will deal with this directly
+#    mvgam installed, consider a model that will deal with this directly
 #   (but note, this model will be SLOW)
 library(mvgam)
 CanWeather$series <- CanWeather$place
-mod2 <- mvgam(formula = T ~ 1,
-              # Use a State-Space model and change 'region' to a parametric
-              # effect to speed up sampling
-              trend_formula = ~ region + 
-                s(doy, k = 10, bs = "cr", by = region) +
-                s(doy, k = 20, bs = "cr", by = latitude),
-              data = CanWeather,
-              trend_model = AR(p = 2),
-              # Use an informative prior on AR1 to speed up sampling
-              priors = prior(normal(0.8, 0.1), ub = 1, lb = 0.5,
-                             class = ar1),
-              family = gaussian())
+mod2 <- mvgam(
+  # Use a State-Space model and change 'region' to a parametric
+  # effect to speed up sampling
+  formula = T ~ 1,
+  trend_formula = ~  
+    region +
+    s(doy, k = 10, bs = "cr", by = region) +
+    s(doy, k = 20, bs = "cr", by = latitude),
+  data = CanWeather,
+  trend_model = AR(p = 2),
+  # Use informative priors on AR and sigma pars to speed up sampling
+  priors = c(prior(normal(0.8, 0.1), ub = 1, lb = 0,
+                   class = ar1),
+             prior(normal(0.2, 0.5), ub = 1, lb = -1,
+                   class = ar2),
+             prior(exponential(5),
+                   class = sigma_obs),
+             prior(exponential(2),
+                   class = sigma)),
+  # Shared Gaussian observation error for all series
+  family = gaussian(),
+  share_obs_params = TRUE,
+  return_model_data = TRUE)
+
 summary(mod2, include_betas = FALSE)
 plot(mod2, type = 'smooths', trend_effects = TRUE)
-plot_predictions(mod2, by = c('doy', 'region'))
+plot_predictions(mod2, by = c('doy', 'region'), type = 'expected')
+plot_predictions(mod2, 
+                 newdata = datagrid(region = 'Continental',
+                                    latitude = unique(CanWeather$latitude[
+                                      which(CanWeather$region == 'Continental')]),
+                                    doy = unique),
+                 by = c('doy', 'latitude'))
 
 
