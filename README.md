@@ -66,6 +66,7 @@ install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOpt
 the `check_cmdstan_toolchain()` function:
 
 ```{r}
+library(cmdstanr)
 check_cmdstan_toolchain(fix = TRUE)
 ```
 If your toolchain is configured correctly then CmdStan can be installed by calling the
