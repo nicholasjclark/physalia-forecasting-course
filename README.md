@@ -26,6 +26,8 @@ Participants should be familiar with RStudio and have some fluency in programmin
 
 **Please be sure to have at least version 4.2 &mdash; and preferably version 4.3 or above &mdash; of `R` installed**. Note that `R` and `RStudio` are two different things: it is not sufficient to just update `RStudio`, you also need to update `R` by installing new versions as they are released.
 
+To install `RStudio`, go to https://posit.co/download/rstudio-desktop/ and follow the instructions.
+
 To download `R` go to the [CRAN Download](https://cran.r-project.org/) page and follow the links to download `R` for your operating system:
 
 * [Windows](https://cran.r-project.org/bin/windows/)
