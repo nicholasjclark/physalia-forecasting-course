@@ -14,7 +14,7 @@ Time series analysis and forecasting are standard goals in applied ecology. But 
 ## TARGET AUDIENCE AND ASSUMED BACKGROUND
 This course is aimed at higher degree research students and early career researchers working with time series data in the natural sciences (with particular emphasis on ecology) who want to extend their knowledge by learning how to add dynamic processes to model temporal autocorrelation. Participants should ideally have some knowledge of regression including linear models, generalized linear models and hierarchical (random) effects. But we’ll briefly recap these as we connect them to time series modelling.
 
-Participants should be familiar with RStudio and have some fluency in programming R code. This includes an ability to import, manipulate (e.g. modify variables) and visualise data. There will be a mix of lectures and hands-on practical exercises throughout the course.
+Participants should be familiar with RStudio and have some fluency in programming `R` code. This includes an ability to import, manipulate (e.g. modify variables) and visualise data. There will be a mix of lectures and hands-on practical exercises throughout the course.
 
 ## LEARNING OUTCOMES
 1.    Understand how dynamic GLMs and GAMs work to capture both nonlinear covariate effects and temporal dependence
@@ -55,15 +55,14 @@ install.packages(pkgs, dependencies = TRUE)
 ```
 
 ### INSTALLING AND CHECKING STAN
-When working in `R`, there are two primary interfaces we can use to fit models with Stan (`rstan` and `CmdStan`). Either interface will work, however it is highly recommended that you use the `Cmdstan` backend, with the `{cmdstanr}` interface, rather than using `{rstan}`. More care, however, needs to be taken to ensure you have an up to date version of Stan. **For all `{mvgam}` and `{brms}` functionalities to work properly, please ensure you have at least version 2.29 of Stan installed**. The CRAN and GitHub development versions of `{rstan}` and `CmdStan` are currently several versions ahead of this, and all of these versions are stable. The exact version you have installed can be checked using either `rstan::stan_version()` or `cmdstanr::cmdstan_version()`
+When working in `R`, there are two primary interfaces we can use to fit models with `Stan` (`{rstan}` and `CmdStan`). Either interface will work, however it is highly recommended that you use the `Cmdstan` backend, with the `{cmdstanr}` interface, rather than using `{rstan}`. More care, however, needs to be taken to ensure you have an up to date version of `Stan`. **For all `{mvgam}` and `{brms}` functionalities to work properly, please ensure you have at least version 2.29 of `Stan` installed**. The CRAN and GitHub development versions of `{rstan}` and `CmdStan` are currently several versions ahead of this, and all of these versions are stable. The exact version you have installed can be checked using either `rstan::stan_version()` or `cmdstanr::cmdstan_version()`
 
 Compiling a Stan program requires a modern C++ compiler and the GNU Make build utility (a.k.a. “gmake”). The correct versions of these tools to use will vary by operating system, but unfortunately most standard Windows and MacOS X machines do not come with them installed by default. The first step to installing `Stan` is to update your C++ toolchain so that you can compile models correctly. [There are detailed instructions by the Stan team on how to ensure you have the correct C++ toolchain to compile models](https://mc-stan.org/docs/cmdstan-guide/installation.html#cpp-toolchain), so please refer to those and follow the steps that are relevant to your own machine. Once you have the correct C++ toolchain, you'll need to install `Cmdstan` and the relevant `R` pacakge interface. First install the `R` package `{cmdstanr}` by running the following command in a fresh R environment:
 
 ```{r}
 install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
 ```
-`cmdstanr` requires a working installation of [CmdStan](https://mc-stan.org/users/interfaces/cmdstan.html), the shell interface to Stan. If you don't have `CmdStan` installed then `{cmdstanr}` can install it for you, assuming you have a suitable C++ toolchain. To double check that your toolchain is set up properly you can call
-the `check_cmdstan_toolchain()` function:
+`cmdstanr` requires a working installation of [CmdStan](https://mc-stan.org/users/interfaces/cmdstan.html), the shell interface to `Stan`. If you don't have `CmdStan` installed then `{cmdstanr}` can install it for you, assuming you have a suitable C++ toolchain. To double check that your toolchain is set up properly you can call the `check_cmdstan_toolchain()` function:
 
 ```{r}
 library(cmdstanr)
@@ -75,7 +74,7 @@ If your toolchain is configured correctly then `CmdStan` can be installed by cal
 ```{r}
 install_cmdstan(cores = 2)
 ```
-You should now be able to follow the remaining instructions on the [Getting Started with CmdStanR page](https://mc-stan.org/cmdstanr/articles/cmdstanr.html) to ensure that Stan models can successfully compile on your machine. A quick way to check this would be to run this script:
+You should now be able to follow the remaining instructions on the [Getting Started with `{cmdstanr}` page](https://mc-stan.org/cmdstanr/articles/cmdstanr.html) to ensure that `Stan` models can successfully compile on your machine. A quick way to check this would be to run this script:
 
 ```{r}
 library(mvgam)
@@ -86,9 +85,9 @@ mod <- mvgam(y ~ s(season, bs = 'cc', k = 5) +
 ```
 
 But issues can sometimes occur when:
-1. [you don't have write access to the folders that CmdStan uses to create model executables](https://discourse.mc-stan.org/t/problem-running-cmdstan-on-computing-cluster/34747/5)
+1. [you don't have write access to the folders that `CmdStan` uses to create model executables](https://discourse.mc-stan.org/t/problem-running-cmdstan-on-computing-cluster/34747/5)
 2. [you are using a university- or company-imposed syncing system such as One Drive, leading to confusion about where your make file and compilers are located](https://discourse.mc-stan.org/t/system-command-make-failed-models-wont-compile/30528)
-3. [you are using a university- or company-imposed firewall that is aggressively deleting the temporary executable files that CmdStan creates when compiling](https://discourse.mc-stan.org/t/trouble-with-cmdstan-toolchain-with-rtools42-on-windows-10-enterprise/28444)
+3. [you are using a university- or company-imposed firewall that is aggressively deleting the temporary executable files that `CmdStan` creates when compiling](https://discourse.mc-stan.org/t/trouble-with-cmdstan-toolchain-with-rtools42-on-windows-10-enterprise/28444)
 
 If you run into any of these issues, it is best to consult with your IT department for support.
 
