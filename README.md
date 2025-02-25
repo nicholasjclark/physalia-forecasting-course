@@ -48,11 +48,11 @@ We will make use of several `R` packages that you'll need to have installed. Pri
 # update any installed R packages
 update.packages(ask = FALSE, checkBuilt = TRUE)
 
-# packages to install for the course
-pkgs <- c("brms", "tidybayes", "mvgam", "gratia")
+# install the primary packages, including their dependencies
+install.packages(c("brms", "mvgam"), dependencies = TRUE)
 
-# install packages, including their dependencies
-install.packages(pkgs, dependencies = TRUE)
+# install a few other packages we will use for plotting
+install.packages(c("gratia", "tidybayes"))
 ```
 
 ### INSTALLING AND CHECKING STAN
