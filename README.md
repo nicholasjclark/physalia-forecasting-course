@@ -49,7 +49,7 @@ We will make use of several `R` packages that you'll need to have installed. Pri
 update.packages(ask = FALSE, checkBuilt = TRUE)
 
 # packages to install for the course
-pkgs <- c("brms", "tidybayes", "mvgam")
+pkgs <- c("brms", "tidybayes", "mvgam", "gratia")
 
 # install packages, including their dependencies
 install.packages(pkgs, dependencies = TRUE)
