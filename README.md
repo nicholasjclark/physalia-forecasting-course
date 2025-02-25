@@ -48,11 +48,10 @@ We will make use of several `R` packages that you'll need to have installed. Pri
 # update any installed R packages
 update.packages(ask = FALSE, checkBuilt = TRUE)
 
-# packages to install for the course, including their dependencies
-pkgs <- c("brms", "dplyr", "gratia", "ggplot2", "marginaleffects",
-          "tidybayes", "zoo", "viridis", "mvgam")
+# packages to install for the course
+pkgs <- c("brms", "tidybayes", "mvgam")
 
-# install packages
+# install packages, including their dependencies
 install.packages(pkgs, dependencies = TRUE)
 ```
 
