@@ -55,7 +55,7 @@ install.packages(pkgs)
 ```
 
 ### INSTALLING AND CHECKING STAN
-When working in R, there are two primary interfaces we can use to fit models with Stan (`rstan` and `CmdStan`). Either interface will work, however it is highly recommended that you use the `Cmdstan` backend, with the `cmdstanr` interface, rather than using `rstan`. More care, however, needs to be taken to ensure you have an up to date version of Stan. **For all `mvgam` and `brms` functionalities to work properly, please ensure you have at least version 2.29 of Stan installed**. The GitHub development versions of `rstan` and `CmdStan` are currently several versions ahead of this, and both of these development versions are stable. The exact version you have installed can be checked using either `rstan::stan_version()` or `cmdstanr::cmdstan_version()`
+When working in R, there are two primary interfaces we can use to fit models with Stan (`rstan` and `CmdStan`). Either interface will work, however it is highly recommended that you use the `Cmdstan` backend, with the `cmdstanr` interface, rather than using `rstan`. More care, however, needs to be taken to ensure you have an up to date version of Stan. **For all `mvgam` and `brms` functionalities to work properly, please ensure you have at least version 2.29 of Stan installed**. The CRAN and GitHub development versions of `rstan` and `CmdStan` are currently several versions ahead of this, and all of these versions are stable. The exact version you have installed can be checked using either `rstan::stan_version()` or `cmdstanr::cmdstan_version()`
 
 Compiling a Stan program requires a modern C++ compiler and the GNU Make build utility (a.k.a. “gmake”). The correct versions of these tools to use will vary by operating system, but unfortunately most standard Windows and MacOS X machines do not come with them installed by default. The first step to installing Stan is to update your C++ toolchain so that you can compile models correctly. [There are detailed instructions by the Stan team on how to ensure you have the correct C++ toolchain to compile models](https://mc-stan.org/docs/cmdstan-guide/installation.html#cpp-toolchain), so please refer to those and follow the steps that are relevant to your own machine. Once you have the correct C++ toolchain, you'll need to install `Cmdstan` and the relevant R pacakge interface. First install the R package by running the following command in a fresh R environment:
 
@@ -66,7 +66,7 @@ install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOpt
 the `check_cmdstan_toolchain()` function:
 
 ```{r}
-check_cmdstan_toolchain()
+check_cmdstan_toolchain(fix = TRUE)
 ```
 If your toolchain is configured correctly then CmdStan can be installed by calling the
 [`install_cmdstan()`](https://mc-stan.org/cmdstanr/reference/install_cmdstan.html) function:
