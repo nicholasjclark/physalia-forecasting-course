@@ -9,7 +9,7 @@ https://www.physalia-courses.org/
 #### 24&ndash;28th March, 2025
 
 ## COURSE OVERVIEW
-Time series analysis and forecasting are standard goals in applied ecology. But most time series courses focus only on traditional forecasting models such as ARIMA or Exponential Smoothing. These models cannot handle features that dominate ecological data, including overdispersion, clustering, missingness, discreteness and nonlinear effects. Using the flexible and powerful Bayesian modelling software Stan, we can now meet this complexity head on. Packages such as `mvgam` and `brms` can build Stan code to specify ecologically appropriate models that include nonlinear effects, random effects and dynamic processes, all with simple interfaces that are familiar to most R users. In this course you will learn how to wrangle, visualize and explore ecological time series. You will also learn to use the [`mvgam`](https://nicholasjclark.github.io/mvgam/) and [`brms`](https://paul-buerkner.github.io/brms/) packages to analyse a diversity of ecological time series to gain useful insights and produce accurate forecasts. All course materials (presentations, practical exercises, data files, and commented R scripts) will be provided electronically to participants.
+Time series analysis and forecasting are standard goals in applied ecology. But most time series courses focus only on traditional forecasting models such as ARIMA or Exponential Smoothing. These models cannot handle features that dominate ecological data, including overdispersion, clustering, missingness, discreteness and nonlinear effects. Using the flexible and powerful Bayesian modelling software Stan, we can now meet this complexity head on. Packages such as `{mvgam}` and `{brms}` can build Stan code to specify ecologically appropriate models that include nonlinear effects, random effects and dynamic processes, all with simple interfaces that are familiar to most R users. In this course you will learn how to wrangle, visualize and explore ecological time series. You will also learn to use the [`{mvgam}`](https://nicholasjclark.github.io/mvgam/) and [`{brms}`](https://paul-buerkner.github.io/brms/) packages to analyse a diversity of ecological time series to gain useful insights and produce accurate forecasts. All course materials (presentations, practical exercises, data files, and commented R scripts) will be provided electronically to participants.
 
 ## TARGET AUDIENCE AND ASSUMED BACKGROUND
 This course is aimed at higher degree research students and early career researchers working with time series data in the natural sciences (with particular emphasis on ecology) who want to extend their knowledge by learning how to add dynamic processes to model temporal autocorrelation. Participants should ideally have some knowledge of regression including linear models, generalized linear models and hierarchical (random) effects. But we’ll briefly recap these as we connect them to time series modelling.
@@ -18,7 +18,7 @@ Participants should be familiar with RStudio and have some fluency in programmin
 
 ## LEARNING OUTCOMES
 1.    Understand how dynamic GLMs and GAMs work to capture both nonlinear covariate effects and temporal dependence
-2.    Be able to fit dynamic GLMs and GAMs in R using the {mvgam} and {brms} packages
+2.    Be able to fit dynamic GLMs and GAMs in R using the `{mvgam}` and `{brms}` packages
 3.    Understand how to critique, visualize and compare fitted dynamic models
 4.    Know how to produce forecasts from dynamic models and evaluate their accuracies using probabilistic scoring rules
 
@@ -55,21 +55,21 @@ install.packages(pkgs, dependencies = TRUE)
 ```
 
 ### INSTALLING AND CHECKING STAN
-When working in R, there are two primary interfaces we can use to fit models with Stan (`rstan` and `CmdStan`). Either interface will work, however it is highly recommended that you use the `Cmdstan` backend, with the `cmdstanr` interface, rather than using `rstan`. More care, however, needs to be taken to ensure you have an up to date version of Stan. **For all `mvgam` and `brms` functionalities to work properly, please ensure you have at least version 2.29 of Stan installed**. The CRAN and GitHub development versions of `rstan` and `CmdStan` are currently several versions ahead of this, and all of these versions are stable. The exact version you have installed can be checked using either `rstan::stan_version()` or `cmdstanr::cmdstan_version()`
+When working in `R`, there are two primary interfaces we can use to fit models with Stan (`rstan` and `CmdStan`). Either interface will work, however it is highly recommended that you use the `Cmdstan` backend, with the `{cmdstanr}` interface, rather than using `{rstan}`. More care, however, needs to be taken to ensure you have an up to date version of Stan. **For all `{mvgam}` and `{brms}` functionalities to work properly, please ensure you have at least version 2.29 of Stan installed**. The CRAN and GitHub development versions of `{rstan}` and `CmdStan` are currently several versions ahead of this, and all of these versions are stable. The exact version you have installed can be checked using either `rstan::stan_version()` or `cmdstanr::cmdstan_version()`
 
-Compiling a Stan program requires a modern C++ compiler and the GNU Make build utility (a.k.a. “gmake”). The correct versions of these tools to use will vary by operating system, but unfortunately most standard Windows and MacOS X machines do not come with them installed by default. The first step to installing Stan is to update your C++ toolchain so that you can compile models correctly. [There are detailed instructions by the Stan team on how to ensure you have the correct C++ toolchain to compile models](https://mc-stan.org/docs/cmdstan-guide/installation.html#cpp-toolchain), so please refer to those and follow the steps that are relevant to your own machine. Once you have the correct C++ toolchain, you'll need to install `Cmdstan` and the relevant R pacakge interface. First install the R package by running the following command in a fresh R environment:
+Compiling a Stan program requires a modern C++ compiler and the GNU Make build utility (a.k.a. “gmake”). The correct versions of these tools to use will vary by operating system, but unfortunately most standard Windows and MacOS X machines do not come with them installed by default. The first step to installing `Stan` is to update your C++ toolchain so that you can compile models correctly. [There are detailed instructions by the Stan team on how to ensure you have the correct C++ toolchain to compile models](https://mc-stan.org/docs/cmdstan-guide/installation.html#cpp-toolchain), so please refer to those and follow the steps that are relevant to your own machine. Once you have the correct C++ toolchain, you'll need to install `Cmdstan` and the relevant `R` pacakge interface. First install the `R` package `{cmdstanr}` by running the following command in a fresh R environment:
 
 ```{r}
 install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
 ```
-`cmdstanr` requires a working installation of [CmdStan](https://mc-stan.org/users/interfaces/cmdstan.html), the shell interface to Stan. If you don't have CmdStan installed then `cmdstanr` can install it for you, assuming you have a suitable C++ toolchain. To double check that your toolchain is set up properly you can call
+`cmdstanr` requires a working installation of [CmdStan](https://mc-stan.org/users/interfaces/cmdstan.html), the shell interface to Stan. If you don't have `CmdStan` installed then `{cmdstanr}` can install it for you, assuming you have a suitable C++ toolchain. To double check that your toolchain is set up properly you can call
 the `check_cmdstan_toolchain()` function:
 
 ```{r}
 library(cmdstanr)
 check_cmdstan_toolchain(fix = TRUE)
 ```
-If your toolchain is configured correctly then CmdStan can be installed by calling the
+If your toolchain is configured correctly then `CmdStan` can be installed by calling the
 [`install_cmdstan()`](https://mc-stan.org/cmdstanr/reference/install_cmdstan.html) function:
 
 ```{r}
