@@ -49,6 +49,7 @@ We will make use of several `R` packages that you'll need to have installed. Pri
 update.packages(ask = FALSE, checkBuilt = TRUE)
 
 # install the development versions of the primary packages, including their dependencies
+install.packages("remotes")
 remotes::install_github("nicholasjclark/mvgam", dependencies = TRUE)
 remotes::install_github("paul-buerkner/brms", dependencies = TRUE)
 
