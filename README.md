@@ -1,4 +1,6 @@
 # Ecological forecasting with `mvgam` and `brms`
+[![mvgam](https://img.shields.io/badge/Powered%20by-mvgam-darkred.svg)](https://nicholasjclark.github.io/mvgam/)
+[![mvgam](https://img.shields.io/badge/Enhanced%20by-brms-lightblue.svg)](https://paulbuerkner.com/brms/)
 
 ### Physalia-Courses 
 
