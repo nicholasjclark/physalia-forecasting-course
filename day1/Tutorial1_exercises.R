@@ -65,7 +65,7 @@ ccf(x = '?',
     bty = 'l',
     lwd = 2,
     ci.col = 'darkred',
-    main = expression(paste(italic(Cor),"(",ndvi[lag],",",count, ")")))
+    main = expression(paste(italic(Cor),"(",mintemp[lag],",",count, ")")))
 
 
 #   Which lags of `mintemp` would you consider to be the most likely candidates for 
