@@ -113,7 +113,7 @@ Users who wish to complete the exercises can download a small template `R` scrip
 ```{r echo=FALSE}
 download_file(
   path = 'Tutorial1_exercises.R',
-  output_name = "Tutorial1_exercises.R",
+  output_name = "Tutorial1_exercises",
   button_label = "Click here to download the exercise R script",
   button_type = "success",
   has_icon = TRUE,
