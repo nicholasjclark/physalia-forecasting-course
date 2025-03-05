@@ -35,7 +35,7 @@ class: inverse, middle, left, my-title-slide, title-slide
 ### School of Veterinary Science, University of Queensland
 ]
 .date[
-### 0900–1200 CET Monday 27th May, 2024
+### 0900–1200 CET Monday 24th March, 2025
 ]
 
 ---
@@ -44,7 +44,7 @@ class: inverse middle center big-subsection
 
 
 
-<style>.panelset{--panel-tab-foreground: #8F2727;--panel-tab-inactive-opacity: 0.8;}</style>
+<style>:root{--panel-tab-foreground:#8F2727;--panel-tab-inactive-opacity:0.8;}</style>
 
 
 
@@ -60,11 +60,11 @@ class: inverse middle center big-subsection
 
 ---
 ## About me
-&lt;img src="resources/NicholasClark.jpg" style="position:fixed; right:8%; top:9%; width:239px; height:326px; border:none;" /&gt;
+&lt;img src="resources/NicholasClark.jpg" style="position:fixed; right:7%; top:9%; width:300px; height:300px; border:none;" /&gt;
 
 &lt;img src="resources/uqmap.png" style="position:fixed; right:0%; top:56%; width:454px; height:296px; border:none;" /&gt;
 
-Australian Research Council Early Career Fellow
+UQ Amplify Early Career Fellow
 
 The University of Queensland
 - School of Veterinary Science 
@@ -273,7 +273,7 @@ Generalize to state that current value of a series (at time `\(t\)`) is .emphasi
 
 
 
-```r
+``` r
 # set seed for reproducibility
 set.seed(1111)
 
@@ -308,7 +308,7 @@ plot(series, type = 'l', bty = 'l', lwd = 2,
 
 
 
-```r
+``` r
 # set seed for reproducibility
 set.seed(1111)
 
@@ -401,8 +401,6 @@ Autocorrelation functions ([ACFs](https://otexts.com/fpp3/acf.html))
 
 Partial autocorrelation functions ([pACFs](https://online.stat.psu.edu/stat510/lesson/2/2.2#:~:text=In%20general%2C%20a%20partial%20correlation,some%20other%20set%20of%20variables.)) 
 
-Cross-correlation functions ([CCFs](https://online.stat.psu.edu/stat510/lesson/8/8.2))
-
 ---
 
 ## *Independent* correlations
@@ -412,7 +410,7 @@ Cross-correlation functions ([CCFs](https://online.stat.psu.edu/stat510/lesson/8
 
 
 
-```r
+``` r
 # set seed for reproducibility
 set.seed(1111)
 
@@ -443,7 +441,7 @@ acf(series, lwd = 2, bty = 'l',
 
 
 
-```r
+``` r
 # set seed for reproducibility
 set.seed(1111)
 
@@ -455,7 +453,7 @@ series &lt;- arima.sim(model = list(ar = c(0.8)), n = T, sd = 1)
 
 # plot the empirical pACF
 pacf(series, lwd = 2, bty = 'l',
-    ci.col = 'darkred', main = '')
+     ci.col = 'darkred', main = '')
 ```
 ]
 
@@ -467,35 +465,6 @@ pacf(series, lwd = 2, bty = 'l',
 
 ---
 
-## *Independent* cross-correlations
-.panelset[
-.panel[.panel-name[Code]
-
-
-
-
-```r
-# compute a CCF of the built-in lung cancer dataset
-ccf(as.vector(mdeaths), as.vector(fdeaths), 
-    # compute cross-correlations at each lag
-    type = 'correlation',
-    bty = 'l', lwd = 2, ci.col = 'darkred',
-    ylab = "cross-correlation", main = "")
-# add an informative title
-title(main = expression(paste(italic(Cor),
-                            "(", Female~deaths,
-                            ",", Male~deaths, ")")),
-          line = 0)
-```
-]
-
-.panel[.panel-name[Plot]
-.center[![](lecture_1_slidedeck_files/figure-html/death_ccf-1.svg)]
-
-]
-]
----
-
 ## ACFs often detect seasonality
 .panelset[
 .panel[.panel-name[Code]
@@ -503,7 +472,7 @@ title(main = expression(paste(italic(Cor),
 
 
 
-```r
+``` r
 # load the 'gas' dataset from the forecast library
 library(forecast)
 data(gas)
@@ -527,7 +496,7 @@ acf(gas, lag.max = 48, lwd = 2, bty = 'l',
 ## But why did we subset?
 
 
-```r
+``` r
 # load the 'gas' dataset from the forecast library
 library(forecast)
 data(gas)
@@ -543,16 +512,16 @@ acf(gas, lag.max = 48, lwd = 2, bty = 'l',
 ---
 
 ## Because `gas` looks like this ...
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-11-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-10-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## ... and has a nonlinear *trend*
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-12-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-11-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Raw ACF is misleading
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-13-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-12-1.svg" style="display: block; margin: auto;" /&gt;
 ---
 
 ## Decompositions
@@ -566,18 +535,12 @@ These components can be summed to give the original series
 ---
 ## Example: a complex series
 
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-14-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-13-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## Decompose: trend + seasonality
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-15-1.svg" style="display: block; margin: auto;" /&gt;
----
-
-## Under the hood
-
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-16-1.svg" style="display: block; margin: auto;" /&gt;
-
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-14-1.svg" style="display: block; margin: auto;" /&gt;
 ---
 
 class: middle center
@@ -668,6 +631,17 @@ etc...
 ## Example ecological time series
 &lt;/br&gt;
 .pull-left[
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-15-1.svg" style="display: block; margin: auto;" /&gt;
+]
+.pull-right[
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-16-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Another ecological time series
+&lt;/br&gt;
+.pull-left[
 &lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-17-1.svg" style="display: block; margin: auto;" /&gt;
 ]
 .pull-right[
@@ -676,7 +650,8 @@ etc...
 
 ---
 
-## Another ecological time series
+## Yet another ecological time series
+
 &lt;/br&gt;
 .pull-left[
 &lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-19-1.svg" style="display: block; margin: auto;" /&gt;
@@ -687,20 +662,8 @@ etc...
 
 ---
 
-## Yet another ecological time series
-
-&lt;/br&gt;
-.pull-left[
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-21-1.svg" style="display: block; margin: auto;" /&gt;
-]
-.pull-right[
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-22-1.svg" style="display: block; margin: auto;" /&gt;
-]
-
----
-
 ## Collections of ecological series
-&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-23-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_1_slidedeck_files/figure-html/unnamed-chunk-21-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -733,13 +696,13 @@ Temporal residual correlation structures
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script src="macros.js"></script>
 <script>var slideshow = remark.create({
-"navigation": {
-"scroll": false
-},
-"highlightStyle": "github",
-"highlightLines": true,
-"countIncrementalSlides": false,
-"ratio": "16:9"
+  "navigation": {
+    "scroll": false
+  },
+  "highlightStyle": "github",
+  "highlightLines": true,
+  "countIncrementalSlides": false,
+  "ratio": "16:9"
 });
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   window.dispatchEvent(new Event('resize'));

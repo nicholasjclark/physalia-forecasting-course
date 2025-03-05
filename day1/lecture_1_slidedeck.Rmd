@@ -3,7 +3,7 @@ title: "Ecological forecasting in R"
 subtitle: "Lecture 1: introduction to time series models"
 institute: "School of Veterinary Science, University of Queensland"
 author: "Nicholas Clark"
-date: "0900&ndash;1200 CET Monday 27th May, 2024"
+date: "0900&ndash;1200 CET Monday 24th March, 2025"
 output:
   xaringan::moon_reader:
     css: ['default','https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css', 'slides.css']
@@ -31,6 +31,7 @@ knitr::opts_chunk$set(cache = FALSE, dev = 'svg', echo = TRUE,
 library('mgcv')
 library('mvgam')
 library('fontawesome')
+library('ggplot2'); theme_set(theme_bw(base_size = 20, base_family = 'serif'))
 ```
 
 ```{r xaringan-panelset, echo=FALSE}
@@ -63,11 +64,11 @@ mypar = function(...){
   par(family = "serif", 
       las = 1, 
       mar=c(4,4.1,2,2),
-      mgp = c(2,0.5,0),
+      mgp = c(2.5,0.5,0),
       bty = "l", 
-      cex.axis = 1.25, 
-      cex.lab = 1.5, 
-      cex.main = 1.5,
+      cex.axis = 1.5, 
+      cex.lab = 2, 
+      cex.main = 2,
       xaxs = 'r',
       yaxs = 'r',
       pch = 16)
@@ -76,10 +77,10 @@ mypar = function(...){
 myparsmall = function(...){
   par(family = "serif", 
       las = 1, 
-      mgp = c(4, 1, 0),
+      mgp = c(3.8, 1, 0),
       mar=c(5,6,2,2),
       bty = "l", 
-      cex.axis = 1.85, 
+      cex.axis = 2, 
       cex.lab = 2.75, 
       cex.main = 2.75,
       xaxs = 'r',
@@ -187,7 +188,7 @@ myscatter = function(x,
        pch = 21,
        bg = c_dark,
        col = 'white',
-       cex = 2,
+       cex = 2.5,
        bty = 'l',
        xlab = xlab,
        ylab = ylab)
@@ -201,11 +202,11 @@ myscatter = function(x,
 
 ---
 ## About me
-<img src="resources/NicholasClark.jpg" style="position:fixed; right:8%; top:9%; width:239px; height:326px; border:none;" />
+<img src="resources/NicholasClark.jpg" style="position:fixed; right:7%; top:9%; width:300px; height:300px; border:none;" />
 
 <img src="resources/uqmap.png" style="position:fixed; right:0%; top:56%; width:454px; height:296px; border:none;" />
 
-Australian Research Council Early Career Fellow
+UQ Amplify Early Career Fellow
 
 The University of Queensland
 - School of Veterinary Science 
@@ -384,16 +385,16 @@ y2 = rnorm(100,x*0.4)
 y3 = rnorm(100,x*0.85)
 layout(matrix(1:3, nrow=1))
 myscatter(x = x, y = y1, xlab = '', ylab = 'Y', big = FALSE)
-title(main = expression(paste(italic(Cor),"(",X,",",Y, ") = 0.1")))
+title(main = expression(paste(italic(Cor),"(",X,",",Y, ") = 0.10")))
 abline(lm(y1~x), lwd = 2)
 
 myscatter(x = x, y = y2, xlab = 'X', ylab = '', big = FALSE)
-title(main = expression(paste(italic(Cor),"(",X,",",Y, ") = 0.5")))
-abline(lm(y2~x), lwd = 2)
+title(main = expression(paste(italic(Cor),"(",X,",",Y, ") = 0.40")))
+abline(lm(y2~x), lwd = 2.5)
 
 myscatter(x = x, y = y3, xlab = '', ylab = '', big = FALSE)
 title(main = expression(paste(italic(Cor),"(",X,",",Y, ") = 0.85")))
-abline(lm(y3~x), lwd = 2)
+abline(lm(y3~x), lwd = 2.5)
 ```
 
 Correlation assumes a .emphasize[*linear*] relationship among two variables
@@ -569,8 +570,9 @@ Often change slowly over time
 ```{r echo = FALSE}
 mypar()
 data("AirPassengers")
-plot(AirPassengers, bty = 'l', lwd = 3.5,
-     col = 'darkred')
+plot(AirPassengers / 10, bty = 'l', lwd = 3.5,
+     col = 'darkred',
+     ylab = 'Air passengers (hundreds)')
 ```
 
 ---
@@ -578,11 +580,8 @@ plot(AirPassengers, bty = 'l', lwd = 3.5,
 ```{r echo = FALSE}
 mypar()
 portal_data %>%
-  dplyr::mutate(time = moon - (min(moon)) + 1) %>%
-  dplyr::mutate(count = PP) %>%
-  dplyr::mutate(series = as.factor('PP')) %>%
-  dplyr::select(series, year, time, count, mintemp, ndvi) -> model_data
-mylines(x = model_data$count,
+  dplyr::filter(series == 'PP') -> model_data
+mylines(x = model_data$captures,
         xlab = 'Time',
         ylab = 'Rodent captures')
 ```
@@ -600,8 +599,6 @@ class: inverse middle center big-subsection
 Autocorrelation functions ([ACFs](https://otexts.com/fpp3/acf.html))
 
 Partial autocorrelation functions ([pACFs](https://online.stat.psu.edu/stat510/lesson/2/2.2#:~:text=In%20general%2C%20a%20partial%20correlation,some%20other%20set%20of%20variables.)) 
-
-Cross-correlation functions ([CCFs](https://online.stat.psu.edu/stat510/lesson/8/8.2))
 
 ---
 
@@ -666,7 +663,7 @@ series <- arima.sim(model = list(ar = c(0.8)), n = T, sd = 1)
 # plot the empirical pACF
 mypar()
 pacf(series, lwd = 2, bty = 'l',
-    ci.col = 'darkred', main = '')
+     ci.col = 'darkred', main = '')
 ```
 
 ```{r eval=FALSE}
@@ -681,7 +678,7 @@ series <- arima.sim(model = list(ar = c(0.8)), n = T, sd = 1)
 
 # plot the empirical pACF
 pacf(series, lwd = 2, bty = 'l',
-    ci.col = 'darkred', main = '')
+     ci.col = 'darkred', main = '')
 ```
 ]
 
@@ -691,47 +688,6 @@ pacf(series, lwd = 2, bty = 'l',
 ]
 ]
 
----
-
-## *Independent* cross-correlations
-.panelset[
-.panel[.panel-name[Code]
-
-```{r death_ccf, echo=FALSE,fig.show='hide', fig.height=3.9, fig.width=1.9*3.9}
-# compute a CCF of the built-in lung cancer dataset
-mypar()
-ccf(as.vector(mdeaths), as.vector(fdeaths), 
-    # compute cross-correlations at each lag
-    type = 'correlation',
-    bty = 'l', lwd = 2, ci.col = 'darkred',
-    ylab = "cross-correlation", main = "")
-    # add an informative title
-    title(main = expression(paste(italic(Cor),
-                            "(", Female~deaths,
-                            ",", Male~deaths, ")")),
-          line = 0)
-```
-
-```{r eval=FALSE}
-# compute a CCF of the built-in lung cancer dataset
-ccf(as.vector(mdeaths), as.vector(fdeaths), 
-    # compute cross-correlations at each lag
-    type = 'correlation',
-    bty = 'l', lwd = 2, ci.col = 'darkred',
-    ylab = "cross-correlation", main = "")
-# add an informative title
-title(main = expression(paste(italic(Cor),
-                            "(", Female~deaths,
-                            ",", Male~deaths, ")")),
-          line = 0)
-```
-]
-
-.panel[.panel-name[Plot]
-.center[![](lecture_1_slidedeck_files/figure-html/death_ccf-1.svg)]
-
-]
-]
 ---
 
 ## ACFs often detect seasonality
@@ -812,11 +768,11 @@ gas = gas / 1000
 gas_stl <- stl(gas, s.window = 13)
 trend <- gas_stl$time.series[,2]
 plot(gas,bty = 'l', lwd = 3.5,
-     col = 'grey70', ylab = 'gas (thousands of units)')
+     col = 'grey75', ylab = 'gas (thousands of units)')
 
 ## plot the trend
-lines(trend, lwd = 3.5, col = 'white')
-lines(trend, lwd = 2.5, col = 'darkred')
+lines(trend, lwd = 4.75, col = 'white')
+lines(trend, lwd = 3, col = 'darkred')
 ```
 
 ---
@@ -847,14 +803,14 @@ These components can be summed to give the original series
 ```{r echo = FALSE}
 mypar()
 data("AirPassengers")
-plot(as.vector(AirPassengers), bty = 'l', lwd = 3.5,
+plot(as.vector(AirPassengers / 10), bty = 'l', lwd = 3.5,
      type = 'l',
      col = 'darkred',
      xlab = '', 
-     ylab = 'Air passengers',
+     ylab = 'Air passengers (hundreds)',
      xaxt = 'n',
      xlim = c(0, 160),
-     ylim = c(-50, 600))
+     ylim = c(-7, 60))
 title(xlab = 'Time', line = 0.75)
 box(bty = 'l', lwd = 2)
 ```
@@ -865,49 +821,38 @@ box(bty = 'l', lwd = 2)
 ```{r echo = FALSE}
 mypar()
 data("AirPassengers")
-plot(as.vector(AirPassengers), bty = 'l', lwd = 3.5,
+plot(as.vector(AirPassengers / 10), bty = 'l', lwd = 3.5,
      type = 'l',
-     col = 'grey70',
+     col = 'grey75',
      xlab = '', 
-     ylab = 'Air passengers',
+     ylab = 'Air passengers (hundreds)',
      xaxt = 'n',
      xlim = c(0, 160),
-     ylim = c(-50, 600))
+     ylim = c(-7, 60))
 title(xlab = 'Time', line = 0.75)
 
 # STL decomposition
-decomp <- stl(AirPassengers, s.window = 9)
+decomp <- stl(AirPassengers / 10, s.window = 9)
 
 ## plot the trend
 trend <- as.vector(decomp$time.series[,2])
-lines(trend, lwd = 3.5, col = 'white')
-lines(trend, lwd = 2.5, col = 'darkred')
+lines(trend, lwd = 4.75, col = 'white')
+lines(trend, lwd = 3, col = 'darkred')
 
 # plot the cycle
 cycle <-  as.vector(decomp$time.series[,1])
-lines(cycle, lwd = 3.5, col = 'white')
-lines(cycle, lwd = 2.5, col = 'darkblue')
+lines(cycle, lwd = 4.75, col = 'white')
+lines(cycle, lwd = 3, col = 'darkblue')
 box(bty = 'l', lwd = 2)
 
 # add labels
 text(x = 145, y = trend[144], labels = 'Trend',
      adj = 0,
-     col = 'darkred', cex = 1.45)
-text(x = 145, y = 5, labels = 'Seasonality',
+     col = 'darkred', cex = 1.85)
+text(x = 145, y = 1, labels = 'Seasonality',
      adj = 0,
-     col = 'darkblue', cex = 1.45, xpd = TRUE)
+     col = 'darkblue', cex = 1.85, xpd = TRUE)
 ```
----
-
-## Under the hood
-
-```{r echo=FALSE, fig.height = 5.5, fig.width = 1.9 * 5.1}
-data("AirPassengers")
-plot(stl(AirPassengers, s.window = 9),
-     lwd = 2, col = 'darkred', bty = 'l',
-     col.range = 'darkred')
-```
-
 ---
 
 class: middle center
@@ -1067,38 +1012,28 @@ myhist(beta_temp, xlab = 'Relative abundance', big = FALSE,
 ---
 
 ## Collections of ecological series
-```{r,fig.height = 6, fig.width = 2.2 * 6, echo=FALSE}
-set.seed(55)
-N = 50
-par(family = "serif", 
-    las = 1, 
-    mar=c(4,4.1,2,2),
-    mgp = c(2,0.5,0),
-    bty = "l", 
-    cex.axis = 1.25, 
-    cex.lab = 1.5, 
-    cex.main = 1.5,
-    col.lab = 'white',
-    xaxs = 'r',
-    yaxs = 'r',
-    pch = 16)
+```{r,fig.height = 6.5, fig.width = 2.2 * 6, echo=FALSE}
+set.seed(5)
+N = 70
 beta_temp <- mvgam::sim_mvgam(T = N, 
                               n_series = 4,
                               family = poisson(), 
                               prop_train = 1,
                               prop_missing = 0.1,
                               trend_rel = 0.6,
-                              mu = c(0, 1, 1.5, 1.7))
+                              mu = c(0.5, 1, 1.5, 1.7))
 beta_temp$data_train$Count <- beta_temp$data_train$y
 beta_temp$data_train %>%
   dplyr::mutate(series = gsub('series_', 'Species ', series)) -> beta_temp$data_train 
 beta_temp$data_train$series <- as.factor(beta_temp$data_train$series)
 
 mvgam::plot_mvgam_series(data = beta_temp$data_train, series = 'all',
-                         y = 'Count')
-par(las = 0)
-mtext('Time', outer = TRUE, side = 1, line = -1.5, cex = 1.5)
-mtext('Count', outer = TRUE, side = 2, line = -1.5, cex = 1.5)
+                         y = 'Count') +
+  theme_bw(base_size = 22, base_family = 'serif') +
+  theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank())
 ```
 
 ---
