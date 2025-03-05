@@ -31,12 +31,9 @@ library(dplyr)
 library(mvgam) 
 library(gratia)
 library(ggplot2)
-library(marginaleffects)
-library(zoo)
-library(viridis)
 
 #### Data manipulation exercises ####
-#1. Plot the distributions of the `count`, `mintemp` and `ndvi` variables as 
+#1. Plot the distributions of the `count`, `mintemp` and `ndvi_ma12` variables as 
 #   histograms to get a better sense of the types of values they can take. 
 #   See `?hist` for guidance
 ?hist
@@ -50,7 +47,7 @@ library(viridis)
 
 #### Visualization exercises ####
 # 1. Calculate cross-correlations between our outcome variable `count` 
-#   and `ndvi` at lags of 1 - 15 months. This procedure is often used 
+#   and `mintemp` at lags of 1 - 15 months. This procedure is often used 
 #   to help identify lags of the x-variable that might be useful predictors 
 #   of the outcome. Note, you will need to use `na.action = na.pass` 
 #   so that the missing values in `count` don't cause problems. 
@@ -71,11 +68,11 @@ ccf(x = '?',
     main = expression(paste(italic(Cor),"(",ndvi[lag],",",count, ")")))
 
 
-#   Which lags of `ndvi` would you consider to be the most likely candidates for 
+#   Which lags of `mintemp` would you consider to be the most likely candidates for 
 #   predicting our outcome `count`?
 
 
-# 2. Plot an `STL` decomposition for the `ndvi` variable
+# 2. Plot an `STL` decomposition for the `mintemp` variable
 ?stl
 
 
@@ -91,43 +88,16 @@ ccf(x = '?',
 #   you rectify these issues by modifying the model?
 plot(model1, type = 'residuals')
 
-# 2. The model contains posterior draws of Dunn-Smyth residuals that can 
-#   be used for further investigations. For each series in the data 
-#   (only one series in this case), residuals are in a matrix of dimension 
-#   `n_draws x n_timepoints`. Calculate posterior median residuals per time 
-#   point and plot these as a line plot (hint, use `?apply` and either 
-#   `?median` or `?quantile` for guidance). Add a dashed horizontal 
-#   line at `0` (hint, use `?abline` for guidance). 
-#   hint, use the following template code and fill in the "?" 
-#   with the correct variable / value
-#   extract residuals for our rodent species of interest
-model1_resids <- model1$resids$PP
-
-#   check the dimensions of the residuals matrix
-dim(model1_resids)
-
-#   calculate posterior median residuals per timepoint
-?apply
-?median
-?quantile
-median_resids <- apply(model1_resids,
-                       MARGIN = '?', 
-                       FUN = '?')
-
-#   plot median residuals over time
-plot(median_resids,
-     type = 'l',
-     # not necessary but makes for a prettier plot
-     lwd = 2,
-     col = 'darkred',
-     bty = 'l',
-     ylab = 'Median residual',
-     xlab = 'Time')
-
-#   add a horizontal dashed line at zero
-?abline
-abline('?' = 0, lty = 'dashed')
-
+# 2. The model contains posterior draws of Dunn-Smyth residuals that can be 
+#    used for further investigations. For each series in the data (only one 
+#    series in this case), residuals are in a matrix of dimension n_draws 
+#    x n_timepoints. Calculate posterior median residuals per time point and 
+#    plot these (hint, use ?pp_check for guidance). 
+#    fill in the "?" with the correct variable / value
+pp_check(model1, 
+         type = 'resid_ribbon',
+         x = '?',
+         ndraws = 200)
 
 #   Do these residuals look worrisome to you?
 
@@ -137,27 +107,27 @@ abline('?' = 0, lty = 'dashed')
 ?graphics::plot
 
 
-# 2. Add `mintemp` as a second predictor. Be sure to first check 
+# 2. Add `ndvi_ma12` as a second predictor. Be sure to first check 
 #   whether there is a strong pairwise correlation between `mintemp` and 
-#   `ndvi` (hint, use `?cor.test` for guidance)
+#   `ndvi_ma12` (hint, use `?cor.test` for guidance)
 ?cor.test
 
 
-# 3. Does the model estimate any strong effect of `mintemp` on 
-#   `log(counts)`? Or does inclusion of `mintemp` lead to different 
-#   inference on the effect of `ndvi` compared to when `mintemp` 
+# 3. Does the model estimate any strong effect of `ndvi_ma12` on 
+#   `log(counts)`? Or does inclusion of `ndvi_ma12` lead to different 
+#   inference on the effect of `mintemp` compared to when `ndvi_ma12` 
 #   was not in the model?
 
 
 #### Nonlinear temporal functions exercises ####
-# 1. Change the `ndvi` effect to a smooth function of `ndvi` using the `s()` 
+# 1. Change the `ndvi_ma12` effect to a smooth function of `ndvi_12` using the `s()` 
 #   argument (hint, see `?s` for guidance on how to define smooth terms in 
 #   GAM formulae using `mgcv` syntax). Inspect the resulting function 
 #   estimates for both `ndvi` and `time`
 ?mgcv::s
 ?mgcv::smooth.terms
 
-#    Inspect the resulting function estimates for both `ndvi` and `time`, 
+#    Inspect the resulting function estimates for both `ndvi_ma12` and `time`, 
 #    and consider using some of the strategies outlined in this blog post on
 #    interpreting nonlinear effects in GAMs with mgcv and marginaleffects
 #    https://ecogambler.netlify.app/blog/interpreting-gams/ to understand 
@@ -166,7 +136,7 @@ abline('?' = 0, lty = 'dashed')
 
 
 # 2. Try increasing the complexity of the temporal smooth by changing 
-#   `k` to a larger number, something like 50. Do you get any sense that 
+#   `k` to a larger number, something like 30. Do you get any sense that 
 #   there are problems with fitting this model? Do any of your 
 #   conclusions change?
 
