@@ -2,6 +2,10 @@
 [![mvgam](https://img.shields.io/badge/Powered%20by-mvgam-darkred.svg)](https://nicholasjclark.github.io/mvgam/)
 [![mvgam](https://img.shields.io/badge/Enhanced%20by-brms-lightblue.svg)](https://paulbuerkner.com/brms/)
 
+
+![](https://github.com/nicholasjclark/physalia-forecasting-course/raw/main/day1/resources/basis_weights20.gif)
+
+
 ### Physalia-Courses 
 
 https://www.physalia-courses.org/
@@ -63,25 +67,25 @@ install.packages(c("gratia", "tidybayes"))
 When working in `R`, there are two primary interfaces we can use to fit models with `Stan` (`{rstan}` and `CmdStan`). It is highly recommended that you use the `Cmdstan` backend, with the `{cmdstanr}` interface, rather than using `{rstan}`. But either interface will work. What is more important is that you have an up to date version of `Stan`. **For all `{mvgam}` and `{brms}` functionalities to work properly, please ensure you have at least version 2.33 of `Stan` installed**. The CRAN and GitHub development versions of `{rstan}` and `CmdStan` are currently several versions ahead of this, and all of these versions are stable.
 
 Compiling a Stan program requires a modern C++ compiler and the GNU Make build utility (a.k.a. “gmake”). The correct versions of these tools to use will vary by operating system, but unfortunately most standard Windows and MacOS X machines do not come with them installed by default. The first step to installing `Stan` is to update your C++ toolchain so that you can compile models correctly. The `{cmdstanr}` package usually makes this easy to do. First install the `R` package `{cmdstanr}` by running the following command in a fresh `R` environment:
-```{r}
+```r
 install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
 ```
 
 If you don't have `CmdStan` installed then `{cmdstanr}` can install it for you, assuming you have a suitable C++ toolchain. To double check that your toolchain is set up properly you can call the `check_cmdstan_toolchain()` function:
-```{r}
+```r
 library(cmdstanr)
 check_cmdstan_toolchain(fix = TRUE)
 ```
 
 This may give you a message that you need to update `rtools` to match your current version of `R`, so please follow the instructions in the printed error message if that is the case. Once the toolchain is set up properly, `{cmdstanr}` will require a working installation of [`CmdStan`](https://mc-stan.org/users/interfaces/cmdstan.html), the shell interface to `Stan`. `CmdStan` can be installed by calling the [`install_cmdstan()`](https://mc-stan.org/cmdstanr/reference/install_cmdstan.html) function:
 
-```{r}
+```r
 install_cmdstan(cores = 2)
 ```
 
 The exact version you have installed can be checked using `cmdstanr::cmdstan_version()`. You should now be able to follow the remaining instructions on the [Getting Started with `{cmdstanr}` page](https://mc-stan.org/cmdstanr/articles/cmdstanr.html) to ensure that `Stan` models can successfully compile on your machine. However a quicker way to check this would be to run this script:
 
-```{r}
+```r
 library(mvgam)
 simdat <- sim_mvgam()
 mod <- mvgam(y ~ s(season, bs = 'cc', k = 5) +
