@@ -3,7 +3,7 @@ title: "Ecological forecasting in R"
 subtitle: "Lecture 2: dynamic GLMs and GAMs"
 institute: "School of Veterinary Science, University of Queensland"
 author: "Nicholas Clark"
-date: "0900&ndash;1200 CET Monday 27th May, 2024"
+date: "0900&ndash;1200 CET Monday 24th March, 2025"
 output:
   xaringan::moon_reader:
     css: ['default','https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css', 'slides.css']
@@ -23,15 +23,17 @@ output:
 class: animated fadeIn
 ```{r setup, include=FALSE, cache=FALSE}
 options(htmltools.dir.version = FALSE)
-knitr::opts_chunk$set(cache = FALSE, dev = 'svg', echo = TRUE,
+knitr::opts_chunk$set(cache = FALSE, dev = 'png', echo = TRUE,
+                      dpi = 550,
                       message = FALSE, warning = FALSE,
                       fig.align = 'center',
                       fig.height = 5.1, fig.width = 1.9 * 5.1)
 library('mgcv')
 library('mvgam')
 library('gratia')
-library('ggplot2')
+library('ggplot2'); theme_set(theme_bw(base_family = 'serif'))
 library('ggborderline')
+library('patchwork')
 library('viridis')
 library('gamair')
 library('forecast')
@@ -78,7 +80,7 @@ multipar = function(...){
 mypar = function(...){
   par(family = "serif", 
       las = 1, 
-      mar=c(4,4.1,2,2),
+      mar=c(4,4.1,1,1),
       mgp = c(2,0.5,0),
       bty = "l", 
       cex.axis = 1.25, 
@@ -203,7 +205,7 @@ myscatter = function(x,
        pch = 21,
        bg = c_dark,
        col = 'white',
-       cex = 2,
+       cex = 2.5,
        bty = 'l',
        xlab = xlab,
        ylab = ylab)
@@ -231,7 +233,7 @@ Access the [tutorial html here](https://nicholasjclark.github.io/physalia-foreca
 Relevant open-source materials include:
 - [An introduction to Bayesian multilevel modeling with `brms`](https://youtu.be/1qeXD4NQ4To)
 - [Introduction to Generalized Additive Models with `r fontawesome::fa("r-project", fill = "steelblue")` and `mgcv`](https://www.youtube.com/watch?v=sgw4cu8hrZM)
-- [Forecasting with Dynamic Generalized Additive Models](https://www.youtube.com/watch?v=0zZopLlomsQ)
+- [Time series in R and Stan using `mvgam`](https://www.youtube.com/playlist?list=PLzFHNoUxkCvsFIg6zqogylUfPpaxau_a3)
 - [Statistical Rethinking 2023 - 12 - Multilevel Models](https://www.youtube.com/watch?v=iwVqiiXYeC4&list=PLDcUM9US4XdPz-KxHM4XHt7uUVGWWVSus&index=12)
 
 ---
@@ -340,35 +342,34 @@ class: middle center
 ---
 
 ```{r echo = FALSE, fig.cap = "Properties of monthly CO2 measurement time series at the South Pole"}
-multipar()
 data("co2s")
 model_data = data.frame(co2 = co2s$co2,
                         time = 1:NROW(co2s),
                         series = as.factor('South Pole'))
-plot_mvgam_series(data = model_data, y = 'co2')
+plot_mvgam_series(data = model_data, y = 'co2') &
+  theme_bw(base_size = 14, base_family = 'serif')
 ```
 
 ---
 
 ```{r echo = FALSE, fig.cap = "Properties of lunar monthly Desert Pocket Mouse capture time series from a long-term monitoring study in Portal, Arizona, USA"}
-multipar()
 portal_data %>%
-  dplyr::mutate(time = moon - (min(moon)) + 1) %>%
-  dplyr::mutate(count = PP) %>%
-  dplyr::mutate(series = as.factor('PP')) %>%
-  dplyr::select(series, year, time, count, mintemp, ndvi) -> model_data
-plot_mvgam_series(data = model_data, y = 'count')
+  dplyr::filter(series == 'PP') %>%
+  droplevels() %>%
+  dplyr::mutate(count = captures) -> model_data
+plot_mvgam_series(data = model_data, y = 'count') &
+  theme_bw(base_size = 14, base_family = 'serif')
 ```
 
 ---
 
 ```{r echo = FALSE, fig.cap = "Properties of annual American kestrel abundance time series in British Columbia, Canada"}
 load(url('https://github.com/atsa-es/MARSS/raw/master/data/kestrel.rda'))
-multipar()
 model_data = data.frame(time = 1:NROW(kestrel),
                         series = as.factor('kestrel'),
                         count = exp(kestrel[,2]))
-plot_mvgam_series(data = model_data, y = 'count')
+plot_mvgam_series(data = model_data, y = 'count') &
+  theme_bw(base_size = 14, base_family = 'serif')
 ```
 
 ---
@@ -488,15 +489,15 @@ class: middle center
 ---
 
 ```{r echo = FALSE, fig.cap = "Properties of Merriam's kangaroo rat relative abundance time series from a long-term monitoring study in Portal, Arizona, USA"}
-multipar()
 portal_data %>%
-  dplyr::mutate(time = moon - (min(moon)) + 1) %>%
-  dplyr::rowwise() %>%
-  dplyr::mutate(total = sum(c(DM, DO, PP, OT), na.rm = TRUE)) %>%
-  dplyr::mutate(`relative abundance` = DM / total) %>%
-  dplyr::mutate(series = as.factor('DM')) %>%
-  dplyr::select(series, year, time, `relative abundance`, mintemp, ndvi) -> model_data
-  plot_mvgam_series(data = model_data, y = 'relative abundance')
+  dplyr::group_by(time) %>%
+  dplyr::mutate(total = sum(captures, na.rm = TRUE)) %>%
+  dplyr::mutate(`relative abundance` = captures / total) %>%
+  dplyr::ungroup() %>%
+  dplyr::filter(series == 'DM') %>%
+  droplevels() -> model_data
+  plot_mvgam_series(data = model_data, y = 'relative abundance') &
+  theme_bw(base_size = 14, base_family = 'serif')
 ```
 
 ---
@@ -583,7 +584,7 @@ Time-varying effects]
 background-image: url('./resources/smooth_only.gif')
 ## GAMs use splines ...
 
-```{r basis-functions, fig.height=4.6875, fig.width = 7.5, echo=FALSE,message=FALSE,warning=FALSE,fig.show='hide'}
+```{r basis-functions, fig.height=6.225, fig.width = 9.975, dev = 'svg', echo=FALSE,message=FALSE,warning=FALSE,fig.show='hide'}
 set.seed(7)
 N <- 400
 y <- mvgam::sim_mvgam(T = N, prop_missing = 0,
@@ -595,7 +596,7 @@ y <- mvgam::sim_mvgam(T = N, prop_missing = 0,
 x <- 1:N
 data <- data.frame(x = x,
                    y = y)
-theme_set(theme_classic(base_size = 17, base_family = 'serif'))
+theme_set(theme_classic(base_size = 23, base_family = 'serif'))
 basis_funs <- basis(s(x, bs = 'cr', k = 12), 
                     data = data)
 ggplot(basis_funs,
@@ -603,7 +604,7 @@ ggplot(basis_funs,
   geom_borderline(linewidth=1.5, bordercolour = "white") +
   scale_color_viridis(discrete = TRUE) +
   theme(legend.position = 'none',
-        axis.line = element_line(size = 1),
+        axis.line = element_line(size = 1.1),
         axis.ticks = element_line(colour = "black", size = 1)) +
   ylab('f(Time)') + xlab('Time') + 
   scale_y_continuous(breaks = c(0, 1))
@@ -614,7 +615,7 @@ ggplot(basis_funs,
 background-image: url('./lecture_2_slidedeck_files/figure-html/basis-functions-1.svg')
 ## ... made of basis functions
 
-```{r basis-functions-weights, fig.height=4.6875, fig.width = 7.5, echo=FALSE,message=FALSE,warning=FALSE,fig.show='hide'}
+```{r basis-functions-weights, fig.height=6.225, fig.width = 9.975, dev = 'svg',  echo=FALSE,message=FALSE,warning=FALSE,fig.show='hide'}
 set.seed(7)
 N <- 400
 y <- mvgam::sim_mvgam(T = N, prop_missing = 0,
@@ -626,7 +627,7 @@ y <- mvgam::sim_mvgam(T = N, prop_missing = 0,
 x <- 1:N
 data <- data.frame(x = x,
                    y = rnorm(n = N, mean = y, sd = 0.75))
-theme_set(theme_classic(base_size = 17, base_family = 'serif'))
+theme_set(theme_classic(base_size = 23, base_family = 'serif'))
 basis_funs <- basis(gam(y ~ s(x, bs = 'cr', k = 12) - 1, 
                     data = data))
 ggplot(basis_funs,
@@ -634,7 +635,7 @@ ggplot(basis_funs,
   geom_borderline(linewidth=1.5, bordercolour = "white") +
   scale_color_viridis(discrete = TRUE) +
   theme(legend.position = 'none',
-        axis.line = element_line(size = 1),
+        axis.line = element_line(size = 1.1),
         axis.ticks = element_line(colour = "black", size = 1)) +
   ylab('f(Time)') + xlab('Time') + 
   scale_y_continuous(breaks = c(0, 1))
@@ -664,32 +665,6 @@ background-image: url('./resources/smooth_to_data.gif')
 
 class: middle center
 ### GAMs are just fancy GLMs, where some (or all) of the predictor effects are estimated as (possibly nonlinear) smooth functions
-<br>
-### But the complexity they can handle is *enormous*
-
-```{r complexity, echo=FALSE, fig.height = 7, fig.width = 10,fig.show='hide'}
-df <- data_sim("eg1", n = 200, seed = 1)
-df$x4 <- rnorm(NROW(df))
-df$x3 <- df$y * mvgam::sim_mvgam(T = 200, n_series = 1,
-                                 prop_train = 1,
-                                 trend_model = 'GP',
-                                 trend_rel = 0.5,
-                                 family = gaussian())$data_train$y
-m_sim <- gam(y ~ s(x0, bs = 'gp') + te(x1, x2) + s(x3) +
-               s(x4, bs = 'cs'),
-             data = df, method = "REML")
-theme_set(theme_classic(base_size = 18, base_family = 'serif'))
-draw(m_sim, ci_col = "#A25050",
-     smooth_col = "#7C0000",
-     residuals = TRUE,
-     resid_col = 'black',
-     ci_alpha = 0.5)
-
-```
-
----
-
-background-image: url('./lecture_2_slidedeck_files/figure-html/complexity-1.svg')
 
 ---
 
@@ -1001,7 +976,7 @@ model <- mvgam(
 
 ---
 
-## Example data (long format)
+## Example data (`tidy` format)
 
 ```{r echo=FALSE}
 set.seed(100)
@@ -1112,11 +1087,11 @@ dplyr::glimpse(model_data)
 .panelset[
 .panel[.panel-name[Code]
 
-```{r obs_properties, echo=FALSE,fig.show='hide', fig.height=4.25, fig.width=1.9*4, warning=FALSE, message=FALSE}
+```{r obs_properties, echo=FALSE,fig.show='hide', fig.height=6.2, fig.width=1.9*6.2, dev = 'svg', warning=FALSE, message=FALSE}
 
 # use mvgam's plot utility to view properties of the observations
-multipar()
-plot_mvgam_series(data = model_data, y = 'count')
+plot_mvgam_series(data = model_data, y = 'count') &
+  theme_bw(base_size = 17, base_family = 'serif')
 ```
 
 ```{r eval=FALSE,message=FALSE}
@@ -1136,7 +1111,8 @@ plot_mvgam_series(data = model_data, y = 'count')
 ## Yearly heterogeneity
 ```{r echo=FALSE}
 mypar()
-boxplot(count ~ year, data = model_data,
+boxplot(count ~ year, 
+        data = model_data,
         ylab = 'Count',
         xlab = 'Year',
         col = '#C79999',
@@ -1149,14 +1125,13 @@ boxplot(count ~ year, data = model_data,
 ## Yearly random intercepts
 
 ```{r eval = FALSE}
-year_random <- mvgam(count ~ 
-                       s(year, bs = 're') - 1,#<<
-                    family = poisson(),
-                    data = model_data,
-                    trend_model = 'None',
-                    burnin = 500,
-                    samples = 500,
-                    chains = 4)
+year_random <- mvgam(
+  count ~ 
+    s(year, bs = 're') - 1,#<<
+  family = poisson(),
+  data = model_data,
+  trend_model = 'None'
+)
 ```
 
 Random effect basis in `mgcv` language
@@ -1169,17 +1144,21 @@ Global intercept suppressed
 .panelset[
 .panel[.panel-name[Code]
 
-```{r year_random_ests, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25, echo=FALSE}
+```{r year_random_ests, fig.show='hide', fig.height=6.2, fig.width=1.9*6.2, dev = 'svg', echo=FALSE}
 
 # plot the random effect posterior estimates
-mypar()
-plot(year_random, type = 're')
+plot_predictions(year_random, 
+                 condition = 'year',
+                 type = 'link') +
+  theme_classic(base_size = 17, base_family = 'serif')
 ```
 
 ```{r eval=FALSE}
 
 # plot the random effect posterior estimates
-plot(year_random, type = 're')
+plot_predictions(year_random, 
+                 condition = 'year',
+                 type = 'link')
 ```
 ]
 
@@ -1190,88 +1169,31 @@ plot(year_random, type = 're')
 ]
 
 ---
-
 ## Population parameters
-.panelset[
-.panel[.panel-name[Code]
-
-```{r eval = FALSE}
-
-# extract population estimates
-pop_params <- as.data.frame(year_random, 
-                            variable = c('mean(year)',
-                                         'sd(year)'))
-
-# plot as histograms
-hist(pop_params$`mean(year)`, main = expression(mu[year]))
-
-hist(pop_params$`sd(year)`, main = expression(sigma[year]))
-```
-
-```{r year_random_means, echo=FALSE,fig.show='hide', fig.height=4, fig.width=1.9*4}
-pop_params <- as.data.frame(year_random, 
-                            variable = c('mean(year)',
-                                         'sd(year)'))
-myhist(pop_params$`mean(year)`, main = expression(mu[year]))
-```
-
-```{r year_random_sds, echo=FALSE,fig.show='hide', fig.height=4, fig.width=1.9*4}
-pop_params <- as.data.frame(year_random, 
-                            variable = c('mean(year)',
-                                         'sd(year)'))
-myhist(pop_params$`sd(year)`, main = expression(sigma[year]))
-```
-]
-
-.panel[.panel-name[Means]
-.center[![](lecture_2_slidedeck_files/figure-html/year_random_means-1.svg)]
-
-]
-
-.panel[.panel-name[SDs]
-.center[![](lecture_2_slidedeck_files/figure-html/year_random_sds-1.svg)]
-
-]
-]
-
----
-## Or using `bayesplot`
 
 .panelset[
 .panel[.panel-name[Code]
 
-```{r year_random_mcmcplot, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25, warning=FALSE, message=FALSE}
+```{r year_random_mcmcplot, fig.show='hide', fig.height=6.2, fig.width=1.9*6.2, dev = 'svg', warning=FALSE, message=FALSE, echo = FALSE}
 
 # use bayesplot utilities to plot parameter estimates
-mcmc_plot(year_random, type = 'areas',
+mcmc_plot(year_random, 
+          type = 'areas',
+          variable = c('mean(year)', 'sd(year)')) +
+  theme_classic(base_size = 17, base_family = 'serif')
+```
+
+```{r eval=FALSE}
+# use bayesplot utilities to plot parameter estimates
+mcmc_plot(year_random, 
+          type = 'areas',
           variable = c('mean(year)', 'sd(year)'))
 ```
+
 ]
 
 .panel[.panel-name[Plot]
 .center[![](lecture_2_slidedeck_files/figure-html/year_random_mcmcplot-1.svg)]
-
-]
-]
----
-
-## Conditional predictions
-.panelset[
-.panel[.panel-name[Code]
-
-```{r year_random_conds, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25, warning=FALSE, message=FALSE}
-
-# use marginaleffects utilities to plot conditional predictions
-library(ggplot2)
-plot_predictions(year_random, 
-                 condition = 'year') +
-  theme_classic()
-
-```
-]
-
-.panel[.panel-name[Plot]
-.center[![](lecture_2_slidedeck_files/figure-html/year_random_conds-1.svg)]
 
 ]
 ]
@@ -1283,17 +1205,17 @@ plot_predictions(year_random,
 .panelset[
 .panel[.panel-name[Code]
 
-```{r year_random_preds, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25, warning=FALSE, message=FALSE,echo=FALSE}
+```{r year_random_preds, fig.show='hide', fig.height=6.2, fig.width=1.9*6.2, dev = 'svg', warning=FALSE, message=FALSE,echo=FALSE}
 
 # use mvgam's plot to view hindcast predictions
-mypar()
-plot(year_random, type = 'forecast')
+plot(hindcast(year_random)) +
+  theme_classic(base_size = 17, base_family = 'serif')
 ```
 
 ```{r eval=FALSE}
 
 # use mvgam's plot to view hindcast predictions
-plot(year_random, type = 'forecast')
+plot(hindcast(year_random))
 ```
 ]
 
@@ -1313,14 +1235,13 @@ load('cache_not_for_upload/lec2_year_smooth.rds')
 model_data %>%
   dplyr::mutate(year = as.numeric(as.character(year))) -> model_data
 
-year_smooth <- mvgam(count ~ 
-                       s(year, bs = 'tp', k = 15), #<<
-                    family = poisson(),
-                    data = model_data,
-                    trend_model = 'None',
-                    burnin = 500,
-                    samples = 500,
-                    chains = 4)
+year_smooth <- mvgam(
+  count ~ 
+    s(year, bs = 'tp', k = 7), #<<
+  family = poisson(),
+  data = model_data,
+  trend_model = 'None',
+)
 ```
 
 A thin plate regression spline of the numeric `year` variable
@@ -1342,15 +1263,19 @@ We .emphasize[*must*] use predictions and plots to understand the model
 .panelset[
 .panel[.panel-name[Code]
 
-```{r year_smooth_ests, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25,echo=FALSE}
-multipar()
-plot(year_smooth, type = 'smooth')
+```{r year_smooth_ests, fig.show='hide', fig.height=6.2, fig.width=1.9*6.2, dev = 'svg', echo=FALSE}
+plot_predictions(year_smooth,
+                 condition = 'year',
+                 type = 'link') +
+  theme_classic(base_size = 17, base_family = 'serif')
 ```
 
 ```{r eval=FALSE}
 
 # plot the smooth effect posterior estimates
-plot(year_smooth, type = 'smooth')
+plot_predictions(year_smooth,
+                 condition = 'year',
+                 type = 'link')
 ```
 ]
 
@@ -1360,76 +1285,28 @@ plot(year_smooth, type = 'smooth')
 ]
 ]
 
----
-
-## Plotting basis functions
-.panelset[
-.panel[.panel-name[Code]
-
-```{r year_smooth_basis, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25}
-
-# plot the basis functions with gratia
-library(ggplot2); library(viridis); library(gratia)
-theme_set(theme_classic())
-ggplot(basis(year_smooth$mgcv_model), 
-       aes(x = year, y = .value, color = .bf)) +
-  geom_borderline(linewidth = 1.25, bordercolour = "white") +
-  geom_borderline(data = smooth_estimates(year_smooth$mgcv_model),
-                  inherit.aes = FALSE,
-                  mapping = aes(x = year, y = .estimate), linewidth = 2) +
-  scale_color_viridis(discrete = TRUE) +
-  theme(legend.position = 'none', axis.line = element_line(size = 1),
-        axis.ticks = element_line(colour = "black", size = 1)) +
-  ylab('f(Year)') + xlab('Year')
-```
-]
-
-.panel[.panel-name[Plot]
-.center[![](lecture_2_slidedeck_files/figure-html/year_smooth_basis-1.svg)]
-
-]
-]
-
----
-
-## Rates of change
-.panelset[
-.panel[.panel-name[Code]
-
-```{r year_smooth_derivs, fig.show='hide', fig.height=4.25, fig.width=1.8*4.25,echo=FALSE}
-
-multipar()
-plot(year_smooth, type = 'smooth', derivatives = TRUE)
-```
-
-```{r eval=FALSE}
-
-# plot the smooth effect posterior estimates
-plot(year_smooth, type = 'smooth', derivatives = TRUE)
-```
-]
-
-.panel[.panel-name[Plot]
-.center[![](lecture_2_slidedeck_files/figure-html/year_smooth_derivs-1.svg)]
-
-]
-]
 
 ---
 ## Conditional predictions
 .panelset[
 .panel[.panel-name[Code]
 
-```{r year_smooth_conds, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25, warning=FALSE, message=FALSE}
+```{r year_smooth_conds, fig.show='hide', fig.height=6.2, fig.width=1.9*6.2, dev = 'svg', warning=FALSE, message=FALSE, echo=FALSE}
 
 # use marginaleffects utilities to plot conditional predictions
-library(ggplot2)
 plot_predictions(year_smooth, 
                  condition = 'year',
                  points = 0.5) +
-  theme_classic()
-
+  theme_classic(base_size = 17, base_family = 'serif')
 ```
+
+```{r eval=FALSE}
+# use marginaleffects utilities to plot conditional predictions
+plot_predictions(year_smooth, 
+                 condition = 'year',
+                 points = 0.5)
+```
+
 ]
 
 .panel[.panel-name[Plot]
@@ -1444,17 +1321,17 @@ plot_predictions(year_smooth,
 .panelset[
 .panel[.panel-name[Code]
 
-```{r year_smooth_preds, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25, warning=FALSE, message=FALSE,echo=FALSE}
+```{r year_smooth_preds, fig.show='hide', fig.height=6.2, fig.width=1.9*6.2, dev = 'svg', warning=FALSE, message=FALSE,echo=FALSE}
 
 # use mvgam's plot to view hindcast predictions
-mypar()
-plot(year_smooth, type = 'forecast')
+plot(hindcast(year_smooth)) +
+  theme_classic(base_size = 17, base_family = 'serif')
 ```
 
 ```{r eval=FALSE}
 
 # use mvgam's plot to view hindcast predictions
-plot(year_smooth, type = 'forecast')
+plot(hindcast(year_smooth))
 ```
 ]
 
@@ -1475,16 +1352,16 @@ class: middle center
 
 ## Random year diagnostics
 ```{r echo=FALSE}
-multipar()
-plot(year_random, type = 'residuals')
+plot(year_random, type = 'residuals') &
+  theme_bw(base_size = 14, base_family = 'serif')
 ```
 
 ---
 
 ## Smooth year diagnostics
 ```{r echo=FALSE}
-multipar()
-plot(year_smooth, type = 'residuals')
+plot(year_smooth, type = 'residuals') &
+  theme_bw(base_size = 14, base_family = 'serif')
 ```
 
 ---
@@ -1502,15 +1379,14 @@ load('cache_not_for_upload/lec2_year_temp_smooth.rds')
 ```
 
 ```{r eval = FALSE}
-year_temp_smooth <- mvgam(count ~ 
-                            s(year, bs = 'tp', k = 15) +
-                            s(mintemp, bs = 'tp', k = 8), #<<
-                          family = poisson(),
-                          data = model_data,
-                          trend_model = 'None',
-                          burnin = 500,
-                          samples = 500,
-                          chains = 4)
+year_temp_smooth <- mvgam(
+  count ~ 
+    s(year, bs = 'tp', k = 7) +
+    s(mintemp, bs = 'tp', k = 7), #<<
+  family = poisson(),
+  data = model_data,
+  trend_model = 'None'
+)
 ```
 
 A thin plate regression spline of  `mintemp`
@@ -1520,17 +1396,19 @@ A thin plate regression spline of  `mintemp`
 .panelset[
 .panel[.panel-name[Code]
 
-```{r year_temp_smooth_est, fig.show='hide', fig.height=4.25, fig.width=2.2*4.25, warning=FALSE, message=FALSE,echo=FALSE}
+```{r year_temp_smooth_est, fig.show='hide', fig.height=6.2, fig.width=1.9*6.2, dev = 'svg', echo=FALSE, message=FALSE}
 
-# use mvgam's plot to view both smooth functions
-multipar()
-plot(year_temp_smooth, type = 'smooth')
+# use gratia's draw() to view both smooth functions
+library(gratia)
+draw(year_temp_smooth) &
+  theme_classic(base_size = 17, base_family = 'serif')
 ```
 
 ```{r eval=FALSE}
 
-# use mvgam's plot to view both smooth functions
-plot(year_temp_smooth, type = 'smooth')
+# use gratia's draw() to view both smooth functions
+library(gratia)
+draw(year_temp_smooth)
 ```
 ]
 
@@ -1541,36 +1419,11 @@ plot(year_temp_smooth, type = 'smooth')
 ]
 ---
 
-## Partial residuals
-.panelset[
-.panel[.panel-name[Code]
-
-```{r year_temp_smooth_resids, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25, warning=FALSE, message=FALSE,echo=FALSE}
-
-# use mvgam's plot_mgvam_smooth to view partial residuals
-multipar()
-plot_mvgam_smooth(year_temp_smooth, smooth = 2, residuals = TRUE)
-```
-
-```{r eval=FALSE}
-
-# use mvgam's plot_mgvam_smooth to view partial residuals
-plot_mvgam_smooth(year_temp_smooth, smooth = 2, residuals = TRUE)
-```
-]
-
-.panel[.panel-name[Plot]
-.center[![](lecture_2_slidedeck_files/figure-html/year_temp_smooth_resids-1.svg)]
-
-]
-]
-
----
 
 ## Diagnostics
 ```{r echo=FALSE}
-multipar()
-plot(year_temp_smooth, type = 'residuals')
+plot(year_temp_smooth, type = 'residuals') &
+  theme_bw(base_size = 14, base_family = 'serif')
 ```
 
 ---
@@ -1587,14 +1440,13 @@ load('cache_not_for_upload/lec2_temp_time_smooth.rds')
 ```
 
 ```{r eval = FALSE}
-temp_time_smooth <- mvgam(count ~ 
-                            s(mintemp, bs = 'tp', k = 8) +
-                            s(time, bs = 'tp', k = 50),#<<
-                          family = poisson(),
-                          data = model_data,
-                          burnin = 500,
-                          samples = 500,
-                          chains = 4)
+temp_time_smooth <- mvgam(
+  count ~ 
+    s(mintemp, bs = 'tp', k = 7) +
+    s(time, bs = 'tp', k = 50),#<<
+  family = poisson(),
+  data = model_data
+)
 ```
 
 Replace the spline of `year` with a complex spline of `time` to capture autocorrelation
@@ -1602,24 +1454,24 @@ Replace the spline of `year` with a complex spline of `time` to capture autocorr
 
 ## Updated smooths
 ```{r echo=FALSE}
-multipar()
-plot(temp_time_smooth, type = 'smooth')
+draw(temp_time_smooth)&
+  theme_classic(base_size = 14, base_family = 'serif')
 ```
 
 ---
 
 ## Diagnostics
 ```{r echo=FALSE}
-multipar()
-plot(temp_time_smooth, type = 'residuals')
+plot(temp_time_smooth, type = 'residuals') &
+  theme_bw(base_size = 14, base_family = 'serif')
 ```
 
 ---
 
 ## Hindcast predictions `r fontawesome::fa("face-smile-beam")`
 ```{r echo=FALSE}
-mypar()
-plot(temp_time_smooth, type = 'forecast')
+plot(hindcast(temp_time_smooth)) +
+  theme_classic(base_size = 17, base_family = 'serif')
 ```
 
 ---

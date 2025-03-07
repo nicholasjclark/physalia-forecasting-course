@@ -37,7 +37,7 @@ class: inverse, middle, left, my-title-slide, title-slide
 ### School of Veterinary Science, University of Queensland
 ]
 .date[
-### 0900–1200 CET Monday 27th May, 2024
+### 0900–1200 CET Monday 24th March, 2025
 ]
 
 ---
@@ -45,7 +45,7 @@ class: inverse, middle, left, my-title-slide, title-slide
 class: animated fadeIn
 
 
-<style>.panelset{--panel-tab-foreground: #8F2727;--panel-tab-inactive-opacity: 0.8;}</style>
+<style>:root{--panel-tab-foreground:#8F2727;--panel-tab-inactive-opacity:0.8;}</style>
 
 
 
@@ -75,7 +75,7 @@ Access the [tutorial html here](https://nicholasjclark.github.io/physalia-foreca
 Relevant open-source materials include:
 - [An introduction to Bayesian multilevel modeling with `brms`](https://youtu.be/1qeXD4NQ4To)
 - [Introduction to Generalized Additive Models with <svg aria-hidden="true" role="img" viewBox="0 0 581 512" style="height:1em;width:1.13em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:steelblue;overflow:visible;position:relative;"><path d="M581 226.6C581 119.1 450.9 32 290.5 32S0 119.1 0 226.6C0 322.4 103.3 402 239.4 418.1V480h99.1v-61.5c24.3-2.7 47.6-7.4 69.4-13.9L448 480h112l-67.4-113.7c54.5-35.4 88.4-84.9 88.4-139.7zm-466.8 14.5c0-73.5 98.9-133 220.8-133s211.9 40.7 211.9 133c0 50.1-26.5 85-70.3 106.4-2.4-1.6-4.7-2.9-6.4-3.7-10.2-5.2-27.8-10.5-27.8-10.5s86.6-6.4 86.6-92.7-90.6-87.9-90.6-87.9h-199V361c-74.1-21.5-125.2-67.1-125.2-119.9zm225.1 38.3v-55.6c57.8 0 87.8-6.8 87.8 27.3 0 36.5-38.2 28.3-87.8 28.3zm-.9 72.5H365c10.8 0 18.9 11.7 24 19.2-16.1 1.9-33 2.8-50.6 2.9v-22.1z"/></svg> and `mgcv`](https://www.youtube.com/watch?v=sgw4cu8hrZM)
-- [Forecasting with Dynamic Generalized Additive Models](https://www.youtube.com/watch?v=0zZopLlomsQ)
+- [Time series in R and Stan using `mvgam`](https://www.youtube.com/playlist?list=PLzFHNoUxkCvsFIg6zqogylUfPpaxau_a3)
 - [Statistical Rethinking 2023 - 12 - Multilevel Models](https://www.youtube.com/watch?v=iwVqiiXYeC4&amp;list=PLDcUM9US4XdPz-KxHM4XHt7uUVGWWVSus&amp;index=12)
 
 ---
@@ -123,13 +123,13 @@ Nearly all common time series models assume this data distribution
 ## Normal (Gaussian)
 
 `$$\boldsymbol{Y_t}\sim \text{Normal}(0,2)$$`
-&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-1-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-1-1.png" style="display: block; margin: auto;" /&gt;
 ---
 
 ## Normal (Gaussian)
 
 `$$\boldsymbol{Y_t}\sim \text{Normal}(50,20)$$`
-&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-2-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-2-1.png" style="display: block; margin: auto;" /&gt;
 ---
 ## Linear regression
 
@@ -180,21 +180,21 @@ class: middle center
 ---
 
 &lt;div class="figure" style="text-align: center"&gt;
-&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-3-1.svg" alt="Properties of monthly CO2 measurement time series at the South Pole"  /&gt;
+&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-3-1.png" alt="Properties of monthly CO2 measurement time series at the South Pole"  /&gt;
 &lt;p class="caption"&gt;Properties of monthly CO2 measurement time series at the South Pole&lt;/p&gt;
 &lt;/div&gt;
 
 ---
 
 &lt;div class="figure" style="text-align: center"&gt;
-&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-4-1.svg" alt="Properties of lunar monthly Desert Pocket Mouse capture time series from a long-term monitoring study in Portal, Arizona, USA"  /&gt;
+&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-4-1.png" alt="Properties of lunar monthly Desert Pocket Mouse capture time series from a long-term monitoring study in Portal, Arizona, USA"  /&gt;
 &lt;p class="caption"&gt;Properties of lunar monthly Desert Pocket Mouse capture time series from a long-term monitoring study in Portal, Arizona, USA&lt;/p&gt;
 &lt;/div&gt;
 
 ---
 
 &lt;div class="figure" style="text-align: center"&gt;
-&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-5-1.svg" alt="Properties of annual American kestrel abundance time series in British Columbia, Canada"  /&gt;
+&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-5-1.png" alt="Properties of annual American kestrel abundance time series in British Columbia, Canada"  /&gt;
 &lt;p class="caption"&gt;Properties of annual American kestrel abundance time series in British Columbia, Canada&lt;/p&gt;
 &lt;/div&gt;
 
@@ -230,13 +230,13 @@ Properties
 
 ## Poisson
 `$$\boldsymbol{Y_t}\sim \text{Poisson}(3)$$`
-&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-6-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-6-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## Poisson
 `$$\boldsymbol{Y_t}\sim \text{Poisson}(50)$$`
-&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-7-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-7-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -311,7 +311,7 @@ class: middle center
 ---
 
 &lt;div class="figure" style="text-align: center"&gt;
-&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-8-1.svg" alt="Properties of Merriam's kangaroo rat relative abundance time series from a long-term monitoring study in Portal, Arizona, USA"  /&gt;
+&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-8-1.png" alt="Properties of Merriam's kangaroo rat relative abundance time series from a long-term monitoring study in Portal, Arizona, USA"  /&gt;
 &lt;p class="caption"&gt;Properties of Merriam's kangaroo rat relative abundance time series from a long-term monitoring study in Portal, Arizona, USA&lt;/p&gt;
 &lt;/div&gt;
 
@@ -432,14 +432,6 @@ background-image: url('./resources/smooth_to_data.gif')
 
 class: middle center
 ### GAMs are just fancy GLMs, where some (or all) of the predictor effects are estimated as (possibly nonlinear) smooth functions
-&lt;br&gt;
-### But the complexity they can handle is *enormous*
-
-
-
----
-
-background-image: url('./lecture_2_slidedeck_files/figure-html/complexity-1.svg')
 
 ---
 
@@ -555,7 +547,7 @@ Uses [Stan](https://mc-stan.org/) for efficient Hamiltonian Monte Carlo sampling
 ## Example of the interface
 
 
-```r
+``` r
 model &lt;- mvgam(
   formula = y ~ 
     s(series, bs = 're') + 
@@ -576,7 +568,7 @@ Where `y` = response, `x`'s = covariates, and `series` = a grouping term
 ## Typical formula syntax
 
 
-```r
+``` r
 model &lt;- mvgam(
 * formula = y ~
 *   s(series, bs = 're') +
@@ -597,7 +589,7 @@ model &lt;- mvgam(
 ## A random intercept effect
 
 
-```r
+``` r
 model &lt;- mvgam(
   formula = y ~ 
 *   s(series, bs = 're') +
@@ -618,7 +610,7 @@ model &lt;- mvgam(
 ## A random slope effect
 
 
-```r
+``` r
 model &lt;- mvgam(
   formula = y ~ 
     s(series, bs = 're') + 
@@ -638,7 +630,7 @@ model &lt;- mvgam(
 ## A linear parametric effect
 
 
-```r
+``` r
 model &lt;- mvgam(
   formula = y ~ 
     s(series, bs = 're') + 
@@ -659,7 +651,7 @@ model &lt;- mvgam(
 ## A one-dimensional smooth
 
 
-```r
+``` r
 model &lt;- mvgam(
   formula = y ~ 
     s(series, bs = 're') + 
@@ -680,7 +672,7 @@ model &lt;- mvgam(
 ## A two-dimensional smooth
 
 
-```r
+``` r
 model &lt;- mvgam(
   formula = y ~ 
     s(series, bs = 're') + 
@@ -701,7 +693,7 @@ model &lt;- mvgam(
 ## Data and response distribution
 
 
-```r
+``` r
 model &lt;- mvgam(
   formula = y ~ 
     s(series, bs = 're') + 
@@ -722,7 +714,7 @@ model &lt;- mvgam(
 ## <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:darkred;overflow:visible;position:relative;"><path d="M37.6 4.2C28-2.3 15.2-1.1 7 7s-9.4 21-2.8 30.5l112 163.3L16.6 233.2C6.7 236.4 0 245.6 0 256s6.7 19.6 16.6 22.8l103.1 33.4L66.8 412.8c-4.9 9.3-3.2 20.7 4.3 28.1s18.8 9.2 28.1 4.3l100.6-52.9 33.4 103.1c3.2 9.9 12.4 16.6 22.8 16.6s19.6-6.7 22.8-16.6l33.4-103.1 100.6 52.9c9.3 4.9 20.7 3.2 28.1-4.3s9.2-18.8 4.3-28.1L392.3 312.2l103.1-33.4c9.9-3.2 16.6-12.4 16.6-22.8s-6.7-19.6-16.6-22.8L388.9 198.7l25.7-70.4c3.2-8.8 1-18.6-5.6-25.2s-16.4-8.8-25.2-5.6l-70.4 25.7L278.8 16.6C275.6 6.7 266.4 0 256 0s-19.6 6.7-22.8 16.6l-32.3 99.6L37.6 4.2z"/></svg> latent dynamics
 
 
-```r
+``` r
 model &lt;- mvgam(
   formula = y ~ 
     s(series, bs = 're') + 
@@ -743,7 +735,7 @@ model &lt;- mvgam(
 ## Sampler parameters
 
 
-```r
+``` r
 model &lt;- mvgam(
   formula = y ~ 
     s(series, bs = 're') + 
@@ -761,7 +753,7 @@ model &lt;- mvgam(
 
 ---
 
-## Example data (long format)
+## Example data (`tidy` format)
 
 &lt;table class=" lightable-minimal" style='color: black; font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
  &lt;thead&gt;
@@ -783,32 +775,32 @@ model &lt;- mvgam(
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_3 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_4 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_2 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_3 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_4 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
   &lt;/tr&gt;
@@ -839,32 +831,32 @@ model &lt;- mvgam(
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 2 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_3 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; species_4 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; species_4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_2 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_3 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_4 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
   &lt;/tr&gt;
@@ -895,32 +887,32 @@ model &lt;- mvgam(
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
    &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; species_3 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; species_4 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; species_1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; species_2 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; species_3 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; species_4 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
   &lt;/tr&gt;
@@ -951,32 +943,32 @@ model &lt;- mvgam(
    &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_3 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; species_4 &lt;/td&gt;
    &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; species_4 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_1 &lt;/td&gt;
    &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 2 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_2 &lt;/td&gt;
    &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 2 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_3 &lt;/td&gt;
    &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 2 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_4 &lt;/td&gt;
    &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 2 &lt;/td&gt;
   &lt;/tr&gt;
@@ -1005,81 +997,81 @@ model &lt;- mvgam(
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.38 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.97 &lt;/td&gt;
    &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; A &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.20 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1.18 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.72 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 2.61 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.47 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.36 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_2 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.71 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.88 &lt;/td&gt;
    &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; A &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -2.67 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1.02 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.67 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -1.63 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.87 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.84 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_3 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.05 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.25 &lt;/td&gt;
    &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; B &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.33 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.12 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1.50 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -1.61 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.89 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.68 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; species_4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -1.52 &lt;/td&gt;
+   &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; B &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.34 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.13 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.39 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; species_4 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.77 &lt;/td&gt;
-   &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; B &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.65 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.86 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.49 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.29 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.02 &lt;/td&gt;
    &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; A &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.25 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1.18 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.82 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 2.73 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1.10 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.40 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_2 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.34 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.03 &lt;/td&gt;
    &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; A &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.15 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 2.12 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.20 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.33 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.52 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -1.11 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_3 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.38 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.16 &lt;/td&gt;
    &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; B &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.81 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1.33 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -1.15 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -1.26 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.40 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.38 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; species_4 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1.32 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.41 &lt;/td&gt;
    &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; B &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.22 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.72 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1.36 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; -0.43 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1.07 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0.29 &lt;/td&gt;
   &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
@@ -1102,19 +1094,20 @@ background-color: #77654E
 ## The data structure
 &lt;br&gt;
 
-```r
+``` r
 dplyr::glimpse(model_data)
 ```
 
 ```
-## Rows: 199
-## Columns: 6
-## $ series  &lt;fct&gt; PP, PP, PP, PP, PP, PP, PP, PP, PP, PP, PP, PP, PP, PP, PP, PP…
-## $ year    &lt;fct&gt; 2004, 2004, 2004, 2004, 2004, 2004, 2004, 2004, 2004, 2004, 20…
-## $ time    &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,…
-## $ count   &lt;int&gt; 0, 1, 2, NA, 10, NA, NA, 16, 18, 12, NA, 3, 2, NA, NA, 13, NA,…
-## $ mintemp &lt;dbl&gt; -9.710, -5.924, -0.220, 1.931, 6.568, 11.590, 14.370, 16.520, …
-## $ ndvi    &lt;dbl&gt; 1.4658889, 1.5585069, 1.3378172, 1.6589129, 1.8536561, 1.76132…
+## Rows: 80
+## Columns: 7
+## $ series      &lt;fct&gt; PP, PP, PP, PP, PP, PP, PP, PP, PP, PP, PP, PP, PP, PP, PP…
+## $ year        &lt;fct&gt; 2004, 2004, 2004, 2004, 2004, 2004, 2004, 2004, 2004, 2004…
+## $ time        &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,…
+## $ count       &lt;int&gt; 0, NA, 0, 1, 7, 7, 8, 8, 4, NA, 0, 0, 0, 0, 0, 0, NA, 2, 4…
+## $ mintemp     &lt;dbl&gt; -0.79633807, -1.33471597, -1.24166462, -1.08048145, -0.424…
+## $ ndvi_ma12   &lt;dbl&gt; -0.172144125, -0.237363477, -0.212120638, -0.160438125, -0…
+## $ year_factor &lt;fct&gt; 2004, 2004, 2004, 2004, 2004, 2004, 2004, 2004, 2004, 2004…
 ```
 
 ---
@@ -1125,7 +1118,7 @@ dplyr::glimpse(model_data)
 
 
 
-```r
+``` r
 # use mvgam's plot utility to view properties of the observations
 plot_mvgam_series(data = model_data, y = 'count')
 ```
@@ -1139,21 +1132,20 @@ plot_mvgam_series(data = model_data, y = 'count')
 ---
 
 ## Yearly heterogeneity
-&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-27-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-27-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Yearly random intercepts
 
 
-```r
-year_random &lt;- mvgam(count ~ 
-*                      s(year, bs = 're') - 1,
-                    family = poisson(),
-                    data = model_data,
-                    trend_model = 'None',
-                    burnin = 500,
-                    samples = 500,
-                    chains = 4)
+``` r
+year_random &lt;- mvgam(
+  count ~ 
+*   s(year, bs = 're') - 1,
+  family = poisson(),
+  data = model_data,
+  trend_model = 'None'
+)
 ```
 
 Random effect basis in `mgcv` language
@@ -1169,9 +1161,11 @@ Global intercept suppressed
 
 
 
-```r
+``` r
 # plot the random effect posterior estimates
-plot(year_random, type = 're')
+plot_predictions(year_random, 
+                 condition = 'year',
+                 type = 'link')
 ```
 ]
 
@@ -1182,77 +1176,25 @@ plot(year_random, type = 're')
 ]
 
 ---
-
 ## Population parameters
-.panelset[
-.panel[.panel-name[Code]
-
-
-```r
-# extract population estimates
-pop_params &lt;- as.data.frame(year_random, 
-                            variable = c('mean(year)',
-                                         'sd(year)'))
-
-# plot as histograms
-hist(pop_params$`mean(year)`, main = expression(mu[year]))
-
-hist(pop_params$`sd(year)`, main = expression(sigma[year]))
-```
-
-
-
-
-]
-
-.panel[.panel-name[Means]
-.center[![](lecture_2_slidedeck_files/figure-html/year_random_means-1.svg)]
-
-]
-
-.panel[.panel-name[SDs]
-.center[![](lecture_2_slidedeck_files/figure-html/year_random_sds-1.svg)]
-
-]
-]
-
----
-## Or using `bayesplot`
 
 .panelset[
 .panel[.panel-name[Code]
 
 
-```r
+
+
+``` r
 # use bayesplot utilities to plot parameter estimates
-mcmc_plot(year_random, type = 'areas',
+mcmc_plot(year_random, 
+          type = 'areas',
           variable = c('mean(year)', 'sd(year)'))
 ```
+
 ]
 
 .panel[.panel-name[Plot]
 .center[![](lecture_2_slidedeck_files/figure-html/year_random_mcmcplot-1.svg)]
-
-]
-]
----
-
-## Conditional predictions
-.panelset[
-.panel[.panel-name[Code]
-
-
-```r
-# use marginaleffects utilities to plot conditional predictions
-library(ggplot2)
-plot_predictions(year_random, 
-                 condition = 'year') +
-  theme_classic()
-```
-]
-
-.panel[.panel-name[Plot]
-.center[![](lecture_2_slidedeck_files/figure-html/year_random_conds-1.svg)]
 
 ]
 ]
@@ -1267,9 +1209,9 @@ plot_predictions(year_random,
 
 
 
-```r
+``` r
 # use mvgam's plot to view hindcast predictions
-plot(year_random, type = 'forecast')
+plot(hindcast(year_random))
 ```
 ]
 
@@ -1284,18 +1226,17 @@ plot(year_random, type = 'forecast')
 
 
 
-```r
+``` r
 model_data %&gt;%
   dplyr::mutate(year = as.numeric(as.character(year))) -&gt; model_data
 
-year_smooth &lt;- mvgam(count ~ 
-*                      s(year, bs = 'tp', k = 15),
-                    family = poisson(),
-                    data = model_data,
-                    trend_model = 'None',
-                    burnin = 500,
-                    samples = 500,
-                    chains = 4)
+year_smooth &lt;- mvgam(
+  count ~ 
+*   s(year, bs = 'tp', k = 7),
+  family = poisson(),
+  data = model_data,
+  trend_model = 'None',
+)
 ```
 
 A thin plate regression spline of the numeric `year` variable
@@ -1306,14 +1247,13 @@ Retain intercept because smooths are zero-centered
 ## Coefficients uninterpretable
 &lt;br&gt;
 
-```r
+``` r
 rownames(coef(year_smooth))
 ```
 
 ```
-##  [1] "(Intercept)" "s(year).1"   "s(year).2"   "s(year).3"   "s(year).4"  
-##  [6] "s(year).5"   "s(year).6"   "s(year).7"   "s(year).8"   "s(year).9"  
-## [11] "s(year).10"  "s(year).11"  "s(year).12"  "s(year).13"  "s(year).14"
+## [1] "(Intercept)" "s(year).1"   "s(year).2"   "s(year).3"   "s(year).4"  
+## [6] "s(year).5"   "s(year).6"
 ```
 
 We .emphasize[*must*] use predictions and plots to understand the model
@@ -1327,9 +1267,11 @@ We .emphasize[*must*] use predictions and plots to understand the model
 
 
 
-```r
+``` r
 # plot the smooth effect posterior estimates
-plot(year_smooth, type = 'smooth')
+plot_predictions(year_smooth,
+                 condition = 'year',
+                 type = 'link')
 ```
 ]
 
@@ -1339,56 +1281,6 @@ plot(year_smooth, type = 'smooth')
 ]
 ]
 
----
-
-## Plotting basis functions
-.panelset[
-.panel[.panel-name[Code]
-
-
-```r
-# plot the basis functions with gratia
-library(ggplot2); library(viridis); library(gratia)
-theme_set(theme_classic())
-ggplot(basis(year_smooth$mgcv_model), 
-       aes(x = year, y = .value, color = .bf)) +
-  geom_borderline(linewidth = 1.25, bordercolour = "white") +
-  geom_borderline(data = smooth_estimates(year_smooth$mgcv_model),
-                  inherit.aes = FALSE,
-                  mapping = aes(x = year, y = .estimate), linewidth = 2) +
-  scale_color_viridis(discrete = TRUE) +
-  theme(legend.position = 'none', axis.line = element_line(size = 1),
-        axis.ticks = element_line(colour = "black", size = 1)) +
-  ylab('f(Year)') + xlab('Year')
-```
-]
-
-.panel[.panel-name[Plot]
-.center[![](lecture_2_slidedeck_files/figure-html/year_smooth_basis-1.svg)]
-
-]
-]
-
----
-
-## Rates of change
-.panelset[
-.panel[.panel-name[Code]
-
-
-
-
-```r
-# plot the smooth effect posterior estimates
-plot(year_smooth, type = 'smooth', derivatives = TRUE)
-```
-]
-
-.panel[.panel-name[Plot]
-.center[![](lecture_2_slidedeck_files/figure-html/year_smooth_derivs-1.svg)]
-
-]
-]
 
 ---
 ## Conditional predictions
@@ -1396,14 +1288,15 @@ plot(year_smooth, type = 'smooth', derivatives = TRUE)
 .panel[.panel-name[Code]
 
 
-```r
+
+
+``` r
 # use marginaleffects utilities to plot conditional predictions
-library(ggplot2)
 plot_predictions(year_smooth, 
                  condition = 'year',
-                 points = 0.5) +
-  theme_classic()
+                 points = 0.5)
 ```
+
 ]
 
 .panel[.panel-name[Plot]
@@ -1421,9 +1314,9 @@ plot_predictions(year_smooth,
 
 
 
-```r
+``` r
 # use mvgam's plot to view hindcast predictions
-plot(year_smooth, type = 'forecast')
+plot(hindcast(year_smooth))
 ```
 ]
 
@@ -1443,12 +1336,12 @@ class: middle center
 ---
 
 ## Random year diagnostics
-&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-38-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-38-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## Smooth year diagnostics
-&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-39-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-39-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -1463,16 +1356,15 @@ class: middle center
 
 
 
-```r
-year_temp_smooth &lt;- mvgam(count ~ 
-                            s(year, bs = 'tp', k = 15) +
-*                           s(mintemp, bs = 'tp', k = 8),
-                          family = poisson(),
-                          data = model_data,
-                          trend_model = 'None',
-                          burnin = 500,
-                          samples = 500,
-                          chains = 4)
+``` r
+year_temp_smooth &lt;- mvgam(
+  count ~ 
+    s(year, bs = 'tp', k = 7) +
+*   s(mintemp, bs = 'tp', k = 7),
+  family = poisson(),
+  data = model_data,
+  trend_model = 'None'
+)
 ```
 
 A thin plate regression spline of  `mintemp`
@@ -1485,9 +1377,10 @@ A thin plate regression spline of  `mintemp`
 
 
 
-```r
-# use mvgam's plot to view both smooth functions
-plot(year_temp_smooth, type = 'smooth')
+``` r
+# use gratia's draw() to view both smooth functions
+library(gratia)
+draw(year_temp_smooth)
 ```
 ]
 
@@ -1498,29 +1391,9 @@ plot(year_temp_smooth, type = 'smooth')
 ]
 ---
 
-## Partial residuals
-.panelset[
-.panel[.panel-name[Code]
-
-
-
-
-```r
-# use mvgam's plot_mgvam_smooth to view partial residuals
-plot_mvgam_smooth(year_temp_smooth, smooth = 2, residuals = TRUE)
-```
-]
-
-.panel[.panel-name[Plot]
-.center[![](lecture_2_slidedeck_files/figure-html/year_temp_smooth_resids-1.svg)]
-
-]
-]
-
----
 
 ## Diagnostics
-&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-44-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-43-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -1534,32 +1407,31 @@ class: middle center
 
 
 
-```r
-temp_time_smooth &lt;- mvgam(count ~ 
-                            s(mintemp, bs = 'tp', k = 8) +
-*                           s(time, bs = 'tp', k = 50),
-                          family = poisson(),
-                          data = model_data,
-                          burnin = 500,
-                          samples = 500,
-                          chains = 4)
+``` r
+temp_time_smooth &lt;- mvgam(
+  count ~ 
+    s(mintemp, bs = 'tp', k = 7) +
+*   s(time, bs = 'tp', k = 50),
+  family = poisson(),
+  data = model_data
+)
 ```
 
 Replace the spline of `year` with a complex spline of `time` to capture autocorrelation
 ---
 
 ## Updated smooths
-&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-47-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-46-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## Diagnostics
-&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-48-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-47-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## Hindcast predictions <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm177.6 62.1C192.8 334.5 218.8 352 256 352s63.2-17.5 78.4-33.9c9-9.7 24.2-10.4 33.9-1.4s10.4 24.2 1.4 33.9c-22 23.8-60 49.4-113.6 49.4s-91.7-25.5-113.6-49.4c-9-9.7-8.4-24.9 1.4-33.9s24.9-8.4 33.9 1.4zm40-89.3l0 0 0 0-.2-.2c-.2-.2-.4-.5-.7-.9c-.6-.8-1.6-2-2.8-3.4c-2.5-2.8-6-6.6-10.2-10.3c-8.8-7.8-18.8-14-27.7-14s-18.9 6.2-27.7 14c-4.2 3.7-7.7 7.5-10.2 10.3c-1.2 1.4-2.2 2.6-2.8 3.4c-.3 .4-.6 .7-.7 .9l-.2 .2 0 0 0 0 0 0c-2.1 2.8-5.7 3.9-8.9 2.8s-5.5-4.1-5.5-7.6c0-17.9 6.7-35.6 16.6-48.8c9.8-13 23.9-23.2 39.4-23.2s29.6 10.2 39.4 23.2c9.9 13.2 16.6 30.9 16.6 48.8c0 3.4-2.2 6.5-5.5 7.6s-6.9 0-8.9-2.8l0 0 0 0zm160 0l0 0-.2-.2c-.2-.2-.4-.5-.7-.9c-.6-.8-1.6-2-2.8-3.4c-2.5-2.8-6-6.6-10.2-10.3c-8.8-7.8-18.8-14-27.7-14s-18.9 6.2-27.7 14c-4.2 3.7-7.7 7.5-10.2 10.3c-1.2 1.4-2.2 2.6-2.8 3.4c-.3 .4-.6 .7-.7 .9l-.2 .2 0 0 0 0 0 0c-2.1 2.8-5.7 3.9-8.9 2.8s-5.5-4.1-5.5-7.6c0-17.9 6.7-35.6 16.6-48.8c9.8-13 23.9-23.2 39.4-23.2s29.6 10.2 39.4 23.2c9.9 13.2 16.6 30.9 16.6 48.8c0 3.4-2.2 6.5-5.5 7.6s-6.9 0-8.9-2.8l0 0 0 0 0 0z"/></svg>
-&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-49-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_2_slidedeck_files/figure-html/unnamed-chunk-48-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -1586,13 +1458,13 @@ Dynamic coefficient models
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script src="macros.js"></script>
 <script>var slideshow = remark.create({
-"navigation": {
-"scroll": false
-},
-"highlightStyle": "github",
-"highlightLines": true,
-"countIncrementalSlides": false,
-"ratio": "16:9"
+  "navigation": {
+    "scroll": false
+  },
+  "highlightStyle": "github",
+  "highlightLines": true,
+  "countIncrementalSlides": false,
+  "ratio": "16:9"
 });
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   window.dispatchEvent(new Event('resize'));
