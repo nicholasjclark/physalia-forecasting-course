@@ -31,9 +31,6 @@ library(dplyr)
 library(mvgam) 
 library(gratia)
 library(ggplot2)
-library(marginaleffects)
-library(zoo)
-library(viridis)
 
 #### Forecasting with temporal smooths exercises ####
 # 1. Using advice from Gavin Simpson's blog post, try changing the order 
@@ -44,13 +41,15 @@ library(viridis)
 #   sections about how these splines can handle multiple penalties
 #   https://fromthebottomoftheheap.net/2020/06/03/extrapolating-with-gams/
 ?b.spline
-model0 <- mvgam(count ~ s(time, bs = 'bs', k = 15,
-                          m = c('?')) + 
-                  ndvi_lag12 + 
-                  mintemp,
-                family = poisson(),
-                data = data_train,
-                newdata = data_test)
+model0 <- mvgam(
+  count ~ s(time, bs = 'bs', k = 15,
+            m = c(?)) + 
+    mintemp_lag4 + 
+    ndvi_ma12,
+  family = poisson(),
+  data = data_train,
+  newdata = data_test
+)
 
 
 # 2. Try using a cubic regression spline in place of the b-spline and 
@@ -63,9 +62,9 @@ model0 <- mvgam(count ~ s(time, bs = 'bs', k = 15,
 #    while in `brms`, it is called `sderr`
 
 
-# 2. Compare estimates for the parametric effect of minimum temperature 
-#   from model2 and model3. In `mvgam`, this parameter is 
-#   called `mintemp`, while in `brms`, it is called `b_mintemp`
+# 2. Use `plot_slopes()` to inspect rates of change in the smooth of 
+#    `mintemp_lag4` for `model3` (hint, use `type = 'link'` for a cleaner
+#    plot of these slopes)
 
 
 # 3. Look at the Dunn-Smyth residuals for model3 and provide a few 
@@ -74,15 +73,16 @@ model0 <- mvgam(count ~ s(time, bs = 'bs', k = 15,
 #    observed data?
 
 
-# 4. Inspect posterior hindcasts and forecasts from model3 using the steps 
-#    we carried out in Tutorial 1
+# 4. Plot residuals against `ndvi_ma12` for `model3` using `pp_check()`. Do you
+#    see any evidence that a linear association might be too simple for this 
+#    effect? 
 
 
 #### Gaussian Process trend exercises ####
 # 1. Fit a model that uses a spline of time (using `bs = 'bs'`) and 
-#    a Negative Binomial family in `mvgam` for comparisons. Plot the 
-#    1st derivative of this temporal spline and describe how (or if) it
-#    differs from that of model5
+#    a Negative Binomial family in `mvgam` for comparisons. Plot the 1st 
+#    derivative of this temporal spline and describe how (or if) it differs 
+#    from the 1st derivative of the GP effect of `model5`
 
 
 # 2. Plot extrapolations from the spline model and take a few notes describing 

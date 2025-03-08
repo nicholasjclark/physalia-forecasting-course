@@ -111,7 +111,7 @@ Users who wish to complete the exercises can download a small template `R` scrip
 ```{r echo=FALSE}
 download_file(
   path = 'Tutorial2_exercises.R',
-  output_name = "Tutorial2_exercises.R",
+  output_name = "Tutorial2_exercises",
   button_label = "Click here to download the exercise R script",
   button_type = "success",
   has_icon = TRUE,
@@ -125,7 +125,6 @@ download_file(
 This tutorial relates to content covered in [Lecture 2](https://nicholasjclark.github.io/physalia-forecasting-course/day1/lecture_2_slidedeck){target="_blank"} and [Lecture 3](https://nicholasjclark.github.io/physalia-forecasting-course/day2/lecture_3_slidedeck){target="_blank"}, and relies on the following packages for manipulating data, shaping time series, fitting dynamic regression models and plotting:
 ```{r include = FALSE}
 library(dplyr)
-#remotes::install_github('nicholasjclark/mvgam',force = TRUE)
 library(mvgam) 
 library(brms)
 library(marginaleffects)
@@ -142,7 +141,7 @@ library(tidybayes)
 library(ggplot2); theme_set(theme_classic())
 ```
 
-We will continue with time series of rodent captures from the Portal Project, [a long-term monitoring study based near the town of Portal, Arizona](https://portal.weecology.org/){target="_blank"}, with particular focus on the time series of captures for the Desert Pocket Mouse *Chaetodipus penicillatus*. Data manipulations will proceed in a similar way as in [Tutorial 1](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia){target="_blank"}, except that we now use a lagged version of `ndvi` (at a lag of 12 lunar months; see `?dplyr::lag` for details) to give you a sense of how you can create and use lagged predictors in time series models
+We will continue with time series of rodent captures from the Portal Project, [a long-term monitoring study based near the town of Portal, Arizona](https://portal.weecology.org/){target="_blank"}, with particular focus on the time series of captures for the Desert Pocket Mouse *Chaetodipus penicillatus*. Data manipulations will proceed in a similar way as in [Tutorial 1](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia){target="_blank"}, except that we now use a lagged version of `mintemp` (at a lag of four lunar months; see `?dplyr::lag` for details) to give you a sense of how you can create and use lagged predictors in time series models
 ```{r Access time series data}
 data("portal_data")
 ```
@@ -150,64 +149,63 @@ data("portal_data")
 ```{r Wrangle data for modelling}
 portal_data %>%
   
-  # mvgam requires a 'time' variable be present in the data to index
-  # the temporal observations. This is especially important when tracking 
-  # multiple time series. In the Portal data, the 'moon' variable indexes the
-  # lunar monthly timestep of the trapping sessions
-  dplyr::mutate(time = moon - (min(moon)) + 1) %>%
+  # Filter the data to only contain captures of the 'PP' 
+  dplyr::filter(series == 'PP') %>%
+  droplevels() %>%
   
-  # We can also provide a more informative name for the outcome variable, which 
-  # is counts of the 'PP' species (Chaetodipus penicillatus) across all control
-  # plots
-  dplyr::mutate(count = PP) %>%
+  # Create a 'count' variable for the outcome
+  dplyr::mutate(count = captures) %>%
   
-  # The other requirement for mvgam is a 'series' variable, which needs to be a
-  # factor variable to index which time series each row in the data belongs to.
-  # Again, this is more useful when you have multiple time series in the data
-  dplyr::mutate(series = as.factor('PP')) %>%
-  
-  # Create a lagged version of ndvi to use as a predictor in place of the 
-  # contemporaneous ndvi we have been using previously. Note, the data must be 
+  # Create a lagged version of mintemp to use as a predictor in place of the 
+  # contemporaneous mintemp we have been using previously. Note, the data must be 
   # in the correct order for this to work properly
   dplyr::arrange(time) %>%
-  dplyr::mutate(ndvi_lag12 = dplyr::lag(ndvi, 12)) %>%
+  dplyr::mutate(mintemp_lag4 = dplyr::lag(mintemp, 4)) %>%
   
   # Select the variables of interest to keep in the model_data
   dplyr::select(series, time, count,
-                mintemp, ndvi_lag12) -> model_data
+                ndvi_ma12, mintemp_lag4) -> model_data
 ```
 
 The data now contain five variables:  
   `series`, a factor indexing which time series each observation belongs to  
   `time`, the indicator of which time step each observation belongs to  
   `count`, the response variable representing the number of captures of the species `PP` in each sampling observation  
-  `mintemp`, the monthly average minimum temperature at each time step  
-  `ndvi_lag12`, the lagged monthly average Normalized Difference Vegetation Index at each time step  
+  `ndvi_ma12`, a 12-month moving average of the monthly Normalized Difference Vegetation Index at each time step  
+  `mintemp_lag4`, the lagged monthly average minimum temperature at each time step  
   
-Using lagged versions of predictors is a standard practice in time series analysis / forecasting. But unfortunately the software we are using cannot easily handle missing values in the predictors. Because we've calculated lags of `ndvi`, the first 12 rows of our data now have missing values for this predictor:
-```{r Inspect missing values in ndvi_lag12}
-head(model_data, 14)
+Using lagged versions of predictors is a standard practice in time series analysis / forecasting. But unfortunately the software we are using cannot easily handle missing values in the predictors. Because we've calculated lags of `mintemp`, the first `4` rows of our data now have missing values for this predictor:
+```{r Inspect missing values in mintemp_lag4}
+head(model_data, 6)
 ```
 
 Visualize the data as a heatmap to get a sense of where these are distributed (`NA`s are shown as red bars in the below plot)
 ```{r}
-image(is.na(t(model_data %>%
-                dplyr::arrange(dplyr::desc(time)))), axes = F,
-      col = c('grey80', 'darkred'))
-axis(3, at = seq(0,1, len = NCOL(model_data)), labels = colnames(model_data))
+image(
+  is.na(
+    t(model_data %>%
+        dplyr::arrange(dplyr::desc(time)))
+  ), 
+  axes = F,
+  col = c('grey80', 'darkred'))
+axis(3, 
+     at = seq(0, 
+              1, 
+              len = NCOL(model_data)), 
+     labels = colnames(model_data))
 ```
 
-For now we will simply omit these missing values and restart the time index at 1:
+For now we will simply omit these missing values and restart the time index at `1`:
 ```{r model_data_trimmed, include = FALSE}
 model_data_trimmed <- xfun::cache_rds(model_data %>%
-  dplyr::filter(!is.na(ndvi_lag12)) %>%
+  dplyr::filter(!is.na(mintemp_lag4)) %>%
   dplyr::mutate(time = time - min(time) + 1))
 head(model_data_trimmed)
 ```
 
 ```{r eval = FALSE}
 model_data %>%
-  dplyr::filter(!is.na(ndvi_lag12)) %>%
+  dplyr::filter(!is.na(mintemp_lag4)) %>%
   dplyr::mutate(time = time - min(time) + 1) -> model_data_trimmed
 head(model_data_trimmed)
 ```
@@ -215,27 +213,27 @@ head(model_data_trimmed)
 As in the previous tutorial, we also split the data into training and testing subsets for inspecting forecast behaviours. We will do the same here, but use a shorter validation period in this example
 ```{r data_train, include = FALSE}
 data_train <- xfun::cache_rds(model_data_trimmed %>% 
-  dplyr::filter(time <= 162))
+  dplyr::filter(time <= 68))
 ```
 
 ```{r data_test, include = FALSE}
 data_test <- xfun::cache_rds(model_data_trimmed %>% 
-  dplyr::filter(time > 162))
+  dplyr::filter(time > 68))
 ```
 
 ```{r eval = FALSE}
 model_data_trimmed %>% 
-  dplyr::filter(time <= 162) -> data_train 
+  dplyr::filter(time <= 68) -> data_train 
 model_data_trimmed %>% 
-  dplyr::filter(time > 162) -> data_test
+  dplyr::filter(time > 68) -> data_test
 ```
 
 ## Forecasting with temporal smooths
-Our last tutorial ended with a model that included a smooth function of `time`. The lectures have illustrated why this might be a bad idea if one of our goals is to forecast. We will produce forecasts from this model to show why this can be problematic. Start by refitting the model from [Tutorial 1](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia){target="_blank"}, including the `data_test` object as `newdata` to ensure the model automatically produces forecasts.
+Our last tutorial ended with a model that included a smooth function of `time`. The lectures have illustrated why this might be a bad idea if one of our goals is to forecast. We will produce forecasts from this model to show why this can be problematic. Start by fitting a similar model to the one we ended with in [Tutorial 1](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia){target="_blank"}, including the `data_test` object as `newdata` to ensure the model automatically produces forecasts.
 ```{r model0, include = FALSE}
 model0 <- xfun::cache_rds(mvgam(count ~ s(time, bs = 'bs', k = 15) + 
-                  ndvi_lag12 + 
-                  mintemp,
+                  mintemp_lag4 + 
+                  ndvi_ma12,
                 family = poisson(),
                 data = data_train,
                 newdata = data_test),
@@ -243,24 +241,26 @@ model0 <- xfun::cache_rds(mvgam(count ~ s(time, bs = 'bs', k = 15) +
 ```
 
 ```{r eval = FALSE}
-model0 <- mvgam(count ~ s(time, bs = 'bs', k = 15) + 
-                  ndvi_lag12 + 
-                  mintemp,
-                family = poisson(),
-                data = data_train,
-                newdata = data_test)
+model0 <- mvgam(
+  count ~ s(time, bs = 'bs', k = 15) + 
+    mintemp_lag4 + 
+    ndvi_ma12,
+  family = poisson(),
+  data = data_train,
+  newdata = data_test
+)
 ```
 
 Inspect forecasts from this model, which are not great
-```{r Plot forecasts of the temporal smooth}
-plot(model0, type = 'forecast', newdata = data_test)
+```{r Plot forecasts of the temporal smooth, warning=FALSE, message=FALSE}
+plot(forecast(model0))
 ```
 
-What happens if we change `k` slightly by using 12 basis functions rather than 15?
+What happens if we change `k` slightly by using 8 basis functions rather than 15?
 ```{r model0b, include = FALSE}
-model0b <- xfun::cache_rds(mvgam(count ~ s(time, bs = 'bs', k = 12) + 
-                  ndvi_lag12 + 
-                  mintemp,
+model0b <- xfun::cache_rds(mvgam(count ~ s(time, bs = 'bs', k = 8) + 
+                  mintemp_lag4 + 
+                  ndvi_ma12,
                 family = poisson(),
                 data = data_train,
                 newdata = data_test),
@@ -268,33 +268,41 @@ model0b <- xfun::cache_rds(mvgam(count ~ s(time, bs = 'bs', k = 12) +
 ```
 
 ```{r eval = FALSE}
-model0b <- mvgam(count ~ s(time, bs = 'bs', k = 12) + 
-                  ndvi_lag12 + 
-                  mintemp,
-                family = poisson(),
-                data = data_train,
-                newdata = data_test)
+model0b <- mvgam(
+  count ~ s(time, bs = 'bs', k = 8) + 
+    mintemp_lag4 + 
+    ndvi_ma12,
+  family = poisson(),
+  data = data_train,
+  newdata = data_test
+)
 ```
 
-Forecasts from this model are, somehow, even more ridiculous!
-```{r}
-plot(model0b, type = 'forecast', newdata = data_test)
+Forecasts from this model are completely different!
+```{r, warning=FALSE}
+plot(forecast(model0b))
 ```
 
 Why is this happening? The forecasts are driven almost entirely by variation in the temporal spline, which is extrapolating linearly *forever* beyond the training data. Any slight wiggles near the boundary will result in wildly different forecasts. To visualize this, we can plot the extrapolated temporal functions for the two models. Here for the first model, with 15 basis functions:
-```{r Plot extrapolated temporal functions using newdata}
-plot_predictions(model0, by = 'time',
-                 newdata = datagrid(time = 1:max(data_test$time)),
-                 type = 'link') +
+```{r Plot extrapolated temporal functions using newdata, warning=FALSE}
+plot_predictions(
+  model0, 
+  by = 'time',
+  newdata = datagrid(time = 1:max(data_test$time)),
+  type = 'link'
+) +
   geom_vline(xintercept = max(data_train$time), 
              linetype = 'dashed')
 ```
 
-And for the second model, with fewer basis functions (12). The difference is clear, with this model reacting to a slightly upward shift in the smooth toward the boundary that results in predictions heading to infinity:
-```{r}
-plot_predictions(model0b, by = 'time',
-                 newdata = datagrid(time = 1:max(data_test$time)),
-                 type = 'link') +
+And for the second model, with fewer basis functions (10). The difference is clear, with this model reacting to a slightly upward shift in the smooth toward the boundary that results in predictions heading to infinity:
+```{r, warning=FALSE}
+plot_predictions(
+  model0b, 
+  by = 'time',
+  newdata = datagrid(time = 1:max(data_test$time)),
+  type = 'link'
+) +
   geom_vline(xintercept = max(data_train$time), 
              linetype = 'dashed')
 ```
@@ -310,13 +318,15 @@ Try changing the value of `k` and seeing how forecasts change. This should give 
 ```{r, eval = FALSE}
 # Replace the ? with the correct value(s)
 # Using ?b.spline you will see examples in the Description and Details sections about how these splines can handle multiple penalties
-model0 <- mvgam(count ~ s(time, bs = 'bs', k = 15,
-                          m = c(?)) + 
-                  ndvi_lag12 + 
-                  mintemp,
-                family = poisson(),
-                data = data_train,
-                newdata = data_test)
+model0 <- mvgam(
+  count ~ s(time, bs = 'bs', k = 15,
+            m = c(?)) + 
+    mintemp_lag4 + 
+    ndvi_ma12,
+  family = poisson(),
+  data = data_train,
+  newdata = data_test
+)
 ```
 </details>
 
@@ -325,11 +335,11 @@ model0 <- mvgam(count ~ s(time, bs = 'bs', k = 15,
 One useful strategy to deal with this is to fit models that [incorporate autocorrelated residual processes within the GAM](https://ecogambler.netlify.app/blog/autocorrelated-gams/){target="_blank"}. If our model's residuals are autocorrelated, our estimates of uncertainty around other regression parameters (such as the $\beta$ coefficients) can be biased and misleading. Failing to address this may lead to false inferences and perhaps to poor forecasts. Fortunately there are ways we can tackle this by modelling the autocorrelation in our model's errors. This can be done using `mgcv` functionality, as the blog post above explains. But we will use `brms` here as it is more flexible and provides an interface that is more consistent with `mvgam`. 
 
 ### A standard Poisson GAM in `brms`
-First, we will fit a similar model to those used in [Tutorial 1](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia){target="_blank"} so to see how `brms` works. The interface is very familiar, relying on the usual `R` formula syntax (see `?brmsformula` for details and examples). But there are some key differences between `brms` and `mvgam`. For example, `brms` can handle a much larger diversity of response distributions (see `?brmsfamily` for details). But for now, we will stick a similar Poisson model as previously (a nonlinear function of `ndvi_lag12` and a parametric, linear function of `mintemp`):
+First, we will fit a similar model to those used in [Tutorial 1](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia){target="_blank"} so to see how `brms` works. The interface is very familiar, relying on the usual `R` formula syntax (see `?brmsformula` for details and examples). But there are some key differences between `brms` and `mvgam`. For example, `brms` can handle a much larger diversity of response distributions (see `?brmsfamily` for details). But for now, we will stick a similar Poisson model as previously (a nonlinear function of `mintemp_lag4` and a parametric, linear function of `mintemp`):
 ```{r model1, include = FALSE}
 model1 <- xfun::cache_rds(brm(count ~ 
-                s(ndvi_lag12, k = 9) +
-                mintemp,
+                s(mintemp_lag4, k = 9) +
+                ndvi_ma12,
               family = poisson(),
               # set a mildly informative prior on beta coefficients
               prior = set_prior("normal(0, 2)", class = "b"),
@@ -341,16 +351,18 @@ model1 <- xfun::cache_rds(brm(count ~
 ```
 
 ```{r eval = FALSE}
-model1 <- brm(count ~ 
-                s(ndvi_lag12, k = 9) +
-                mintemp,
-              family = poisson(),
-              # set a mildly informative prior on beta coefficients
-              prior = set_prior("normal(0, 2)", class = "b"),
-              data = data_train,
-              backend = 'cmdstanr',
-              iter = 1000,
-              cores = 4)
+model1 <- brm(
+  count ~ 
+    s(mintemp_lag4, k = 9) +
+    ndvi_ma12,
+  family = poisson(),
+  # set a mildly informative prior on beta coefficients
+  prior = set_prior("normal(0, 2)", class = "b"),
+  data = data_train,
+  backend = 'cmdstanr',
+  iter = 1000,
+  cores = 4
+)
 ```
 
 Use `summary()` to ensure no major diagnostic warnings have been produced and inspect posterior distributions for key parameters. You may notice some warnings of divergent transitions for this model, which should give you some immediate concern about the validity of the model's inferences
@@ -358,7 +370,7 @@ Use `summary()` to ensure no major diagnostic warnings have been produced and in
 summary(model1)
 ```
 
-For any `brms` model, we can inspect the underlying `Stan` code using the `stancode` function:
+As witht he `mvgam` models, for any `brms` model we can inspect the underlying `Stan` code using the `stancode` function:
 ```{r eval = FALSE}
 stancode(model1)
 ```
@@ -370,13 +382,15 @@ stancode(model1)
 </details>
 <br>
 
-Of course we still cannot interpret the smooth effects using the posterior summary. We will need to make targeted plots to do that. Fortunately `brms` has a similar `conditional_effects()` function to `mvgam` so this is simple to do:
+Of course we still cannot interpret the smooth effects using the posterior summary. We will need to make targeted plots to do that. Fortunately `brms` has a similar `conditional_effects()` function to `mvgam` so this is simple to do (note that by default calling `conditional_effects()` on `brms` models will return predictions on the *expectation* scale):
 ```{r Visualise conditional effects}
-plot(conditional_effects(model1),
+plot(
+  conditional_effects(model1),
      theme = theme_classic(),
      mean = FALSE,
      rug = TRUE, 
-     ask = FALSE)
+     ask = FALSE
+  )
 ```
 
 ### Computing residuals with `tidybayes`
@@ -416,8 +430,9 @@ pacf(residual_data$z_residual,
     main = 'Dunn-Smyth residuals')
 ```
 
-```{r Residual quantile-quantile plot}
-ggplot(residual_data, aes(sample = z_residual)) +
+```{r Residual quantile-quantile plot, warning=FALSE}
+ggplot(residual_data, 
+       aes(sample = z_residual)) +
   geom_qq() +
   geom_abline(col = 'darkred') +
   theme_classic()
@@ -427,8 +442,8 @@ ggplot(residual_data, aes(sample = z_residual)) +
 This model is not doing well. Clearly we need to account for temporal autocorrelation *without* using a smooth of `time`. Now onto another great feature of `brms`: the ability to include (possibly latent) autocorrelated residuals with the `ar()` function (see `?brms::ar` for details). This model will use a separate sub-model for latent residuals that evolve as an AR1 process (i.e. the error in the current time point is a function of the error in the previous time point, plus stochastic noise). When using non-Gaussian observations, we can only select an order of 1 for the AR component (higher orders are only currently allowed for Gaussian observations). Note, this model takes much longer to fit than the previous model because it estimates a full temporal covariance for the residuals
 ```{r model2, include = FALSE}
 model2 <- xfun::cache_rds(brm(count ~ 
-                s(ndvi_lag12, k = 9) +
-                mintemp +
+                s(mintemp_lag4, k = 9) +
+                ndvi_ma12 +
                 ar(p = 1, 
                    time = time,
                    cov = TRUE),
@@ -441,18 +456,20 @@ model2 <- xfun::cache_rds(brm(count ~
 ```
 
 ```{r eval = FALSE}
-model2 <- brm(count ~ 
-                s(ndvi_lag12, k = 9) +
-                mintemp +
-                ar(p = 1, 
-                   time = time,
-                   cov = TRUE),
-              family = poisson(),
-              prior = c(set_prior("normal(0, 2)", class = "b")),
-              data = data_train,
-              backend = 'cmdstanr',
-              iter = 1000,
-              cores = 4)
+model2 <- brm(
+  count ~ 
+    s(mintemp_lag4, k = 9) +
+    ndvi_ma12 +
+    ar(p = 1, 
+       time = time,
+       cov = TRUE),
+  family = poisson(),
+  prior = c(set_prior("normal(0, 2)", class = "b")),
+  data = data_train,
+  backend = 'cmdstanr',
+  iter = 1000,
+  cores = 4
+)
 ```
 
 <details>
@@ -460,15 +477,15 @@ model2 <- brm(count ~
 The model can be described mathematically as follows:
 \begin{align*}
 \boldsymbol{count}_t & \sim \text{Poisson}(\lambda_t) \\
-log(\lambda_t) & = f(\boldsymbol{ndvi})_t + \beta_{mintemp} * \boldsymbol{mintemp}_t + z_t \\
+log(\lambda_t) & = f(\boldsymbol{mintemp})_t + \beta_{ndvi} * \boldsymbol{ndvi}_t + z_t \\
 z_t & \sim \text{Normal}(ar1 * z_{t-1}, \sigma_{error}) \\
 ar1 & \sim \text{Normal}(0, 1)[-1, 1] \\
 \sigma_{error} & \sim \text{Exponential}(2) \\
-f(\boldsymbol{ndvi}) & = \sum_{k=1}^{K}b * \beta_{smooth} \\
+f(\boldsymbol{mintemp}) & = \sum_{k=1}^{K}b * \beta_{smooth} \\
 \beta_{smooth} & \sim \text{MVNormal}(0, (\Omega * \lambda)^{-1}) \\
-\beta_{mintemp} & \sim \text{Normal}(0, 1) \end{align*}
+\beta_{ndvi} & \sim \text{Normal}(0, 1) \end{align*}
 
-Here the term $z_t$ captures autocorrelated latent residuals, which are modelled using an AR1 process. In `brms`, the AR coefficients are restricted to the interval $[-1,1]$ to ensure the dynamic process is stationary. 
+Here the term $z_t$ captures autocorrelated latent residuals, which are modelled using an AR1 process. The AR coefficients are restricted to the interval $[-1,1]$ to ensure the dynamic process is stationary. 
 </details>
 <br>
 
@@ -492,39 +509,43 @@ stancode(model2)
 ### Autocorrelated error GAM in `mvgam`
 The `brms` model is estimating autocorrelated errors for the full time period, even though some of these time points have missing observations. This is useful for getting more realistic estimates of the residual autocorrelation parameters. In contrast, if you were to attempt an AR error process in `mgcv` (which you can do using `gamm()` or `bam()`), the time points with missing data would be thrown out *before* constructing the model. This will cause problems, sometimes small but sometimes very big, for your inferences.
   
-`mvgam` can also fit the latent trend AR1 model, though it is considerably faster. Let's fit it (note that only 250 posterior samples per chain are taken to reduce the size of the model, which will make it easier to download for completing the exercises):
+`mvgam` can also fit the latent trend AR1 model, though it is considerably faster. It also includes an option to reparameterize the latent dynamic process using non-centering, which typically leads to higher effective sample sizes and better convergence. Let's fit it (note that only 250 posterior samples per chain are taken to reduce the size of the model, which will make it easier to download for completing the exercises):
 ```{r model3, include=FALSE}
 model3 <- xfun::cache_rds(mvgam(count ~ 
-                  s(ndvi_lag12, k = 9) +
-                  mintemp,
+                  s(mintemp_lag4, k = 9) +
+                  ndvi_ma12,
                 family = poisson(),
                 data = data_train,
                 newdata = data_test,
                 priors = prior(normal(0, 2), class = b),
                 samples = 250,
-                trend_model = 'AR1'))
+                trend_model = AR(),
+                noncentred = TRUE))
 ```
 
 ```{r eval=FALSE}
-model3 <- mvgam(count ~ 
-                  s(ndvi_lag12, k = 9) +
-                  mintemp,
-                family = poisson(),
-                data = data_train,
-                newdata = data_test,
-                priors = prior(normal(0, 2), class = b),
-                samples = 250,
-                trend_model = AR(p = 1))
+model3 <- mvgam(
+  count ~ 
+    s(mintemp_lag4, k = 9) +
+    ndvi_ma12,
+  family = poisson(),
+  data = data_train,
+  newdata = data_test,
+  priors = prior(normal(0, 2), class = b),
+  samples = 250,
+  trend_model = AR(p = 1),
+  noncentred = TRUE
+)
 ```
 
 Inspect the `Stan` code for this model to see how it differs from the `brms` version
 ```{r eval = FALSE}
-code(model3)
+stancode(model3)
 ```
 <details>
   <summary>Check here to see the model's `Stan` code </summary>
 ```{r echo = FALSE}
-code(model3)
+stancode(model3)
 ```
 </details>
 <br>
@@ -535,37 +556,61 @@ summary(model3)
 ```
 
 ### Comparing inferences
-We can compare inferences from the two models to see that they are similar (although in a different order):
+We can compare inferences from the two models to see that they are broadly similar:
 ```{r}
-plot(conditional_effects(model2), ask = FALSE)
+plot(
+  conditional_effects(model2), 
+  ask = FALSE
+  )
 ```
 
 ```{r}
-conditional_effects(model3)
+conditional_effects(model3, 
+                    type = 'expected')
 ```
 
 Now compare estimates for the residual AR1 parameters. First, extract posterior draws for the AR1 parameter from the two models, which can be done using the `as.data.frame`:
 ```{r Extract AR1 parameter posterior draws using as.data.frame}
-ar1_ests <- rbind(data.frame(
-  ar1 = as.data.frame(model3, variable = 'ar1[1]')$`ar1[1]`,
-  model = 'mvgam'),
+ar1_ests <- rbind(
+  data.frame(
+    ar1 = as.data.frame(model3, variable = 'ar1[1]')$`ar1[1]`,
+    model = 'mvgam'),
   data.frame(
     ar1 = as.data.frame(model2, variable = 'ar[1]')$`ar[1]`,
-    model = 'brms'))
+    model = 'brms')
+)
 ```
 
-We can use `ggplot2` to compare these estimates, which shows that they are also very similar:
-```{r}
-ggplot(data = ar1_ests, aes(x = ar1, fill = model)) +
+We can use `ggplot2` to compare these estimates, which shows that they are similar, but not exactly the same:
+```{r, warning=FALSE}
+ggplot(data = ar1_ests, 
+       aes(x = ar1, fill = model)) +
   geom_histogram(aes(y = after_stat(density)), 
-                 bins = 40, col = 'white') +
+                 bins = 40, 
+                 col = 'white') +
   facet_grid(rows = 'model') +
   theme_bw() +
   theme(legend.position = 'none') +
-  scale_fill_manual(values = c('darkblue', 'darkred')) +
-  labs(x = expression(ar1[error]), y = 'Frequency') +
+  scale_fill_manual(values = c('darkblue', 
+                               'darkred')) +
+  labs(x = expression(ar1[error]), 
+       y = 'Frequency') +
   xlim(c(0,1))
 ```
+
+Why is the `brms` model struggling here? Most likely this is happening because any rows in `data_train` that have `NA` in the outcome variable (`count`) are being thrown out before model fitting. There are quite a few of these:
+```{r}
+length(which(is.na(data_train$count)))
+```
+
+This means that the `brms` model *thinks* that certain observations are adjacent to one another in `time` when actually they are not. For example, the `brms` model believes that timepoints `5` and `7` are right next to each other, and also that timepoints `12` and `14` are right next to eachother:
+```{r}
+data_train %>%
+  dplyr::select(time, count) %>%
+  head(16)
+```
+
+This causes problems because we would not expect the level of autocorrelation to be the same when jumping `2` timesteps vs only `1` timestep. In fact, most regression packages in `R` will do this (i.e. they will fit autocorrelation models to residuals *after* throwing out observations with missing values). **But**, `mvgam` does not do this! It keeps the observations with `NA`s in the data so that the temporal spacing can be adequately preserved.
 
 ### AR processes and stationarity
 As you may remember from the lectures, the larger this AR1 parameter becomes (in absolute value), the more a time series tends toward nonstationarity. We can look at some example functions to investigate this behaviour in more detail here
@@ -594,7 +639,8 @@ simulate_ar1 = function(ar1 = 0.5, N = 50){
 }
 
 # plot a single AR1 series with an AR1 parameter = 0.5
-plot(x = 1:50, y = simulate_ar1(ar1 = 0.5), 
+plot(x = 1:50, 
+     y = simulate_ar1(ar1 = 0.5), 
      type = 'l',
      lwd = 2, col = 'darkred',
      ylab = expression(f(Time)),
@@ -618,7 +664,8 @@ box(bty = 'l', lwd = 2)
 <br>
 
 ```{r echo = FALSE}
-plot(x = 1:50, y = simulate_ar1(ar1 = 0.5), 
+plot(x = 1:50, 
+     y = simulate_ar1(ar1 = 0.5), 
      type = 'l',
      lwd = 2, col = 'darkred',
      ylab = expression(f(Time)),
@@ -640,7 +687,8 @@ box(bty = 'l', lwd = 2)
 
 This plot shows how an AR1 process with a smallish AR1 parameter (0.5) approaches stationarity fairly quickly. What happens if we increase this parameter toward the types of values that our models have estimated? The code to produce these simulations is the same as above, except the AR1 parameter was changed to 0.95
 ```{r echo = FALSE}
-plot(x = 1:50, y = simulate_ar1(ar1 = 0.95), 
+plot(x = 1:50, 
+     y = simulate_ar1(ar1 = 0.95), 
      type = 'l',
      lwd = 2, col = 'darkred',
      ylab = expression(f(Time)),
@@ -663,25 +711,27 @@ box(bty = 'l', lwd = 2)
 The variance of this particular series grows into the future for a much longer time than did the series we simulated above. This is useful for getting a sense about the relative stability of the underlying dynamic process. We can enforce a Random Walk so that the dynamic process will not be stationary (note, a Random Walk trend can only be fit in `mvgam`; there is currently no way of using such a process in `brms`, that I'm aware of):
 ```{r model3b, include=FALSE}
 model3b <- xfun::cache_rds(mvgam(count ~ 
-                  s(ndvi_lag12, k = 9) +
-                  mintemp,
+                  s(mintemp_lag4, k = 9) +
+                  ndvi_ma12,
                 family = poisson(),
                 data = data_train,
                 newdata = data_test,
                 priors = prior(normal(0, 2), class = b),
-                trend_model = 'RW'),
+                trend_model = RW()),
                 dir = 'cache_not_for_upload/')
 ```
 
 ```{r eval=FALSE}
-model3b <- mvgam(count ~ 
-                  s(ndvi_lag12, k = 9) +
-                  mintemp,
-                family = poisson(),
-                data = data_train,
-                newdata = data_test,
-                priors = prior(normal(0, 2), class = b),
-                trend_model = RW())
+model3b <- mvgam(
+  count ~ 
+    s(mintemp_lag4, k = 9) +
+    ndvi_ma12,
+  family = poisson(),
+  data = data_train,
+  newdata = data_test,
+  priors = prior(normal(0, 2), class = b),
+  trend_model = RW()
+)
 ```
 
 <details>
@@ -689,12 +739,12 @@ model3b <- mvgam(count ~
 The model can be described mathematically as follows:
 \begin{align*}
 \boldsymbol{count}_t & \sim \text{Poisson}(\lambda_t) \\
-log(\lambda_t) & = f(\boldsymbol{ndvi})_t + \beta_{mintemp} * \boldsymbol{mintemp}_t + z_t \\
+log(\lambda_t) & = f(\boldsymbol{mintemp})_t + \beta_{ndvi} * \boldsymbol{ndvi}_t + z_t \\
 z_t & \sim \text{Normal}(z_{t-1}, \sigma_{error}) \\
 \sigma_{error} & \sim \text{Exponential}(2) \\
-f(\boldsymbol{ndvi}) & = \sum_{k=1}^{K}b * \beta_{smooth} \\
+f(\boldsymbol{mintemp}) & = \sum_{k=1}^{K}b * \beta_{smooth} \\
 \beta_{smooth} & \sim \text{MVNormal}(0, (\Omega * \lambda)^{-1}) \\
-\beta_{mintemp} & \sim \text{Normal}(0, 1) \end{align*}
+\beta_{ndvi} & \sim \text{Normal}(0, 1) \end{align*}
 
 Note the similarity to model3 above. The only difference is that we no longer estimate the AR1 parameter, so the mean of the latent process at time $t$ is simply the value of the latent process at time $t-1$. 
 </details>
@@ -702,21 +752,31 @@ Note the similarity to model3 above. The only difference is that we no longer es
 
 Plotting the trend estimates for the AR1 and Random Walk models gives you further insight into the different assumptions they make about the temporal evolution of the system:
 ```{r, fig.width = 6, fig.asp = 1.2}
-layout(matrix(1:2, nrow = 2))
-plot(model3, type = 'trend', newdata = data_test, main = 'AR1 trend')
-plot(model3b, type = 'trend', newdata = data_test, main = 'RW trend')
+patchwork::wrap_plots(
+  plot(
+    forecast(model3, 
+             type = 'trend')
+  ) +
+    labs(title = 'AR1 trend'),
+  plot(
+    forecast(model3b, 
+             type = 'trend')
+  ) +
+    labs(title = 'RW trend'),
+  ncol = 1
+)
 ```
   
 ### Exercises
 1. Compare estimates for the latent residual error terms ($\sigma_{error}$) from model2 and model3. In `mvgam`, this parameter is called `sigma[1]`, while in `brms`, it is called `sderr`
-2. Compare estimates for the parametric effect of minimum temperature ($\beta_{mintemp}$) from model2 and model3. In `mvgam`, this parameter is called `mintemp`, while in `brms`, it is called `b_mintemp`
+2. Use `plot_slopes()` to inspect rates of change in the smooth of `mintemp_lag4` for `model3` (hint, use `type = 'link'` for a cleaner plot of these slopes)
 3. Look at the Dunn-Smyth residuals for model3 and provide a few comments describing what you see (use `plot.mvgam()` with `type = residuals`). Does this model seem to capture the relevant features of the autocorrelated observed data?
-4. Inspect posterior hindcasts and forecasts from model3 using the steps we carried out in [Tutorial 1](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia){target="_blank"}
+4. Plot residuals against `ndvi_ma12` for `model3` using `pp_check()`. Do you see any evidence that a linear association might be too simple for this effect? 
 
 ## Gaussian Processes
 Another way to capture dynamic errors in ecological time series is with a Gaussian Process: 
   
-"*A Gaussian process defines a probability distribution over functions; in other words every sample from a Gaussian Process is an entire function from the covariate space X to the real-valued output space.*" (Betancourt; [Robust Gaussian Process Modeling](https://betanalpha.github.io/assets/case_studies/gaussian_processes.html){target="_blank"}) 
+>"A Gaussian process defines a probability distribution over functions; in other words every sample from a Gaussian Process is an entire function from the covariate space X to the real-valued output space." (Betancourt; [Robust Gaussian Process Modeling](https://betanalpha.github.io/assets/case_studies/gaussian_processes.html){target="_blank"}) 
   
 In many time series analyses, we believe the power of past observations to explain current data is a function of *how long ago* we observed those past observations. Gaussian Processes (GPs) use covariance functions (often called 'kernels') that allow this to happen by specifying how correlations depend on the difference, in time, between observations. For our purposes we will rely on the squared exponential kernel, which depends on $\rho$ (often called the length scale parameter) to control how quickly correlations decay as a function of time. The functions also depend on a parameter $\alpha$, which controls how much the GP term contributes to the linear predictor. Below we simulate from such a GP to get an idea of the kinds of functional shapes that can be produced as you vary the length scale  $\rho$:
 
@@ -749,18 +809,28 @@ gp_vals <- MASS::mvrnorm(n = 1,
                          Sigma = Sigma)
 
 # plot the single GP draw
-plot(x = draw_seq, y = gp_vals, type = 'l',
-     lwd = 2, col = 'darkred',
+plot(x = draw_seq, 
+     y = gp_vals, 
+     type = 'l',
+     lwd = 2, 
+     col = 'darkred',
      ylab = expression(f(Time)),
-     xlab = 'Time', bty = 'l',
+     xlab = 'Time', 
+     bty = 'l',
      ylim = c(-3,3),
-     main = expression(alpha~'='~1*'; '~rho~'='~10))
+     main = expression(alpha~'='~1*'; 
+                       '~rho~'='~10))
 # overlay an additional 10 possible functions using different colours
 for(i in 1:10){
-  draw <- MASS::mvrnorm(n = 1, mu = rep(0, length(draw_seq)),
+  draw <- MASS::mvrnorm(n = 1, 
+                        mu = rep(0, length(draw_seq)),
                         Sigma = Sigma)
-  lines(x = draw_seq, y = draw, lwd = 3.5, col = 'white')
-  lines(x = draw_seq, y = draw,
+  lines(x = draw_seq, 
+        y = draw, 
+        lwd = 3.5, 
+        col = 'white')
+  lines(x = draw_seq, 
+        y = draw,
         col = sample(c("#DCBCBC",
                        "#C79999",
                        "#B97C7C",
@@ -775,18 +845,28 @@ box(bty = 'l', lwd = 2)
 
 ```{r echo = FALSE}
 # plot the single GP draw
-plot(x = draw_seq, y = gp_vals, type = 'l',
-     lwd = 2, col = 'darkred',
+plot(x = draw_seq, 
+     y = gp_vals, 
+     type = 'l',
+     lwd = 2, 
+     col = 'darkred',
      ylab = expression(f(Time)),
-     xlab = 'Time', bty = 'l',
+     xlab = 'Time', 
+     bty = 'l',
      ylim = c(-3,3),
-     main = expression(alpha~'='~1*'; '~rho~'='~10))
+     main = expression(alpha~'='~1*'; 
+                       '~rho~'='~10))
 # overlay an additional 10 possible functions using different colours
 for(i in 1:10){
-  draw <- MASS::mvrnorm(n = 1, mu = rep(0, length(draw_seq)),
+  draw <- MASS::mvrnorm(n = 1, 
+                        mu = rep(0, length(draw_seq)),
                         Sigma = Sigma)
-  lines(x = draw_seq, y = draw, lwd = 3.5, col = 'white')
-  lines(x = draw_seq, y = draw,
+  lines(x = draw_seq, 
+        y = draw, 
+        lwd = 3.5, 
+        col = 'white')
+  lines(x = draw_seq, 
+        y = draw,
         col = sample(c("#DCBCBC",
                        "#C79999",
                        "#B97C7C",
@@ -812,7 +892,9 @@ alpha <- 1
 times <- 1:50
 
 # generate a sequence of prediction values
-draw_seq <- seq(min(times), max(times), length.out = 100)
+draw_seq <- seq(min(times), 
+                max(times), 
+                length.out = 100)
 
 # construct the temporal covariance matrix
 Sigma <- alpha^2 * 
@@ -825,18 +907,27 @@ gp_vals <- MASS::mvrnorm(n = 1,
                          Sigma = Sigma)
 
 # plot the single GP draw
-plot(x = draw_seq, y = gp_vals, type = 'l',
-     lwd = 2, col = 'darkred',
+plot(x = draw_seq, 
+     y = gp_vals, 
+     type = 'l',
+     lwd = 2, 
+     col = 'darkred',
      ylab = expression(f(Time)),
      xlab = 'Time', bty = 'l',
      ylim = c(-3,3),
-     main = expression(alpha~'='~1*'; '~rho~'='~4))
+     main = expression(alpha~'='~1*'; 
+                       '~rho~'='~4))
 # overlay an additional 10 possible functions using different colours
 for(i in 1:10){
-  draw <- MASS::mvrnorm(n = 1, mu = rep(0, length(draw_seq)),
+  draw <- MASS::mvrnorm(n = 1,
+                        mu = rep(0, length(draw_seq)),
                         Sigma = Sigma)
-  lines(x = draw_seq, y = draw, lwd = 3.5, col = 'white')
-  lines(x = draw_seq, y = draw,
+  lines(x = draw_seq, 
+        y = draw, 
+        lwd = 3.5, 
+        col = 'white')
+  lines(x = draw_seq, 
+        y = draw,
         col = sample(c("#DCBCBC",
                        "#C79999",
                        "#B97C7C",
@@ -853,11 +944,11 @@ These functions are much 'wigglier' and can be useful for capturing temporal dyn
 
 We can use GPs in both `brms` and `mvgam`. In fact, both packages capitalize on some advances that allow GPs to be approximated using Hilbert space basis functions, which [considerably speed up computation at little cost to accuracy or prediction performance](https://link.springer.com/article/10.1007/s11222-022-10167-2){target="_blank"}. You can incorporate GPs of time (or of any other covariate) using the `gp()` function (see `?gp` for details).   
   
-Up to this point we've used a Poisson model and have been able to capture excess dispersion with autoregressive error terms. But a GP trend will not readily capture this overdispersion because it evolves smoothly. We'll isntead switch to a Negative Binomial model. This can be helpful for our data as we want to capture overdispersion in the counts while estimating a smooth underlying dynamic trend with the GP function. [Read more about the Negative Binomial and its widespread use in ecological modelling in this recent paper.](https://www.mdpi.com/1424-2818/14/5/320){target="_blank"}
+Up to this point we've used a Poisson model and have been able to capture excess dispersion with autoregressive error terms. But a GP trend will not readily capture this overdispersion because it evolves smoothly. We'll instead switch to a Negative Binomial model. This can be helpful for our data as we want to capture overdispersion in the counts while estimating a smooth underlying dynamic trend with the GP function. [Read more about the Negative Binomial and its widespread use in ecological modelling in this recent paper.](https://www.mdpi.com/1424-2818/14/5/320){target="_blank"}
 ```{r model4, include = FALSE}
 model4 <- xfun::cache_rds(brm(count ~ 
-                s(ndvi_lag12, k = 9) +
-                mintemp +
+                s(mintemp_lag4, k = 9) +
+                ndvi_ma12 +
                 # use a gp of time with squared exponential kernel;
                 # employ Hilbert space approximation
                 # for faster computation, with 20 basis functions
@@ -875,22 +966,24 @@ model4 <- xfun::cache_rds(brm(count ~
 ```
 
 ```{r eval = FALSE}
-model4 <- brm(count ~ 
-                s(ndvi_lag12, k = 9) +
-                mintemp +
-                # use a GP of time with squared exponential kernel;
-                # employ Hilbert space approximation
-                # for faster computation, with 20 basis functions
-                # used for the approximation; set scale = FALSE so
-                # the rho parameter is more interpretable
-                gp(time, c = 5/4, k = 20, scale = FALSE),
-              # use a Negative Binomial observation model
-              family = negbinomial(),
-              prior = set_prior("normal(0, 2)", class = "b"),
-              data = data_train,
-              backend = 'cmdstanr',
-              iter = 1000,
-              cores = 4)
+model4 <- brm(
+  count ~ 
+    s(mintemp_lag4, k = 9) +
+    ndvi_ma12 +
+    # use a GP of time with squared exponential kernel;
+    # employ Hilbert space approximation
+    # for faster computation, with 20 basis functions
+    # used for the approximation; set scale = FALSE so
+    # the rho parameter is more interpretable
+    gp(time, c = 5/4, k = 20, scale = FALSE),
+  # use a Negative Binomial observation model
+  family = negbinomial(),
+  prior = set_prior("normal(0, 2)", class = "b"),
+  data = data_train,
+  backend = 'cmdstanr',
+  iter = 1000,
+  cores = 4
+)
 ```
 
 <details>
@@ -898,14 +991,14 @@ model4 <- brm(count ~
 The model can be described mathematically as follows:
 \begin{align*}
 \boldsymbol{count}_t & \sim \text{NegBinomial}(\lambda_t, \phi) \\
-log(\lambda_t) & = f(\boldsymbol{ndvi})_t + \beta_{mintemp} * \boldsymbol{mintemp}_t + z_t \\
+log(\lambda_t) & = f(\boldsymbol{mintemp})_t + \beta_{ndvi} * \boldsymbol{ndvi}_t + z_t \\
 z & \sim \text{MVNormal}(0, \Sigma_{error}) \\
 \Sigma_{error}[t_i, t_j] & = \alpha^2 * exp(-0.5 * ((|t_i - t_j| / \rho))^2) \\
 \alpha & \sim \text{StudentT}(3, 0, 2.5)[0, ] \\
 \rho & \sim \text{InverseGamma}(1.5, 9) \\
-f(\boldsymbol{ndvi}) & = \sum_{k=1}^{K}b * \beta_{smooth} \\
+f(\boldsymbol{mintemp}) & = \sum_{k=1}^{K}b * \beta_{smooth} \\
 \beta_{smooth} & \sim \text{MVNormal}(0, (\Omega * \lambda)^{-1}) \\
-\beta_{mintemp} & \sim \text{Normal}(0, 1) \\
+\beta_{ndvi} & \sim \text{Normal}(0, 1) \\
 \phi & \sim \text{Gamma}(0.01, 0.01) \end{align*}
 </details>
 <br>
@@ -917,11 +1010,13 @@ summary(model4)
 
 Plot conditional effects from this model, on the response scale
 ```{r Plot conditional effects}
-plot(conditional_effects(model4),
-     theme = theme_classic(),
-     mean = FALSE,
-     rug = TRUE,
-     ask = FALSE)
+plot(
+  conditional_effects(model4),
+  theme = theme_classic(),
+  mean = FALSE,
+  rug = TRUE,
+  ask = FALSE
+)
 ```
 
 The last plot shows that the GP has clearly captured nonlinear, smooth variation over time.
@@ -931,8 +1026,8 @@ The last plot shows that the GP has clearly captured nonlinear, smooth variation
 We can fit a similar model in `mvgam` using the `nb()` family:
 ```{r model5, include=FALSE}
 model5 <- xfun::cache_rds(mvgam(count ~ 
-                  s(ndvi_lag12, k = 9) +
-                  mintemp +
+                  s(mintemp_lag4, k = 9) +
+                  ndvi_ma12 +
                   gp(time, c = 5/4, k = 20, scale = FALSE),
                 family = nb(),
                 data = data_train,
@@ -942,14 +1037,16 @@ model5 <- xfun::cache_rds(mvgam(count ~
 ```
 
 ```{r eval=FALSE}
-model5 <- mvgam(count ~ 
-                  s(ndvi_lag12, k = 9) +
-                  mintemp +
-                  gp(time, c = 5/4, k = 20, scale = FALSE),
-                family = nb(),
-                data = data_train,
-                newdata = data_test,
-                priors = prior(normal(0, 2), class = b))
+model5 <- mvgam(
+  count ~ 
+    s(mintemp_lag4, k = 9) +
+    ndvi_ma12 +
+    gp(time, c = 5/4, k = 20, scale = FALSE),
+  priors = prior(normal(0, 2), class = b),
+  family = nb(),
+  data = data_train,
+  newdata = data_test,
+)
 ```
 
 This model's summary also now contains posterior summaries of the GP parameters and the Negative Binomial overdispersion parameter
@@ -959,13 +1056,18 @@ summary(model5)
 
 And plot conditional effects:
 ```{r Plot GP temporal effects}
-conditional_effects(model5)
+conditional_effects(model5,
+                    type = 'expected')
 ```
 
 As we saw in [Tutorial 1](https://nicholasjclark.github.io/physalia-forecasting-course/day1/tutorial_1_physalia){target="_blank"}, it can also be useful to understand first derivatives of smooth functions to get a sense of when (in history) they were increasing or decreasing. We can view the first derivative estimates for this model's smooth trend using the following command:
 ```{r}
-plot_slopes(model5, variable = 'time', condition = 'time',
-            type = 'link') +
+plot_slopes(
+  model5, 
+  variable = 'time', 
+  condition = 'time',
+  type = 'link'
+) +
   labs(y = 'First derivative (slope) of linear predictor') +
   geom_hline(yintercept = 0, linetype = 'dashed')
 ```
@@ -977,15 +1079,18 @@ loo(model5)
 ```
 
 Of course we can also look at forecasts from the `mvgam` model:
-```{r}
-plot(model5, type = 'forecast')
+```{r, warning=FALSE}
+plot(forecast(model5))
 ```
 
 These look much better than the spline extrapolations we saw at the beginning of this tutorial. We can also see how the GP is extrapolating on the link scale
 ```{r}
-plot_predictions(model5, by = 'time',
-                 newdata = datagrid(time = 1:max(data_test$time)),
-                 type = 'link') +
+plot_predictions(
+  model5, 
+  by = 'time',
+  newdata = datagrid(time = 1:max(data_test$time)),
+  type = 'link'
+) +
   geom_vline(xintercept = max(data_train$time), 
              linetype = 'dashed')
 ```
@@ -1017,9 +1122,11 @@ plot_kernels = function(gp_ests, max_time = 50){
   # use a for-loop to estimate the kernel for each draw using
   # our custom quad_kernel() function
   for(i in 1:NROW(gp_ests)){
-    kernels[i,] <- quad_kernel(rho = gp_ests$`rho_gp_time_`[i],
-                               alpha = gp_ests$`alpha_gp_time_`[i],
-                               times = draw_seq)
+    kernels[i,] <- quad_kernel(
+      rho = gp_ests[, grep('rho', names(gp_ests))][i],
+      alpha = gp_ests[, grep('alpha', names(gp_ests))][i],
+      times = draw_seq
+    )
   }
   
   # Calculate posterior empirical quantiles of the kernels
@@ -1030,56 +1137,42 @@ plot_kernels = function(gp_ests, max_time = 50){
   
   # Plot the kernel uncertainty estimates
   pred_vals <- draw_seq
-  plot(1, xlim = c(0, max_time), ylim = c(0, max(cred)), type = 'n',
-       xlab = 'Time difference', ylab = 'Covariance',
+  plot(1, 
+       xlim = c(0, max_time), 
+       ylim = c(0, max(cred)), 
+       type = 'n',
+       xlab = 'Time difference', 
+       ylab = 'Covariance',
        bty = 'L')
   box(bty = 'L', lwd = 2)
-  polygon(c(pred_vals, rev(pred_vals)), c(cred[1,], rev(cred[5,])),
-          col = "#DCBCBC", border = NA)
-  polygon(c(pred_vals, rev(pred_vals)), c(cred[2,], rev(cred[4,])),
-          col = "#B97C7C", border = NA)
-  lines(pred_vals, cred[3,], col = "#7C0000", lwd = 2.5)
+  polygon(c(pred_vals, rev(pred_vals)), 
+          c(cred[1,], rev(cred[5,])),
+          col = "#DCBCBC", 
+          border = NA)
+  polygon(c(pred_vals, rev(pred_vals)), 
+          c(cred[2,], rev(cred[4,])),
+          col = "#B97C7C", 
+          border = NA)
+  lines(pred_vals, 
+        cred[3,], 
+        col = "#7C0000", 
+        lwd = 2.5)
 }
-
 ```
 </details>
 <br>
 
 Extract posterior estimates of the GP parameters using the `as.data.frame` function that we've been using previously. You can then plot the posterior kernel estimates for model 5 to visualize how temporal error covariance is estimated to change as two time points are further apart. To do this, all we need to supply is the posterior estimates for the GP parameters in the form of a `data.frame`:
 ```{r Plot mvgam GP covariance kernels}
-gp_ests <- as.data.frame(model5, variable = c('rho_gp_time_',
-                                              'alpha_gp_time_'))
-plot_kernels(gp_ests = gp_ests, max_time = 40)
+gp_ests <- as.data.frame(model5, variable = 'gp_', regex = TRUE)
+plot_kernels(gp_ests = gp_ests, max_time = 30)
 ```
 
 This can be helpful to understand how long the temporal 'memory' of a given GP is, which also relates to how smooth it's underlying functions are.
-  
-But one potential downside is that [the length scale parameter $\rho$ is fundamentally challenging to identify](https://groups.google.com/g/stan-users/c/GDJrrZetQXA){target="_blank"}, particularly when estimating a latent Gaussian Process. For both the `mvgam` and `brms` models, our estimates of this parameter are somewhat wide:
-```{r Plot posterior rho estimates}
-gp_rhos <- rbind(data.frame(
-  rho = as.data.frame(model5, variable = 'rho_gp_time_')$`rho_gp_time_`,
-  model = 'mvgam'),
-  data.frame(
-    rho = as.data.frame(model4, variable = 'lscale_gptime')$lscale_gptime,
-    model = 'brms'))
-
-ggplot(data = gp_rhos, aes(x = rho, fill = model)) +
-  geom_histogram(aes(y = after_stat(density)), 
-                 bins = 40, col = 'white') +
-  facet_grid(rows = 'model') +
-  theme_bw() +
-  theme(legend.position = 'none') +
-  scale_fill_manual(values = c('darkblue', 'darkred')) +
-  labs(x = expression(rho[GP]), y = 'Frequency') +
-  xlim(c(0,24))
-```
-
-This doesn't cause issue in our example, but sometimes this lack of identifiability can cause problems. Imagine a scenario where a very short length scale leads to overly wiggly functions that compete with other temporal processes we'd like to estimate. Often in practice it can be useful to place a fairly restrictive prior that imposes the kind of smoothness we might expect to see. If you are interested in this, I recommend you see [this useful (and detailed) case study on GPs by Michael Betancourt](https://betanalpha.github.io/assets/case_studies/gaussian_processes.html){target="_blank"}.
-
 
 ### Exercises
-1. Fit a model that uses a spline of time (using `bs = 'bs'`) and a Negative Binomial family in `mvgam` for comparisons. Plot the 1st derivative of this temporal spline and describe how (or if) it differs from that of model5
-2. Plot extrapolations from the spline model and take a few notes describing how these differ from the GP predictions in model5
+1. Fit a model that uses a spline of time (using `bs = 'bs'`) and a Negative Binomial family in `mvgam` for comparisons. Plot the 1st derivative of this temporal spline and describe how (or if) it differs from the 1st derivative of the GP effect of `model5`
+2. Plot extrapolations from the spline model and take a few notes describing how these differ from the GP predictions in `model5`
 3. Compare the in-sample predictive accuracies of the two models using `loo_compare()`. Is either model favoured over the other?
 4. Consider watching the below lecture by [Richard McElreath](https://www.eva.mpg.de/ecology/staff/richard-mcelreath/){target="_blank"} on Gaussian Processes and their wide uses in statistical modelling
 
