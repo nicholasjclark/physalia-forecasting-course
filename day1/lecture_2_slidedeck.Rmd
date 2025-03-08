@@ -651,6 +651,13 @@ background-image: url('./resources/basis_weights.gif')
 ## ... gives a spline $(f(x))$
 
 ---
+## $k$ &#8680; potential complexity
+
+<img src="resources/basis_weights4.gif" style="position:fixed; right:5%; top:30%; width:525px; height:350px; border:none;" />
+
+<img src="resources/basis_weights20.gif" style="position:fixed; left:5%; top:30%; width:525px; height:350px; border:none;" />
+
+---
 
 background-image: url('./resources/penalty_spline.gif')
 background-size: contain
