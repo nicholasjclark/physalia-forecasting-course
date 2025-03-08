@@ -455,6 +455,33 @@ Once the model has finished, the first step is to inspect the `summary()` to ens
 summary(model1)
 ```
 
+Another useful function to call after fitting a model with `mvgam()` is to use `how_to_cite()`, which will generate a full referenced text description that you can modify for your materials and methods sections in scientific publications
+```{r}
+description <- how_to_cite(model1)
+```
+
+```{r, eval = FALSE}
+description
+```
+
+```{r, echo=FALSE}
+cat("Methods text skeleton\n")
+cat(insight::format_message(description$methods_text))
+```
+
+```{r echo=FALSE}
+cat("\nPrimary references\n")
+for (i in seq_along(description$citations)) {
+  cat(insight::format_message(description$citations[[i]]))
+  cat('\n')
+}
+cat("\nOther useful references\n")
+for (i in seq_along(description$other_citations)) {
+  cat(insight::format_message(description$other_citations[[i]]))
+  cat('\n')
+}
+```
+
 ### Plotting effects and residuals
 
 We can get some sense of the variation in yearly intercepts from the summary, but it is easier to understand them by plotting. Plot posterior distributions of the temporal random effects using `plot.mvgam()` with `type = 're'`. See `?plot.mvgam` for more details

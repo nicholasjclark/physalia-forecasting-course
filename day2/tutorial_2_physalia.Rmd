@@ -598,19 +598,31 @@ ggplot(data = ar1_ests,
   xlim(c(0,1))
 ```
 
-Why is the `brms` model struggling here? Most likely this is happening because any rows in `data_train` that have `NA` in the outcome variable (`count`) are being thrown out before model fitting. There are quite a few of these:
+There is a major drawback of the `brms` model here, which happens because any rows in `data_train` that have `NA` in the outcome variable (`count`) are being thrown out before model fitting. In fact, there are quite a few of these in our data:
 ```{r}
 length(which(is.na(data_train$count)))
 ```
 
-This means that the `brms` model *thinks* that certain observations are adjacent to one another in `time` when actually they are not. For example, the `brms` model believes that timepoints `5` and `7` are right next to each other, and also that timepoints `12` and `14` are right next to eachother:
+This means that the `brms` model *thinks* that certain observations are adjacent to one another in `time` when actually they are not. For example, the `brms` model believes that timepoints `5` and `7` are right next to each other, and also that timepoints `12` and `14` are right next to each other:
 ```{r}
 data_train %>%
   dplyr::select(time, count) %>%
   head(16)
 ```
 
-This causes problems because we would not expect the level of autocorrelation to be the same when jumping `2` timesteps vs only `1` timestep. In fact, most regression packages in `R` will do this (i.e. they will fit autocorrelation models to residuals *after* throwing out observations with missing values). **But**, `mvgam` does not do this! It keeps the observations with `NA`s in the data so that the temporal spacing can be adequately preserved.
+This can often cause problems because we would not expect the level of autocorrelation to be the same when jumping `2` timesteps vs only `1` timestep. In fact, most regression packages in `R` will do this (i.e. they will fit autocorrelation models to residuals *after* throwing out observations with missing values). **But, `mvgam` does not do this!** It keeps the observations with `NA`s in the data so that the temporal spacing can be adequately preserved. Other drawbacks of the `brms` approach to correlated residuals include:  
+  
+* We cannot allow different time series to have different AR1 parameters
+* We cannot model the correlations among the errors for different time series
+* We cannot fit the dynamic processes using a State-Space approach
+
+Of course there may be situations where we really do have unequal temporal spacing among observations and we don't want to force a model into equal spacing by filling missing timepoints with `NA`s. In this case, `mvgam` can be used with a Continuous Time Autoregressive process:
+
+\begin{align*}
+z_{i,t} & \sim \text{Normal}(ar1_i^{distance} * z_{i,t-1}, \sigma_i) \end{align*}
+
+Where $distance$ is a vector of non-negative measurements of the time differences between successive observations. See the [**Examples** section in `?CAR`](https://nicholasjclark.github.io/mvgam/reference/RW.html){target="_blank"} for an illustration of how to set these models up.
+
 
 ### AR processes and stationarity
 As you may remember from the lectures, the larger this AR1 parameter becomes (in absolute value), the more a time series tends toward nonstationarity. We can look at some example functions to investigate this behaviour in more detail here
@@ -817,7 +829,7 @@ plot(x = draw_seq,
      ylab = expression(f(Time)),
      xlab = 'Time', 
      bty = 'l',
-     ylim = c(-3,3),
+     ylim = c(-3.5, 3.5),
      main = expression(alpha~'='~1*'; 
                        '~rho~'='~10))
 # overlay an additional 10 possible functions using different colours
@@ -853,7 +865,7 @@ plot(x = draw_seq,
      ylab = expression(f(Time)),
      xlab = 'Time', 
      bty = 'l',
-     ylim = c(-3,3),
+     ylim = c(-3.5, 3.5),
      main = expression(alpha~'='~1*'; 
                        '~rho~'='~10))
 # overlay an additional 10 possible functions using different colours
@@ -914,7 +926,7 @@ plot(x = draw_seq,
      col = 'darkred',
      ylab = expression(f(Time)),
      xlab = 'Time', bty = 'l',
-     ylim = c(-3,3),
+     ylim = c(-3.5, 3.5),
      main = expression(alpha~'='~1*'; 
                        '~rho~'='~4))
 # overlay an additional 10 possible functions using different colours
@@ -1095,7 +1107,32 @@ plot_predictions(
              linetype = 'dashed')
 ```
 
-This is *much* better extrapolation behaviour compared to splines
+This is *much* better extrapolation behaviour compared to splines. Using `how_to_cite()` for this model will give you information on the approximate GPs and how they are estimated:
+```{r}
+description <- how_to_cite(model5)
+```
+
+```{r, eval = FALSE}
+description
+```
+
+```{r, echo=FALSE}
+cat("Methods text skeleton\n")
+cat(insight::format_message(description$methods_text))
+```
+
+```{r echo=FALSE}
+cat("\nPrimary references\n")
+for (i in seq_along(description$citations)) {
+  cat(insight::format_message(description$citations[[i]]))
+  cat('\n')
+}
+cat("\nOther useful references\n")
+for (i in seq_along(description$other_citations)) {
+  cat(insight::format_message(description$other_citations[[i]]))
+  cat('\n')
+}
+```
 
 ### Inference on GP parameters
 
@@ -1177,9 +1214,12 @@ This can be helpful to understand how long the temporal 'memory' of a given GP i
 4. Consider watching the below lecture by [Richard McElreath](https://www.eva.mpg.de/ecology/staff/richard-mcelreath/){target="_blank"} on Gaussian Processes and their wide uses in statistical modelling
 
 <center>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/Y2ZLt4iOrXU?start=1" data-external = "1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<div style="display: flex; justify-content: center;">
+<iframe style="aspect-ratio: 16 / 9; width: 100% !important;" src="https://www.youtube.com/embed/Y2ZLt4iOrXU?start=1" data-external = "1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</div>
 </center>
 
+  
 ## Session Info
 ```{r, class.output="scroll-300"}
 sessionInfo()
