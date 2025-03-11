@@ -493,7 +493,7 @@ class: middle center
 ### This is because splines only have *local knowledge*
 
 ---
-background-image: url('../day1/lecture_2_slidedeck_files/figure-html/basis-functions-weights-1.svg')
+background-image: url('./lecture_3_slidedeck_files/figure-html/basis-functions-weights-1.svg')
 ## Basis functions &#8680; local knowledge
 
 ---
