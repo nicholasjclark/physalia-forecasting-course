@@ -37,7 +37,7 @@ class: inverse, middle, left, my-title-slide, title-slide
 ### School of Veterinary Science, University of Queensland
 ]
 .date[
-### 0900–1200 CET Tuesday 28th May, 2024
+### 0900–1200 CET Tuesday 25th March, 2025
 ]
 
 ---
@@ -45,7 +45,7 @@ class: inverse, middle, left, my-title-slide, title-slide
 
 
 
-<style>.panelset{--panel-tab-foreground: #8F2727;--panel-tab-inactive-opacity: 0.8;}</style>
+<style>:root{--panel-tab-foreground:#8F2727;--panel-tab-inactive-opacity:0.8;}</style>
 
 
 
@@ -91,18 +91,20 @@ class: inverse middle center big-subsection
 ---
 ## Simulated data
 
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-1-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-1-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 ## A spline of `time`
 
-```r
+``` r
 library(mvgam)
-model &lt;- mvgam(y ~ 
-*                s(time, k = 20, bs = 'bs', m = 2),
-                data = data_train,
-                newdata = data_test,
-                family = gaussian())
+model &lt;- mvgam(
+  y ~ 
+*   s(time, k = 20, bs = 'bs', m = 2),
+  data = data_train,
+  newdata = data_test,
+  family = gaussian()
+)
 ```
 
 A B-spline (`bs = 'bs'`) with `m = 2` sets the penalty on the second derivative
@@ -111,13 +113,15 @@ A B-spline (`bs = 'bs'`) with `m = 2` sets the penalty on the second derivative
 
 ## A spline of `time`
 
-```r
+``` r
 library(mvgam)
-model &lt;- mvgam(y ~ 
-                 s(time, k = 20, bs = 'bs', m = 2), 
-                data = data_train,
-*               newdata = data_test,
-                family = gaussian())
+model &lt;- mvgam(
+  y ~ 
+    s(time, k = 20, bs = 'bs', m = 2), 
+  data = data_train,
+* newdata = data_test,
+  family = gaussian()
+)
 ```
 
 A B-spline (`bs = 'bs'`) with `m = 2` sets the penalty on the second derivative
@@ -127,42 +131,42 @@ Use `newdata` argument to generate automatic probabilistic forecasts
 ---
 ## The smooth function
 
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-4-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## Realizations of the function
 
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-5-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-5-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## Hindcasts <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm177.6 62.1C192.8 334.5 218.8 352 256 352s63.2-17.5 78.4-33.9c9-9.7 24.2-10.4 33.9-1.4s10.4 24.2 1.4 33.9c-22 23.8-60 49.4-113.6 49.4s-91.7-25.5-113.6-49.4c-9-9.7-8.4-24.9 1.4-33.9s24.9-8.4 33.9 1.4zm40-89.3l0 0 0 0-.2-.2c-.2-.2-.4-.5-.7-.9c-.6-.8-1.6-2-2.8-3.4c-2.5-2.8-6-6.6-10.2-10.3c-8.8-7.8-18.8-14-27.7-14s-18.9 6.2-27.7 14c-4.2 3.7-7.7 7.5-10.2 10.3c-1.2 1.4-2.2 2.6-2.8 3.4c-.3 .4-.6 .7-.7 .9l-.2 .2 0 0 0 0 0 0c-2.1 2.8-5.7 3.9-8.9 2.8s-5.5-4.1-5.5-7.6c0-17.9 6.7-35.6 16.6-48.8c9.8-13 23.9-23.2 39.4-23.2s29.6 10.2 39.4 23.2c9.9 13.2 16.6 30.9 16.6 48.8c0 3.4-2.2 6.5-5.5 7.6s-6.9 0-8.9-2.8l0 0 0 0zm160 0l0 0-.2-.2c-.2-.2-.4-.5-.7-.9c-.6-.8-1.6-2-2.8-3.4c-2.5-2.8-6-6.6-10.2-10.3c-8.8-7.8-18.8-14-27.7-14s-18.9 6.2-27.7 14c-4.2 3.7-7.7 7.5-10.2 10.3c-1.2 1.4-2.2 2.6-2.8 3.4c-.3 .4-.6 .7-.7 .9l-.2 .2 0 0 0 0 0 0c-2.1 2.8-5.7 3.9-8.9 2.8s-5.5-4.1-5.5-7.6c0-17.9 6.7-35.6 16.6-48.8c9.8-13 23.9-23.2 39.4-23.2s29.6 10.2 39.4 23.2c9.9 13.2 16.6 30.9 16.6 48.8c0 3.4-2.2 6.5-5.5 7.6s-6.9 0-8.9-2.8l0 0 0 0 0 0z"/></svg>
 
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-6-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-6-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## Extrapolate 2-steps ahead <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm177.6 62.1C192.8 334.5 218.8 352 256 352s63.2-17.5 78.4-33.9c9-9.7 24.2-10.4 33.9-1.4s10.4 24.2 1.4 33.9c-22 23.8-60 49.4-113.6 49.4s-91.7-25.5-113.6-49.4c-9-9.7-8.4-24.9 1.4-33.9s24.9-8.4 33.9 1.4zM144.4 208a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm192-32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>
 
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-7-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-7-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## 5-steps ahead <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zM174.6 384.1c-4.5 12.5-18.2 18.9-30.7 14.4s-18.9-18.2-14.4-30.7C146.9 319.4 198.9 288 256 288s109.1 31.4 126.6 79.9c4.5 12.5-2 26.2-14.4 30.7s-26.2-2-30.7-14.4C328.2 358.5 297.2 336 256 336s-72.2 22.5-81.4 48.1zM144.4 208a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm192-32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>
 
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-8-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-8-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## 20-steps ahead <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M175.9 448c-35-.1-65.5-22.6-76-54.6C67.6 356.8 48 308.7 48 256C48 141.1 141.1 48 256 48s208 93.1 208 208s-93.1 208-208 208c-28.4 0-55.5-5.7-80.1-16zM0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zM128 369c0 26 21.5 47 48 47s48-21 48-47c0-20-28.4-60.4-41.6-77.7c-3.2-4.4-9.6-4.4-12.8 0C156.6 308.6 128 349 128 369zm128-65c-13.3 0-24 10.7-24 24s10.7 24 24 24c30.7 0 58.7 11.5 80 30.6c9.9 8.8 25 8 33.9-1.9s8-25-1.9-33.9C338.3 320.2 299 304 256 304zm47.6-96a32 32 0 1 0 64 0 32 32 0 1 0 -64 0zm-128 32a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg>
 
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-9-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-9-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Forecasts <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M400 406.1V288c0-13.3-10.7-24-24-24s-24 10.7-24 24V440.6c-28.7 15-61.4 23.4-96 23.4s-67.3-8.5-96-23.4V288c0-13.3-10.7-24-24-24s-24 10.7-24 24V406.1C72.6 368.2 48 315 48 256C48 141.1 141.1 48 256 48s208 93.1 208 208c0 59-24.6 112.2-64 150.1zM256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM159.6 220c10.6 0 19.9 3.8 25.4 9.7c7.6 8.1 20.2 8.5 28.3 .9s8.5-20.2 .9-28.3C199.7 186.8 179 180 159.6 180s-40.1 6.8-54.6 22.3c-7.6 8.1-7.1 20.7 .9 28.3s20.7 7.1 28.3-.9c5.5-5.8 14.8-9.7 25.4-9.7zm166.6 9.7c5.5-5.8 14.8-9.7 25.4-9.7s19.9 3.8 25.4 9.7c7.6 8.1 20.2 8.5 28.3 .9s8.5-20.2 .9-28.3C391.7 186.8 371 180 351.6 180s-40.1 6.8-54.6 22.3c-7.6 8.1-7.1 20.7 .9 28.3s20.7 7.1 28.3-.9zM208 320v32c0 26.5 21.5 48 48 48s48-21.5 48-48V320c0-26.5-21.5-48-48-48s-48 21.5-48 48z"/></svg>
 
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-10-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-10-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 ## 2nd derivative penalty
@@ -187,12 +191,14 @@ background-size: cover
 ## 1st derivative penalty?
 &lt;br&gt;
 
-```r
-model &lt;- mvgam(y ~ 
-*                s(time, k = 20, bs = 'bs', m = 1),
-               data = data_train,
-               newdata = data_test,
-               family = gaussian())
+``` r
+model &lt;- mvgam(
+  y ~ 
+*   s(time, k = 20, bs = 'bs', m = 1),
+  data = data_train,
+  newdata = data_test,
+  family = gaussian()
+)
 ```
 
 Using `m = 1` sets the penalty on the first derivative
@@ -201,25 +207,25 @@ Using `m = 1` sets the penalty on the first derivative
 
 ## Hindcasts <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm177.6 62.1C192.8 334.5 218.8 352 256 352s63.2-17.5 78.4-33.9c9-9.7 24.2-10.4 33.9-1.4s10.4 24.2 1.4 33.9c-22 23.8-60 49.4-113.6 49.4s-91.7-25.5-113.6-49.4c-9-9.7-8.4-24.9 1.4-33.9s24.9-8.4 33.9 1.4zM144.4 208a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm192-32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>
 
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-12-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-12-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## 2-step ahead prediction <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm177.6 62.1C192.8 334.5 218.8 352 256 352s63.2-17.5 78.4-33.9c9-9.7 24.2-10.4 33.9-1.4s10.4 24.2 1.4 33.9c-22 23.8-60 49.4-113.6 49.4s-91.7-25.5-113.6-49.4c-9-9.7-8.4-24.9 1.4-33.9s24.9-8.4 33.9 1.4zM144.4 208a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm192-32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>
 
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-13-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-13-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## 20-steps ahead <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M256 48a208 208 0 1 0 0 416 208 208 0 1 0 0-416zM512 256A256 256 0 1 1 0 256a256 256 0 1 1 512 0zM168 320c-13.3 0-24 10.7-24 24s10.7 24 24 24h8V320h-8zm40 48h32V320H208v48zm96 0V320H272v48h32zm32 0h8c13.3 0 24-10.7 24-24s-10.7-24-24-24h-8v48zM168 288H344c30.9 0 56 25.1 56 56s-25.1 56-56 56H168c-30.9 0-56-25.1-56-56s25.1-56 56-56zm-23.6-80a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm192-32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>
 
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-14-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## Forecasts <svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M464 256A208 208 0 1 1 48 256a208 208 0 1 1 416 0zM256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zM160.4 248a24 24 0 1 0 0-48 24 24 0 1 0 0 48zm216-24a24 24 0 1 0 -48 0 24 24 0 1 0 48 0zM192 336c-13.3 0-24 10.7-24 24s10.7 24 24 24H320c13.3 0 24-10.7 24-24s-10.7-24-24-24H192zM160 176a48 48 0 1 1 0 96 48 48 0 1 1 0-96zm0 128a80 80 0 1 0 0-160 80 80 0 1 0 0 160zm144-80a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zm128 0a80 80 0 1 0 -160 0 80 80 0 1 0 160 0z"/></svg>
 
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-15-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-15-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -243,153 +249,105 @@ class: middle center
 &lt;br&gt;
 ### This is because splines only have *local knowledge*
 
-
 ---
-background-image: url('./lecture_3_slidedeck_files/figure-html/basis-functions-weights-1.svg')
+background-image: url('../day1/lecture_2_slidedeck_files/figure-html/basis-functions-weights-1.svg')
 ## Basis functions &amp;#8680; local knowledge
 
 ---
 
 ## We need *global knowledge*
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-16-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-16-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## First, a few other pitfalls
 
-`mgcv` 📦 has a heuristic checking function (`gam.check`) to inform whether a spline is *wiggly enough*
+Residual diagnostics can inform whether a spline is *wiggly enough*
 
 Can be useful to understand if your functions are complex enough to capture patterns in observed data
 
 But can also be misleading when dealing with time series
 
-`mvgam` 📦 includes an underlying object of class `gam` that can be checked with `gam.check`
-
 ---
 ## Simulated data
 
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-17-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-17-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Restricted smooth of `time`
 &lt;br&gt;
 
-```r
-model &lt;- mvgam(y ~ s(time, k = 6),
-                 family = gaussian(),
-               data = data_train,
-               newdata = data_test)
+``` r
+model &lt;- mvgam(
+* y ~ s(time, k = 6),
+  family = gaussian(),
+  data = data_train,
+  newdata = data_test
+)
 ```
 
 Using a thin plate spline with low maximum complexity (`k = 6`)
 
 ---
 
-## Check basis complexity
+## Unmodelled variation
 
-
-```r
-gam.check(model$mgcv_model)
-```
-
-.small[
-
-```
-## 
-## Method: REML   Optimizer: outer newton
-## full convergence after 6 iterations.
-## Gradient range [-2.516432e-07,-8.657903e-09]
-## (score 94.00124 &amp; scale 0.590227).
-## Hessian positive definite, eigenvalue range [1.028413,36.58177].
-## Model rank =  6 / 6 
-## 
-## Basis dimension (k) checking results. Low p-value (k-index&lt;1) may
-## indicate that k is too low, especially if edf is close to k'.
-## 
-##           k'  edf k-index p-value    
-## s(time) 5.00 4.41    0.55  &lt;2e-16 ***
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-```
-]
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-19-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## Unmodelled variation
 
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-21-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-20-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
-
 ## Increase complexity?
 
-```r
-model &lt;- mvgam(y ~ s(time, k = 15), family = gaussian(),
-               data = data_train, newdata = data_test)
-
-gam.check(model$mgcv_model)
+``` r
+model &lt;- mvgam(
+  y ~ s(time, k = 15), 
+  family = gaussian(),
+  data = data_train, 
+  newdata = data_test
+)
 ```
 
-.small[
-
-```
-## 
-## Method: REML   Optimizer: outer newton
-## full convergence after 5 iterations.
-## Gradient range [-1.64113e-07,3.260311e-08]
-## (score 86.84541 &amp; scale 0.4085855).
-## Hessian positive definite, eigenvalue range [1.993815,36.91466].
-## Model rank =  15 / 15 
-## 
-## Basis dimension (k) checking results. Low p-value (k-index&lt;1) may
-## indicate that k is too low, especially if edf is close to k'.
-## 
-##            k'   edf k-index p-value  
-## s(time) 14.00  8.57    0.82   0.045 *
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-```
-]
 ---
 
 ## Not wiggly enough
 
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-24-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-22-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Not wiggly enough
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-23-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## Even more complex?
 
-```r
-model &lt;- mvgam(y ~ s(time, k = 50), family = gaussian(),
-               data = data_train, newdata = data_test)
-
-gam.check(model$mgcv_model)
+``` r
+model &lt;- mvgam(
+  y ~ s(time, k = 50), 
+  family = gaussian(),
+  data = data_train, 
+  newdata = data_test
+)
 ```
 
-.small[
-
-```
-## 
-## Method: REML   Optimizer: outer newton
-## full convergence after 6 iterations.
-## Gradient range [1.752317e-07,4.46345e-07]
-## (score 84.14271 &amp; scale 0.372791).
-## Hessian positive definite, eigenvalue range [0.883367,37.11506].
-## Model rank =  50 / 50 
-## 
-## Basis dimension (k) checking results. Low p-value (k-index&lt;1) may
-## indicate that k is too low, especially if edf is close to k'.
-## 
-##           k'  edf k-index p-value
-## s(time) 49.0 10.4     0.9    0.19
-```
-]
 ---
 
 ## Finally wiggly enough 
 
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-27-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-25-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Finally wiggly enough 
+
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-26-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -405,7 +363,7 @@ class: middle center
 
 ## Forecasts vary *hugely*
 &lt;br&gt;
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-28-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-27-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 class: middle center inverse huge
@@ -417,9 +375,9 @@ background-size: cover
 
 class: middle center
 
-### `gam.check` is sensitive to unmodelled autocorrelation
+### Splines may be sensitive to unmodelled autocorrelation
 &lt;br&gt;
-### Raising `k` to satisfy warnings may improve inference on historical patterns, but leads to even more unpredictable extrapolation behaviour
+### Raising `k` may improve inference on historical patterns, but leads to even more unpredictable extrapolation behaviour
 &lt;br&gt;
 ### If the goal is to produce predictions (i.e. to forecast), we can do better with appropriate *time series models*
 
@@ -457,15 +415,14 @@ Where:
 
 ---
 
-## Motivating example (skip)
+## Motivating example 
 
-```r
+``` r
 # set seed for reproducibility
 set.seed(222)
 
 # simulate an integer-valued time series with some missing observations
-sim_data &lt;- sim_mvgam(T = 100, n_series = 1, 
-                      trend_model = 'RW',
+sim_data &lt;- sim_mvgam(T = 100, n_series = 1, trend_model = 'RW',
 *                     prop_missing = 0.2)
 ```
 
@@ -488,21 +445,21 @@ sim_data &lt;- sim_mvgam(T = 100, n_series = 1,
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 2 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 3 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
@@ -512,14 +469,14 @@ sim_data &lt;- sim_mvgam(T = 100, n_series = 1,
 &lt;/table&gt;
 
 ---
-## Simulated data (skip)
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-31-1.svg" style="display: block; margin: auto;" /&gt;
+## Simulated data 
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-30-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
-## Use `tscount` 📦? (skip)
+## Use `tscount` 📦? 
 
-```r
+``` r
 # attempt a tscount time series model
 # which can fit autoregressive models for count time series
 library(tscount)
@@ -539,7 +496,7 @@ tsglm(sim_data$data_train$y,
 `NA`s cause big problems in autoregressive models
 ---
 
-## `NA`s compound (skip)
+## `NA`s compound
 
 &lt;table class=" lightable-minimal" style='color: black; font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
  &lt;thead&gt;
@@ -565,7 +522,7 @@ tsglm(sim_data$data_train$y,
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 2 &lt;/td&gt;
    &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
@@ -574,8 +531,8 @@ tsglm(sim_data$data_train$y,
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 2 &lt;/td&gt;
    &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
@@ -583,27 +540,27 @@ tsglm(sim_data$data_train$y,
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 3 &lt;/td&gt;
    &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 2 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
    &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 3 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
@@ -611,8 +568,8 @@ tsglm(sim_data$data_train$y,
   &lt;tr&gt;
    &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
    &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
@@ -621,101 +578,10 @@ tsglm(sim_data$data_train$y,
    &lt;td style="text-align:right;"&gt; 8 &lt;/td&gt;
    &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
    &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; NA &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 8 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
-  &lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-
----
-## 2/8 rows complete (skip)
-
-&lt;table class=" lightable-minimal" style='color: black; font-family: "Trebuchet MS", verdana, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'&gt;
- &lt;thead&gt;
-  &lt;tr&gt;
-   &lt;th style="text-align:right;"&gt; time &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; y &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; y_lag1 &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; y_lag2 &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; season &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; year &lt;/th&gt;
-   &lt;th style="text-align:left;"&gt; series &lt;/th&gt;
-  &lt;/tr&gt;
- &lt;/thead&gt;
-&lt;tbody&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; NA &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 7 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 7 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; series_1 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 8 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 0 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 8 &lt;/td&gt;
-   &lt;td style="text-align:right;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; 1 &lt;/td&gt;
-   &lt;td style="text-align:left;font-weight: bold;background-color: rgba(81, 36, 122, 32) !important;"&gt; series_1 &lt;/td&gt;
   &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
@@ -775,6 +641,8 @@ background-size: contain
 &lt;br&gt;
 &lt;br&gt;
 &lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
 Missing observations do not impede evolution of the *latent* process
 
 ---
@@ -783,6 +651,8 @@ background-image: url('./resources/SS_model.svg')
 background-size: contain
 
 ## Evolves *independently*
+&lt;br&gt;
+&lt;br&gt;
 &lt;br&gt;
 &lt;br&gt;
 &lt;br&gt;
@@ -802,12 +672,14 @@ The latent process model can take on a *huge variety* of forms
 
 
 
-```r
-mod_example &lt;- mvgam(y ~ 1,
-*                    trend_model = AR(p = 1),
-                     data = sim_data$data_train,
-                     newdata = sim_data$data_test,
-                     family = poisson())
+``` r
+mod_example &lt;- mvgam(
+  y ~ 1,
+* trend_model = AR(p = 1),
+  data = sim_data$data_train,
+  newdata = sim_data$data_test,
+  family = poisson()
+)
 ```
 
 `mvgam` 📦 has no problem with these observations
@@ -816,29 +688,28 @@ Fit a model with latent AR1 dynamics and just an intercept in the observation mo
 
 ---
 ## The latent trend
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-38-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-36-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Forecasts
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-39-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-37-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Residuals
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-40-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-38-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## A tougher example?
 
-```r
+``` r
 # set seed for reproducibility
 set.seed(100)
 
 # simulate an integer-valued time series with some missing observations
 sim_data2 &lt;- sim_mvgam(T = 100, n_series = 1, 
-                       mu = 1,
-                      trend_model = 'RW',
-*                     prop_missing = 0.75)
+                       mu = 1, trend_model = 'RW',
+*                      prop_missing = 0.75)
 ```
 
 75% of observations missing!
@@ -847,23 +718,25 @@ sim_data2 &lt;- sim_mvgam(T = 100, n_series = 1,
 ## Same model
 &lt;br&gt;
 
-```r
-mod_example2 &lt;- mvgam(y ~ 1,
-                     trend_model = AR(p = 1),
-                     data = sim_data2$data_train,
-                     newdata = sim_data2$data_test,
-                     family = poisson())
+``` r
+mod_example2 &lt;- mvgam(
+  y ~ 1,
+  trend_model = AR(p = 1),
+  data = sim_data2$data_train,
+  newdata = sim_data2$data_test,
+  family = poisson()
+)
 ```
 
 
 
 ---
 ## The latent trend
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-44-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-42-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Forecasts
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-45-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-43-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -877,7 +750,7 @@ class: middle center
 ---
 
 &lt;div class="figure" style="text-align: center"&gt;
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-46-1.svg" alt="Properties of Merriam's kangaroo rat relative abundance time series from a long-term monitoring study in Portal, Arizona, USA"  /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-44-1.png" alt="Properties of Merriam's kangaroo rat relative abundance time series from a long-term monitoring study in Portal, Arizona, USA"  /&gt;
 &lt;p class="caption"&gt;Properties of Merriam's kangaroo rat relative abundance time series from a long-term monitoring study in Portal, Arizona, USA&lt;/p&gt;
 &lt;/div&gt;
 
@@ -892,12 +765,14 @@ class: inverse middle center big-subsection
 
 ## Dynamic Beta GAM
 
-```r
-mod_beta &lt;- mvgam(relabund ~ 
-                    te(mintemp, ndvi),
-                  trend_model = AR(p = 3),
-*                 family = betar(),
-                  data = dm_data)
+``` r
+mod_beta &lt;- mvgam(
+  relabund ~ 
+    te(mintemp, ndvi_ma12),
+  trend_model = AR(p = 3),
+* family = betar(),
+  data = dm_data
+)
 ```
 
 
@@ -908,15 +783,15 @@ Beta regression using the `mgcv` 📦's `betar` family
 
 ## Dynamic Beta GAM
 
-```r
-mod_beta &lt;- mvgam(relabund ~ 
-                    te(mintemp, ndvi),
-*                 trend_model = AR(p = 3),
-                  family = betar(), 
-                  data = dm_data)
+``` r
+mod_beta &lt;- mvgam(
+  relabund ~ 
+    te(mintemp, ndvi_ma12),
+* trend_model = AR(p = 3),
+  family = betar(), 
+  data = dm_data
+)
 ```
-
-
 
 Beta regression using the `mgcv` 📦's `betar` family
 
@@ -926,15 +801,15 @@ AR3 dynamic trend model
 
 ## Dynamic Beta GAM
 
-```r
-mod_beta &lt;- mvgam(relabund ~ 
-*                   te(mintemp, ndvi),
-                  trend_model = AR(p = 3),
-                  family = betar(), 
-                  data = dm_data)
+``` r
+mod_beta &lt;- mvgam(
+  relabund ~ 
+*   te(mintemp, ndvi_ma12),
+  trend_model = AR(p = 3),
+  family = betar(), 
+  data = dm_data
+)
 ```
-
-
 
 Beta regression using the `mgcv` 📦's `betar` family
 
@@ -945,11 +820,11 @@ Multidimensional [tensor product smooth function for nonlinear covariate interac
 ---
 
 ## The latent trend
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-53-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-49-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Multidimensionial smooth
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-54-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-50-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -965,11 +840,17 @@ class: animated fadeIn black-inverse
 .panel[.panel-name[Code]
 
 
-```r
+
+
+``` r
 # plot conditional effect of NDVI on the outcome scale
-plot_predictions(mod_beta, condition = 'ndvi',
-                 points = 0.5, conf_level = 0.8, rug = TRUE) +
-  theme_classic()
+plot_predictions(
+  mod_beta, 
+  condition = 'ndvi_ma12',
+  points = 0.5, 
+  conf_level = 0.8, 
+  rug = TRUE
+)
 ```
 
 ]
@@ -988,13 +869,18 @@ plot_predictions(mod_beta, condition = 'ndvi',
 .panel[.panel-name[Code]
 
 
-```r
-# plot conditional effect of Min Temp on the outcome scale
-plot_predictions(mod_beta, condition = 'mintemp',
-                 points = 0.5, conf_level = 0.8, rug = TRUE) +
-  theme_classic()
-```
 
+
+``` r
+# plot conditional effect of Min Temp on the outcome scale
+plot_predictions(
+  mod_beta, 
+  condition = 'mintemp',
+  points = 0.5, 
+  conf_level = 0.8, 
+  rug = TRUE
+)
+```
 ]
 
 .panel[.panel-name[Plot]
@@ -1011,12 +897,20 @@ plot_predictions(mod_beta, condition = 'mintemp',
 .panel[.panel-name[Code]
 
 
-```r
+
+
+``` r
 # plot conditional effect of BOTH covariates on the outcome scale
-plot_predictions(mod_beta, condition = c('ndvi', 'mintemp'),
-                 points = 0.5, conf_level = 0.8, rug = TRUE) +
-  theme_classic()
+plot_predictions(
+  mod_beta, 
+  condition = c('ndvi_ma12',
+                'mintemp'),
+  points = 0.5, 
+  conf_level = 0.8, 
+  rug = TRUE
+)
 ```
+
 
 ]
 
@@ -1028,7 +922,7 @@ plot_predictions(mod_beta, condition = c('ndvi', 'mintemp'),
 
 ---
 ## Hindcasts
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-55-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-54-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -1042,13 +936,13 @@ class: middle center
 ---
 
 ## Piecewise linear...
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-56-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-55-1.png" style="display: block; margin: auto;" /&gt;
 
 
 ---
 
 ## ...or logistic with upper saturation
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-57-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-56-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -1075,7 +969,7 @@ Process at time `\(t\)` is centred around it's own value at time `\(t-1\)`, with
 
 
 
-```r
+``` r
 # set seed and number of timepoints
 set.seed(1111); T &lt;- 100
 
@@ -1089,7 +983,7 @@ for (t in 2:T) {
 
 # plot the time series as a line
 plot(series, type = 'l', bty = 'l', lwd = 2, 
-     col = 'darkred', ylab = 'x', xlab = 'Time')
+     col = 'darkred', ylab = 'x', xlab = 'time')
 ```
 ]
 
@@ -1135,7 +1029,7 @@ z_t &amp; \sim \text{Normal}( \alpha + \phi_1 * z_{t-1} + \phi_2 * z_{t-2} + \ph
 
 
 
-```r
+``` r
 # set seed and number of timepoints
 set.seed(1111); T &lt;- 100
 
@@ -1149,7 +1043,7 @@ for (t in 2:T) {
 
 # plot the time series as a line
 plot(series, type = 'l', bty = 'l', lwd = 2, 
-     col = 'darkred', ylab = 'x', xlab = 'Time')
+     col = 'darkred', ylab = 'x', xlab = 'time')
 ```
 ]
 
@@ -1184,7 +1078,7 @@ Stationary time series are useful for inferring properties of .emphasize[*stabil
 ---
 
 ## Stationarity &amp;#8680; stability
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-60-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-59-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 class: middle center
@@ -1218,26 +1112,26 @@ Where:
 ---
 
 ## Random *functions*
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-61-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-60-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Length scale  &amp;#8680; *memory*
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-62-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-61-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## Kernel &amp;#8680; covariance decay
 
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-63-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-62-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Kernel &amp;#8680; covariance decay
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-64-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-63-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## Kernel &amp;#8680; covariance decay
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-65-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-64-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -1268,7 +1162,7 @@ class: middle center
 ---
 
 ## Global knowledge <svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg>
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-66-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-65-1.png" style="display: block; margin: auto;" /&gt;
 ---
 
 ## Approximating GPs
@@ -1286,7 +1180,7 @@ Both packages use automatic, [informative priors for length scales `\(\rho\)`](h
 Use the [`gp` function](https://paul-buerkner.github.io/brms/reference/gp.html) with `time` as the covariate
 
 
-```r
+``` r
 brm(y ~ x + ... +
 *     gp(time, c = 5/4, k = 20, scale = FALSE),
     family = poisson(),
@@ -1342,11 +1236,13 @@ But as we've seen previously, splines will often give poor predictions about how
 In `mvgam`📦, use `dynamic` to set up time-varying effects
 
 
-```r
-mod_beta_dyn &lt;- mvgam(relabund ~ s(mintemp, k = 6) +
-*                       dynamic(ndvi, scale = FALSE, k = 20),
-                      family = betar(),
-                      data = dm_data)
+``` r
+mod_beta_dyn &lt;- mvgam(
+  relabund ~ ndvi_ma12 +
+*   dynamic(mintemp, scale = FALSE, k = 20),
+  family = betar(),
+  data = dm_data
+)
 ```
 
 Requires user to set `\(k\)`, as the function is approximated using a low-rank GP smooth from the `brms`📦
@@ -1355,24 +1251,19 @@ Estimates full uncertainty in GP parameters to yield a squared exponential GP
 
 ---
 
-## Estimated smooths
-&lt;img src="lecture_3_slidedeck_files/figure-html/unnamed-chunk-69-1.svg" style="display: block; margin: auto;" /&gt;
-
----
-
-## Predicted effects
+## Time-varying effect
 .panelset[
 .panel[.panel-name[Code]
 
 
 
 
-```r
+``` r
 # use mvgam's plot_mvgam_smooth to view predicted effects
-plot_mvgam_smooth(mod_beta_dyn, smooth = 2,
+plot_mvgam_smooth(mod_beta_dyn, smooth = 1,
                   # datagrid from marginaleffects is useful
                   # to set up prediction scenarios
-                  newdata = datagrid(time = 1:230,
+                  newdata = datagrid(time = 1:90,
                                      model = mod_beta_dyn))
 abline(v = max(dm_data$time), lwd = 2, lty = 'dashed')
 ```
@@ -1388,14 +1279,16 @@ abline(v = max(dm_data$time), lwd = 2, lty = 'dashed')
 ## In `brms`
 In `brms`📦, use `gp` with the `by` argument
 
-```r
-brm_beta_dyn &lt;- brm(relabund ~ s(mintemp, k = 6) +
-*                     gp(time, by = ndvi, c = 5/4, k = 20),
-                    family = Beta(),
-                    data = dm_data,
-                    chains = 4,
-                    cores = 4,
-                    backend = 'cmdstanr')
+``` r
+brm_beta_dyn &lt;- brm(
+  relabund ~ ndvi_ma12 +
+*   gp(time, by = mintemp, c = 5/4, k = 20),
+  family = Beta(),
+  data = dm_data,
+  chains = 4,
+  cores = 4,
+  backend = 'cmdstanr'
+)
 ```
 
 
@@ -1409,9 +1302,18 @@ A GP specifying time-varying effects of `ndvi`
 .panel[.panel-name[Code]
 
 
-```r
+``` r
 # use brms' conditional_effects to view predictions
-plot(conditional_effects(brm_beta_dyn, effects = c('time:ndvi')),
+plot(conditional_effects(brm_beta_dyn, effects = c('time:mintemp')),
+                    theme = theme_classic(base_size = 17, base_family = 'serif'),
+                    mean = FALSE,
+                    rug = TRUE)
+```
+
+
+``` r
+# use brms' conditional_effects to view predictions
+plot(conditional_effects(brm_beta_dyn, effects = c('time:mintemp')),
                     theme = theme_classic(),
                     mean = FALSE,
                     rug = TRUE)
@@ -1449,13 +1351,13 @@ Probabilistic forecast evaluation
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script src="macros.js"></script>
 <script>var slideshow = remark.create({
-"navigation": {
-"scroll": false
-},
-"highlightStyle": "github",
-"highlightLines": true,
-"countIncrementalSlides": false,
-"ratio": "16:9"
+  "navigation": {
+    "scroll": false
+  },
+  "highlightStyle": "github",
+  "highlightLines": true,
+  "countIncrementalSlides": false,
+  "ratio": "16:9"
 });
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   window.dispatchEvent(new Event('resize'));

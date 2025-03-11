@@ -3,7 +3,7 @@ title: "Ecological forecasting in R"
 subtitle: "Lecture 3: latent AR and GP models"
 institute: "School of Veterinary Science, University of Queensland"
 author: "Nicholas Clark"
-date: "0900&ndash;1200 CET Tuesday 28th May, 2024"
+date: "0900&ndash;1200 CET Tuesday 25th March, 2025"
 output:
   xaringan::moon_reader:
     css: ['default','https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css', 'slides.css']
@@ -23,18 +23,18 @@ output:
 
 ```{r setup, include=FALSE, cache=FALSE}
 options(htmltools.dir.version = FALSE)
-knitr::opts_chunk$set(cache = FALSE, dev = 'svg', echo = TRUE,
+knitr::opts_chunk$set(cache = FALSE, dev = 'png', echo = TRUE,
+                      dpi = 550,
                       message = FALSE, warning = FALSE,
                       fig.align = 'center',
                       fig.height = 5.1, fig.width = 1.9 * 5.1)
 library('mgcv')
 library('mvgam')
 library('gratia')
-library('ggplot2')
+library('ggplot2'); theme_set(theme_bw(base_size = 18, base_family = 'serif'))
 library('ggborderline')
 library('viridis')
 library('gamair')
-library('forecast')
 library('kableExtra')
 ```
 
@@ -277,22 +277,24 @@ class: inverse middle center big-subsection
 ---
 ## Simulated data
 
-```{r echo = FALSE}
-library(mvgam)
+```{r echo = FALSE, message=FALSE, warning=FALSE}
 load('cache_not_for_upload/gausdat.rds')
-multipar()
-plot_mvgam_series(data = gausdat$data_train, newdata = gausdat$data_test)
+plot_mvgam_series(data = gausdat$data_train, 
+                  newdata = gausdat$data_test) &
+  theme_bw(base_size = 15, base_family = 'serif')
 ```
 
 ---
 ## A spline of `time`
 ```{r eval = FALSE}
 library(mvgam)
-model <- mvgam(y ~ 
-                 s(time, k = 20, bs = 'bs', m = 2), #<<
-                data = data_train,
-                newdata = data_test,
-                family = gaussian())
+model <- mvgam(
+  y ~ 
+    s(time, k = 20, bs = 'bs', m = 2), #<<
+  data = data_train,
+  newdata = data_test,
+  family = gaussian()
+)
 ```
 
 A B-spline (`bs = 'bs'`) with `m = 2` sets the penalty on the second derivative
@@ -302,11 +304,13 @@ A B-spline (`bs = 'bs'`) with `m = 2` sets the penalty on the second derivative
 ## A spline of `time`
 ```{r eval = FALSE}
 library(mvgam)
-model <- mvgam(y ~ 
-                 s(time, k = 20, bs = 'bs', m = 2), 
-                data = data_train,
-                newdata = data_test,#<<
-                family = gaussian())
+model <- mvgam(
+  y ~ 
+    s(time, k = 20, bs = 'bs', m = 2), 
+  data = data_train,
+  newdata = data_test,#<<
+  family = gaussian()
+)
 ```
 
 A B-spline (`bs = 'bs'`) with `m = 2` sets the penalty on the second derivative
@@ -338,8 +342,8 @@ plot_mvgam_smooth(splinemod,
 ## Hindcasts `r fontawesome::fa("face-smile-beam")`
 
 ```{r echo = FALSE, message=FALSE}
-mypar()
-plot(hindcast(splinemod), xlab = 'time', ylab = 'Predictions')
+plot(hindcast(splinemod), xlab = 'time', ylab = 'Predictions') +
+  theme_classic(base_size = 18, base_family = 'serif')
 ```
 
 ---
@@ -382,9 +386,10 @@ abline(v = max(gausdat$data_train$time), lwd = 2, lty = 'dashed')
 ## Forecasts `r fontawesome::fa("face-sad-cry")`
 
 ```{r echo = FALSE, message = FALSE, results='hide'}
-mypar()
-plot(splinemod, type = 'forecast', newdata = gausdat$data_test, xlab = 'time',
-     ylab = 'Predictions')
+plot(forecast(splinemod)) +
+  labs(x = 'time',
+       y = 'Posterior predictions') +
+  theme_classic(base_size = 18, base_family = 'serif')
 ```
 
 ---
@@ -410,11 +415,13 @@ background-size: cover
 ## 1st derivative penalty?
 <br>
 ```{r eval = FALSE}
-model <- mvgam(y ~ 
-                 s(time, k = 20, bs = 'bs', m = 1), #<<
-               data = data_train,
-               newdata = data_test,
-               family = gaussian())
+model <- mvgam(
+  y ~ 
+    s(time, k = 20, bs = 'bs', m = 1), #<<
+  data = data_train,
+  newdata = data_test,
+  family = gaussian()
+)
 ```
 
 Using `m = 1` sets the penalty on the first derivative
@@ -424,8 +431,8 @@ Using `m = 1` sets the penalty on the first derivative
 ## Hindcasts `r fontawesome::fa("face-smile")`
 
 ```{r echo = FALSE, message=FALSE}
-mypar()
-plot(hindcast(splinemod_1p), xlab = 'time', ylab = 'Predictions')
+plot(hindcast(splinemod_1p), xlab = 'time', ylab = 'Predictions') +
+  theme_classic(base_size = 18, base_family = 'serif')
 ```
 
 ---
@@ -457,9 +464,10 @@ abline(v = max(gausdat$data_train$time), lwd = 2, lty = 'dashed')
 ## Forecasts `r fontawesome::fa("face-flushed")`
 
 ```{r echo = FALSE, message = FALSE, results='hide'}
-mypar()
-plot(splinemod_1p, type = 'forecast', newdata = gausdat$data_test, xlab = 'time',
-     ylab = 'Predictions')
+plot(forecast(splinemod_1p)) +
+  labs(x = 'time',
+       y = 'Posterior predictions') +
+  theme_classic(base_size = 18, base_family = 'serif')
 ```
 
 ---
@@ -484,154 +492,162 @@ class: middle center
 <br>
 ### This is because splines only have *local knowledge*
 
-```{r basis-functions-weights, fig.height=4.6875, fig.width = 7.5, echo=FALSE,message=FALSE,warning=FALSE,fig.show='hide'}
-set.seed(7)
-N <- 400
-y <- mvgam::sim_mvgam(T = N, prop_missing = 0,
-                      prop_train = 1,
-                      family = gaussian(),
-                      n_series = 1,
-                      trend_model = 'GP',
-                      trend_rel = 0.95)$data_train$y
-x <- 1:N
-data <- data.frame(x = x,
-                   y = rnorm(n = N, mean = y, sd = 0.75))
-theme_set(theme_classic(base_size = 17, base_family = 'serif'))
-basis_funs <- basis(gam(y ~ s(x, bs = 'cr', k = 12) - 1, 
-                    data = data))
-ggplot(basis_funs,
-       aes(x = x, y = .value, colour = .bf)) +
-  geom_borderline(linewidth=1.5, bordercolour = "white") +
-  scale_color_viridis(discrete = TRUE) +
-  theme(legend.position = 'none',
-        axis.line = element_line(size = 1),
-        axis.ticks = element_line(colour = "black", size = 1)) +
-  ylab('f(Time)') + xlab('Time') + 
-  scale_y_continuous(breaks = c(0, 1))
-```
 ---
-background-image: url('./lecture_3_slidedeck_files/figure-html/basis-functions-weights-1.svg')
+background-image: url('../day1/lecture_2_slidedeck_files/figure-html/basis-functions-weights-1.svg')
 ## Basis functions &#8680; local knowledge
 
 ---
 
 ## We need *global knowledge*
 ```{r echo = FALSE, message = FALSE, results='hide'}
-mypar()
-plot(gpmod, type = 'forecast', newdata = gausdat$data_test, xlab = 'time',
-     ylab = 'Predictions')
+plot(forecast(gpmod)) +
+  labs(x = 'time',
+       y = 'Posterior predictions')+
+  theme_classic(base_size = 18, base_family = 'serif')
 ```
 
 ---
 
 ## First, a few other pitfalls
 
-`mgcv` 📦 has a heuristic checking function (`gam.check`) to inform whether a spline is *wiggly enough*
+Residual diagnostics can inform whether a spline is *wiggly enough*
 
 Can be useful to understand if your functions are complex enough to capture patterns in observed data
 
 But can also be misleading when dealing with time series
 
-`mvgam` 📦 includes an underlying object of class `gam` that can be checked with `gam.check`
-
 ---
 ## Simulated data
 
 ```{r echo = FALSE}
-library(mvgam)
 load('cache_not_for_upload/autocordat.rds')
-multipar()
 plot_mvgam_series(data = autocordat$data_train, 
-                  newdata = autocordat$data_test)
+                  newdata = autocordat$data_test) &
+  theme_bw(base_size = 15, base_family = 'serif')
 ```
 
 ---
 ## Restricted smooth of `time`
 <br>
 ```{r eval = FALSE}
-model <- mvgam(y ~ s(time, k = 6),
-                 family = gaussian(),
-               data = data_train,
-               newdata = data_test)
+model <- mvgam(
+  y ~ s(time, k = 6),#<<
+  family = gaussian(),
+  data = data_train,
+  newdata = data_test
+)
 ```
 
 Using a thin plate spline with low maximum complexity (`k = 6`)
 
 ---
 
-## Check basis complexity
+## Unmodelled variation
 
-```{r eval=FALSE}
-gam.check(model$mgcv_model)
+```{r echo = FALSE}
+plot_predictions(
+  autogam,
+  condition = 'time',
+  points = 0.4,
+  type = 'expected'
+) +
+  theme_classic(base_size = 18, base_family = 'serif')
 ```
-
-.small[
-```{r fig.show='hide', echo=FALSE}
-gam.check(autogam$mgcv_model)
-```
-]
 
 ---
 
 ## Unmodelled variation
 
 ```{r echo = FALSE}
-mypar()
-plot_mvgam_smooth(autogam, 
-                  smooth = 's(time)',
-                  residuals = TRUE)
+pp_check(
+  autogam,
+  type = 'resid_ribbon',
+  x = 'time',
+  ndraws = 50
+) +
+  labs(x = 'time',
+       y = 'Residuals')
 ```
 
 ---
-
 ## Increase complexity?
 ```{r eval = FALSE}
-model <- mvgam(y ~ s(time, k = 15), family = gaussian(),
-               data = data_train, newdata = data_test)
-
-gam.check(model$mgcv_model)
+model <- mvgam(
+  y ~ s(time, k = 15), 
+  family = gaussian(),
+  data = data_train, 
+  newdata = data_test
+)
 ```
 
-.small[
-```{r fig.show='hide', echo=FALSE}
-gam.check(autogam2$mgcv_model)
-```
-]
 ---
 
 ## Not wiggly enough
 
 ```{r echo = FALSE}
-mypar()
-plot_mvgam_smooth(autogam2, 
-                  smooth = 's(time)',
-                  residuals = TRUE)
+plot_predictions(
+  autogam2,
+  condition = 'time',
+  points = 0.4,
+  type = 'expected'
+) +
+  theme_classic(base_size = 18, base_family = 'serif')
+```
+
+---
+
+## Not wiggly enough
+
+```{r echo = FALSE}
+pp_check(
+  autogam2,
+  type = 'resid_ribbon',
+  x = 'time',
+  ndraws = 50
+) +
+  labs(x = 'time',
+       y = 'Residuals')
 ```
 
 ---
 
 ## Even more complex?
 ```{r eval = FALSE}
-model <- mvgam(y ~ s(time, k = 50), family = gaussian(),
-               data = data_train, newdata = data_test)
-
-gam.check(model$mgcv_model)
+model <- mvgam(
+  y ~ s(time, k = 50), 
+  family = gaussian(),
+  data = data_train, 
+  newdata = data_test
+)
 ```
 
-.small[
-```{r fig.show='hide', echo=FALSE}
-gam.check(autogam3$mgcv_model)
-```
-]
 ---
 
 ## Finally wiggly enough 
 
 ```{r echo = FALSE}
-mypar()
-plot_mvgam_smooth(autogam3, 
-                  smooth = 's(time)',
-                  residuals = TRUE)
+plot_predictions(
+  autogam3,
+  condition = 'time',
+  points = 0.4,
+  type = 'expected'
+) +
+  theme_classic(base_size = 18, base_family = 'serif')
+```
+
+---
+
+## Finally wiggly enough 
+
+```{r echo = FALSE}
+pp_check(
+  autogam3,
+  type = 'resid_ribbon',
+  x = 'time',
+  ndraws = 50
+) +
+  labs(x = 'time',
+       y = 'Residuals')
 ```
 
 ---
@@ -649,27 +665,22 @@ class: middle center
 ## Forecasts vary *hugely*
 <br>
 ```{r echo = FALSE, results = FALSE, fig.width = 2.4 * 5.1, fig.height = 4.8}
-layout(matrix(1:3, nrow = 1))
-  par(family = "serif", 
-      las = 1, 
-      mar=c(4,4.1,2,2),
-      mgp = c(2,0.5,0),
-      bty = "l", 
-      cex.axis = 1.5, 
-      cex.lab = 2, 
-      cex.main = 2,
-      xaxs = 'r',
-      yaxs = 'r',
-      pch = 16)
-plot(autogam, type = 'forecast', newdata = autocordat$data_test,
-     ylab = 'Predictions', xlab = '',
-     main = 'k = 6')
-plot(autogam2, type = 'forecast', newdata = autocordat$data_test,
-     ylab = '', xlab = 'time',
-     main = 'k = 15')
-plot(autogam3, type = 'forecast', newdata = autocordat$data_test,
-     ylab = '', xlab = '',
-     main = 'k = 50')
+patchwork::wrap_plots(
+  plot(forecast(autogam)) +
+    labs(y = 'Predictions',
+         x = '',
+         title = 'k = 6'),
+  plot(forecast(autogam2)) +
+    labs(y = '',
+         x = 'time',
+         title = 'k = 15'),
+  plot(forecast(autogam3)) +
+    labs(y = '',
+         x = '',
+         title = 'k = 50'),
+  nrow = 1
+) &
+  theme_classic(base_size = 18, base_family = 'serif')
 ```
 
 ---
@@ -682,9 +693,9 @@ background-size: cover
 
 class: middle center
 
-### `gam.check` is sensitive to unmodelled autocorrelation
+### Splines may be sensitive to unmodelled autocorrelation
 <br>
-### Raising `k` to satisfy warnings may improve inference on historical patterns, but leads to even more unpredictable extrapolation behaviour
+### Raising `k` may improve inference on historical patterns, but leads to even more unpredictable extrapolation behaviour
 <br>
 ### If the goal is to produce predictions (i.e. to forecast), we can do better with appropriate *time series models*
 
@@ -722,14 +733,13 @@ Where:
 
 ---
 
-## Motivating example (skip)
+## Motivating example 
 ```{r}
 # set seed for reproducibility
 set.seed(222)
 
 # simulate an integer-valued time series with some missing observations
-sim_data <- sim_mvgam(T = 100, n_series = 1, 
-                      trend_model = 'RW',
+sim_data <- sim_mvgam(T = 100, n_series = 1, trend_model = 'RW',
                       prop_missing = 0.2)#<<
 ```
 
@@ -745,19 +755,19 @@ head(sim_data$data_train, 4) %>%
 ```
 
 ---
-## Simulated data (skip)
+## Simulated data 
 ```{r echo = FALSE}
 set.seed(222)
 sim_data <- sim_mvgam(T = 100, n_series = 1, 
                       trend_model = 'RW',
                       prop_missing = 0.2)
-multipar()
-plot_mvgam_series(data = sim_data$data_train)
+plot_mvgam_series(data = sim_data$data_train) &
+  theme_bw(base_size = 15, base_family = 'serif')
 ```
 
 ---
 
-## Use `tscount` 📦? (skip)
+## Use `tscount` 📦? 
 ```{r eval=FALSE}
 # attempt a tscount time series model
 # which can fit autoregressive models for count time series
@@ -782,7 +792,7 @@ tsglm(sim_data$data_train$y, model = list(past_obs = 1))
 `NA`s cause big problems in autoregressive models
 ---
 
-## `NA`s compound (skip)
+## `NA`s compound
 
 ```{r echo=FALSE}
 set.seed(222)
@@ -797,26 +807,6 @@ head(mod_dat, 8) %>%
   kbl() %>%
   kable_minimal(full_width = FALSE) %>%
   column_spec(2:4, bold = T, background = '#51247A20')
-
-```
-
----
-## 2/8 rows complete (skip)
-
-```{r echo=FALSE}
-set.seed(222)
-sim_data <- sim_mvgam(T = 100, n_series = 1, 
-                      trend_model = 'RW',
-                      prop_missing = 0.2)
-sim_data$data_train %>%
-  dplyr::mutate(y_lag1 = dplyr::lag(y),
-                y_lag2 = dplyr::lag(y, n = 2)) %>%
-  dplyr::select(time, y, y_lag1, y_lag2, season, year, series) -> mod_dat
-head(mod_dat, 8) %>%
-  kbl() %>%
-  kable_minimal(full_width = FALSE) %>%
-  row_spec(row = which(complete.cases(mod_dat[1:8,])),
-           bold = T, background = '#51247A20')
 
 ```
 
@@ -875,6 +865,8 @@ background-size: contain
 <br>
 <br>
 <br>
+<br>
+<br>
 Missing observations do not impede evolution of the *latent* process
 
 ---
@@ -883,6 +875,8 @@ background-image: url('./resources/SS_model.svg')
 background-size: contain
 
 ## Evolves *independently*
+<br>
+<br>
 <br>
 <br>
 <br>
@@ -904,11 +898,13 @@ load('cache_not_for_upload/mod_example.rds')
 ```
 
 ```{r eval = FALSE}
-mod_example <- mvgam(y ~ 1,
-                     trend_model = AR(p = 1),#<<
-                     data = sim_data$data_train,
-                     newdata = sim_data$data_test,
-                     family = poisson())
+mod_example <- mvgam(
+  y ~ 1,
+  trend_model = AR(p = 1),#<<
+  data = sim_data$data_train,
+  newdata = sim_data$data_test,
+  family = poisson()
+)
 ```
 
 `mvgam` 📦 has no problem with these observations
@@ -918,24 +914,24 @@ Fit a model with latent AR1 dynamics and just an intercept in the observation mo
 ---
 ## The latent trend
 ```{r echo=FALSE}
-mypar()
 plot(mod_example, type = 'trend', newdata = sim_data$data_test,
-     ylab = 'Trend', xlab = 'time')
+     ylab = 'Trend', xlab = 'time') +
+  theme_classic(base_size = 17, base_family = 'serif')
 ```
 
 ---
 ## Forecasts
 ```{r echo=FALSE, results = 'hide'}
-mypar()
-plot(mod_example, type = 'forecast', newdata = sim_data$data_test,
-     ylab = 'Predictions', xlab = 'time')
+plot(forecast(mod_example)) +
+  labs(y = 'Predictions', x = 'Time') +
+  theme_classic(base_size = 17, base_family = 'serif')
 ```
 
 ---
 ## Residuals
 ```{r echo=FALSE}
-multipar()
-plot(mod_example, type = 'residuals')
+plot(mod_example, type = 'residuals') +
+  theme_bw(base_size = 17, base_family = 'serif')
 ```
 
 ---
@@ -947,9 +943,8 @@ set.seed(100)
 
 # simulate an integer-valued time series with some missing observations
 sim_data2 <- sim_mvgam(T = 100, n_series = 1, 
-                       mu = 1,
-                      trend_model = 'RW',
-                      prop_missing = 0.75) #<<
+                       mu = 1, trend_model = 'RW',
+                       prop_missing = 0.75) #<<
 ```
 
 75% of observations missing!
@@ -958,11 +953,13 @@ sim_data2 <- sim_mvgam(T = 100, n_series = 1,
 ## Same model
 <br>
 ```{r eval = FALSE}
-mod_example2 <- mvgam(y ~ 1,
-                     trend_model = AR(p = 1),
-                     data = sim_data2$data_train,
-                     newdata = sim_data2$data_test,
-                     family = poisson())
+mod_example2 <- mvgam(
+  y ~ 1,
+  trend_model = AR(p = 1),
+  data = sim_data2$data_train,
+  newdata = sim_data2$data_test,
+  family = poisson()
+)
 ```
 
 ```{r echo=FALSE}
@@ -972,17 +969,17 @@ load('cache_not_for_upload/mod_example2.rds')
 ---
 ## The latent trend
 ```{r echo=FALSE}
-mypar()
 plot(mod_example2, type = 'trend', newdata = sim_data2$data_test, 
-     ylab = 'Trend', xlab = 'time')
+     ylab = 'Trend', xlab = 'time') +
+  theme_classic(base_size = 17, base_family = 'serif')
 ```
 
 ---
 ## Forecasts
 ```{r echo=FALSE, results='hide'}
-mypar()
-plot(mod_example2, type = 'forecast', newdata = sim_data2$data_test,
-     ylab = 'Predictions', xlab = 'time')
+plot(forecast(mod_example2)) +
+  labs(y = 'Predictions', x = 'time') +
+  theme_classic(base_size = 17, base_family = 'serif')
 ```
 
 ---
@@ -998,15 +995,16 @@ class: middle center
 
 ```{r echo = FALSE, fig.cap = "Properties of Merriam's kangaroo rat relative abundance time series from a long-term monitoring study in Portal, Arizona, USA"}
 data("portal_data")
-multipar()
 portal_data %>%
-  dplyr::mutate(time = moon - (min(moon)) + 1) %>%
-  dplyr::rowwise() %>%
-  dplyr::mutate(total = sum(c(DM, DO, PP, OT), na.rm = TRUE)) %>%
-  dplyr::mutate(`relative abundance` = DM / total) %>%
-  dplyr::mutate(series = as.factor('DM')) %>%
-  dplyr::select(series, year, time, `relative abundance`, mintemp, ndvi) -> model_data
-  plot_mvgam_series(data = model_data, y = 'relative abundance')
+  dplyr::group_by(time) %>%
+  dplyr::mutate(total = sum(captures, na.rm = TRUE)) %>%
+  dplyr::mutate(`relative abundance` = pmin(0.99, captures / total),
+                relabund = pmin(0.99, captures / total)) %>%
+  dplyr::ungroup() %>%
+  dplyr::filter(series == 'DM') %>%
+  droplevels() -> dm_data
+plot_mvgam_series(data = dm_data, y = 'relative abundance') &
+  theme_bw(base_size = 15, base_family = 'serif')
 ```
 
 ---
@@ -1020,11 +1018,13 @@ class: inverse middle center big-subsection
 
 ## Dynamic Beta GAM
 ```{r eval = FALSE}
-mod_beta <- mvgam(relabund ~ 
-                    te(mintemp, ndvi),
-                  trend_model = AR(p = 3),
-                  family = betar(), #<<
-                  data = dm_data)
+mod_beta <- mvgam(
+  relabund ~ 
+    te(mintemp, ndvi_ma12),
+  trend_model = AR(p = 3),
+  family = betar(), #<<
+  data = dm_data
+)
 ```
 
 ```{r echo=FALSE}
@@ -1037,15 +1037,13 @@ Beta regression using the `mgcv` 📦's `betar` family
 
 ## Dynamic Beta GAM
 ```{r eval = FALSE}
-mod_beta <- mvgam(relabund ~ 
-                    te(mintemp, ndvi),
-                  trend_model = AR(p = 3),#<<
-                  family = betar(), 
-                  data = dm_data)
-```
-
-```{r echo=FALSE}
-load('cache_not_for_upload/mod_beta.rds')
+mod_beta <- mvgam(
+  relabund ~ 
+    te(mintemp, ndvi_ma12),
+  trend_model = AR(p = 3),#<<
+  family = betar(), 
+  data = dm_data
+)
 ```
 
 Beta regression using the `mgcv` 📦's `betar` family
@@ -1056,15 +1054,13 @@ AR3 dynamic trend model
 
 ## Dynamic Beta GAM
 ```{r eval = FALSE}
-mod_beta <- mvgam(relabund ~ 
-                    te(mintemp, ndvi),#<<
-                  trend_model = AR(p = 3),
-                  family = betar(), 
-                  data = dm_data)
-```
-
-```{r echo=FALSE}
-load('cache_not_for_upload/mod_beta.rds')
+mod_beta <- mvgam(
+  relabund ~ 
+    te(mintemp, ndvi_ma12),#<<
+  trend_model = AR(p = 3),
+  family = betar(), 
+  data = dm_data
+)
 ```
 
 Beta regression using the `mgcv` 📦's `betar` family
@@ -1077,15 +1073,15 @@ Multidimensional [tensor product smooth function for nonlinear covariate interac
 
 ## The latent trend
 ```{r echo=FALSE}
-mypar()
-plot(mod_beta, type = 'trend', ylab = 'Trend', xlab = 'time')
+plot(mod_beta, type = 'trend', ylab = 'Trend', xlab = 'time') +
+  theme_classic(base_size = 17, base_family = 'serif')
 ```
 
 ---
 ## Multidimensionial smooth
 ```{r echo=FALSE}
 mypar()
-plot(mod_beta, type = 'smooth')
+plot(mod_beta, type = 'smooth', trend_effects = TRUE)
 ```
 
 ---
@@ -1101,12 +1097,29 @@ class: animated fadeIn black-inverse
 .panelset[
 .panel[.panel-name[Code]
 
-```{r beta_ndvi, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25, message=FALSE,warning=FALSE}
+```{r beta_ndvi, fig.show='hide', fig.height=6.2, fig.width=1.9*6.2,  message=FALSE,warning=FALSE, echo= FALSE, dev = 'svg'}
 
 # plot conditional effect of NDVI on the outcome scale
-plot_predictions(mod_beta, condition = 'ndvi',
-                 points = 0.5, conf_level = 0.8, rug = TRUE) +
-  theme_classic()
+plot_predictions(
+  mod_beta, 
+  condition = 'ndvi_ma12',
+  points = 0.5, 
+  conf_level = 0.8, 
+  rug = TRUE
+) +
+  theme_classic(base_size = 17, base_family = 'serif')
+```
+
+```{r eval=FALSE}
+
+# plot conditional effect of NDVI on the outcome scale
+plot_predictions(
+  mod_beta, 
+  condition = 'ndvi_ma12',
+  points = 0.5, 
+  conf_level = 0.8, 
+  rug = TRUE
+)
 ```
 
 ]
@@ -1124,14 +1137,30 @@ plot_predictions(mod_beta, condition = 'ndvi',
 .panelset[
 .panel[.panel-name[Code]
 
-```{r beta_mintemp, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25, message=FALSE,warning=FALSE}
+```{r beta_mintemp, fig.show='hide', fig.height=6.2, fig.width=1.9*6.2,  message=FALSE,warning=FALSE, echo=FALSE, dev = 'svg'}
 
 # plot conditional effect of Min Temp on the outcome scale
-plot_predictions(mod_beta, condition = 'mintemp',
-                 points = 0.5, conf_level = 0.8, rug = TRUE) +
-  theme_classic()
+plot_predictions(
+  mod_beta, 
+  condition = 'mintemp',
+  points = 0.5, 
+  conf_level = 0.8, 
+  rug = TRUE
+) +
+  theme_classic(base_size = 17, base_family = 'serif')
 ```
 
+```{r eval=FALSE}
+
+# plot conditional effect of Min Temp on the outcome scale
+plot_predictions(
+  mod_beta, 
+  condition = 'mintemp',
+  points = 0.5, 
+  conf_level = 0.8, 
+  rug = TRUE
+)
+```
 ]
 
 .panel[.panel-name[Plot]
@@ -1147,13 +1176,33 @@ plot_predictions(mod_beta, condition = 'mintemp',
 .panelset[
 .panel[.panel-name[Code]
 
-```{r beta_both, fig.show='hide', fig.height=4.25, fig.width=1.9*4.25, message=FALSE,warning=FALSE}
+```{r beta_both, fig.show='hide', fig.height=6.2, fig.width=1.9*6.2,  message=FALSE,warning=FALSE, echo=FALSE, dev = 'svg' }
 
 # plot conditional effect of BOTH covariates on the outcome scale
-plot_predictions(mod_beta, condition = c('ndvi', 'mintemp'),
-                 points = 0.5, conf_level = 0.8, rug = TRUE) +
-  theme_classic()
+plot_predictions(
+  mod_beta, 
+  condition = c('ndvi_ma12',
+                'mintemp'),
+  points = 0.5, 
+  conf_level = 0.8, 
+  rug = TRUE
+) +
+  theme_classic(base_size = 17, base_family = 'serif')
 ```
+
+```{r eval=FALSE}
+
+# plot conditional effect of BOTH covariates on the outcome scale
+plot_predictions(
+  mod_beta, 
+  condition = c('ndvi_ma12',
+                'mintemp'),
+  points = 0.5, 
+  conf_level = 0.8, 
+  rug = TRUE
+)
+```
+
 
 ]
 
@@ -1166,8 +1215,10 @@ plot_predictions(mod_beta, condition = c('ndvi', 'mintemp'),
 ---
 ## Hindcasts
 ```{r echo=FALSE}
-mypar()
-plot(mod_beta, type = 'forecast', ylab = 'Predictions', xlab = 'time')
+plot(hindcast(mod_beta)) +
+  labs(x = 'time',
+       y = 'Predictions') +
+  theme_classic(base_size = 17, base_family = 'serif')
 ```
 
 ---
@@ -1205,7 +1256,7 @@ series <- rnorm(100, mean = scale(trend),
 # plot the time series as a line
 mypar()
 plot(series, type = 'l', bty = 'l', lwd = 2, 
-     col = 'darkred', ylab = 'z', xlab = 'Time')
+     col = 'darkred', ylab = 'z', xlab = 'time')
 ```
 
 
@@ -1236,7 +1287,7 @@ series <- rnorm(100, mean = trend - mean(trend),
 # plot the time series as a line
 mypar()
 plot(series, type = 'l', bty = 'l', lwd = 2, 
-     col = 'darkred', ylab = 'z', xlab = 'Time')
+     col = 'darkred', ylab = 'z', xlab = 'time')
 ```
 
 ---
@@ -1261,7 +1312,7 @@ Process at time $t$ is centred around it's own value at time $t-1$, with spread 
 .panelset[
 .panel[.panel-name[Code]
 
-```{r rw_sim, echo=FALSE,fig.show='hide', fig.height=4.25, fig.width=1.9*4.25,echo=FALSE}
+```{r rw_sim, echo=FALSE,fig.show='hide', fig.height=6.2, fig.width=1.9*6.2,  echo=FALSE, dev = 'svg'}
 # set seed for reproducibility
 set.seed(1111)
 
@@ -1280,7 +1331,7 @@ for (t in 2:T) {
 # plot the time series as a line
 mypar()
 plot(series, type = 'l', bty = 'l', lwd = 2, 
-     col = 'darkred', ylab = 'x', xlab = 'Time')
+     col = 'darkred', ylab = 'x', xlab = 'time')
 ```
 
 ```{r eval=FALSE}
@@ -1297,7 +1348,7 @@ for (t in 2:T) {
 
 # plot the time series as a line
 plot(series, type = 'l', bty = 'l', lwd = 2, 
-     col = 'darkred', ylab = 'x', xlab = 'Time')
+     col = 'darkred', ylab = 'x', xlab = 'time')
 ```
 ]
 
@@ -1340,7 +1391,7 @@ z_t & \sim \text{Normal}( \alpha + \phi_1 * z_{t-1} + \phi_2 * z_{t-2} + \phi_3 
 .panelset[
 .panel[.panel-name[Code]
 
-```{r ar_sim, echo=FALSE,fig.show='hide', fig.height=4.25, fig.width=1.9*4.25,echo=FALSE}
+```{r ar_sim, echo=FALSE,fig.show='hide', fig.height=6.2, fig.width=1.9*6.2, echo=FALSE, dev = 'svg'}
 # set seed for reproducibility
 set.seed(1111)
 
@@ -1359,7 +1410,7 @@ for (t in 2:T) {
 # plot the time series as a line
 mypar()
 plot(series, type = 'l', bty = 'l', lwd = 2, 
-     col = 'darkred', ylab = 'x', xlab = 'Time')
+     col = 'darkred', ylab = 'x', xlab = 'time')
 ```
 
 ```{r eval=FALSE}
@@ -1376,7 +1427,7 @@ for (t in 2:T) {
 
 # plot the time series as a line
 plot(series, type = 'l', bty = 'l', lwd = 2, 
-     col = 'darkred', ylab = 'x', xlab = 'Time')
+     col = 'darkred', ylab = 'x', xlab = 'time')
 ```
 ]
 
@@ -1413,7 +1464,7 @@ Stationary time series are useful for inferring properties of .emphasize[*stabil
 ## Stationarity &#8680; stability
 ```{r echo = FALSE, fig.height = 4.6, fig.width = 2.1 * 5.1}
 par(  family = 'serif',
-      mar=c(3,4,1,1),
+      mar=c(3,4,1.25,1),
       mgp = c(2,0.75,0),
       cex.axis = 1.5, 
       cex.lab = 1.5, 
@@ -1543,7 +1594,7 @@ mypar()
 plot(x = draw_seq, y = gp_vals, type = 'l',
      lwd = 2, col = 'darkred',
      ylab = expression(f(Time)),
-     xlab = 'Time', bty = 'l',
+     xlab = 'time', bty = 'l',
      ylim = c(-3,3),
      main = expression(alpha~'='~1*'; '~rho~'='~16))
 # overlay an additional 15 possible functions using different colours
@@ -1594,7 +1645,7 @@ mypar()
 plot(x = draw_seq, y = gp_vals, type = 'l',
      lwd = 2, col = 'darkred',
      ylab = expression(f(Time)),
-     xlab = 'Time', bty = 'l',
+     xlab = 'time', bty = 'l',
      ylim = c(-3,3),
      main = expression(alpha~'='~1*'; '~rho~'='~4))
 # overlay an additional 15 possible functions using different colours
@@ -1722,9 +1773,10 @@ class: middle center
 
 ## Global knowledge `r fontawesome::fa("check")`
 ```{r echo = FALSE, message = FALSE, results='hide'}
-mypar()
-plot(gpmod, type = 'forecast', newdata = gausdat$data_test, xlab = 'time',
-     ylab = 'Predictions')
+plot(forecast(gpmod)) +
+  labs(x = 'time',
+       y = 'Posterior predictions')+
+  theme_classic(base_size = 18, base_family = 'serif')
 ```
 ---
 
@@ -1798,10 +1850,12 @@ But as we've seen previously, splines will often give poor predictions about how
 In `mvgam`📦, use `dynamic` to set up time-varying effects
 
 ```{r eval = FALSE}
-mod_beta_dyn <- mvgam(relabund ~ s(mintemp, k = 6) +
-                        dynamic(ndvi, scale = FALSE, k = 20), #<<
-                      family = betar(),
-                      data = dm_data)
+mod_beta_dyn <- mvgam(
+  relabund ~ ndvi_ma12 +
+    dynamic(mintemp, scale = FALSE, k = 20), #<<
+  family = betar(),
+  data = dm_data
+)
 ```
 
 Requires user to set $k$, as the function is approximated using a low-rank GP smooth from the `brms`📦
@@ -1810,25 +1864,17 @@ Estimates full uncertainty in GP parameters to yield a squared exponential GP
 
 ---
 
-## Estimated smooths
-```{r echo = FALSE}
-load('cache_not_for_upload/mod_beta_dyn.rds')
-multipar()
-plot(mod_beta_dyn, type = 'smooths')
-```
-
----
-
-## Predicted effects
+## Time-varying effect
 .panelset[
 .panel[.panel-name[Code]
 
-```{r ndvi_time, echo=FALSE,fig.show='hide', fig.height=4.25, fig.width=1.9*4, warning=FALSE, message=FALSE}
+```{r ndvi_time, echo=FALSE,fig.show='hide', fig.height=6.2, fig.width=1.9*6.2,  warning=FALSE, message=FALSE, dev = 'svg'}
+load('cache_not_for_upload/mod_beta_dyn.rds')
 
 # use mvgam's plot utility
 mypar()
-plot_mvgam_smooth(mod_beta_dyn, smooth = 2,
-                  newdata = datagrid(time = 1:230,
+plot_mvgam_smooth(mod_beta_dyn, smooth = 1,
+                  newdata = datagrid(time = 1:90,
                                      model = mod_beta_dyn))
 abline(v = max(dm_data$time), lwd = 2, lty = 'dashed')
 ```
@@ -1836,10 +1882,10 @@ abline(v = max(dm_data$time), lwd = 2, lty = 'dashed')
 ```{r eval=FALSE,message=FALSE}
 
 # use mvgam's plot_mvgam_smooth to view predicted effects
-plot_mvgam_smooth(mod_beta_dyn, smooth = 2,
+plot_mvgam_smooth(mod_beta_dyn, smooth = 1,
                   # datagrid from marginaleffects is useful
                   # to set up prediction scenarios
-                  newdata = datagrid(time = 1:230,
+                  newdata = datagrid(time = 1:90,
                                      model = mod_beta_dyn))
 abline(v = max(dm_data$time), lwd = 2, lty = 'dashed')
 ```
@@ -1855,13 +1901,15 @@ abline(v = max(dm_data$time), lwd = 2, lty = 'dashed')
 ## In `brms`
 In `brms`📦, use `gp` with the `by` argument
 ```{r eval=FALSE}
-brm_beta_dyn <- brm(relabund ~ s(mintemp, k = 6) +
-                      gp(time, by = ndvi, c = 5/4, k = 20),#<<
-                    family = Beta(),
-                    data = dm_data,
-                    chains = 4,
-                    cores = 4,
-                    backend = 'cmdstanr')
+brm_beta_dyn <- brm(
+  relabund ~ ndvi_ma12 +
+    gp(time, by = mintemp, c = 5/4, k = 20),#<<
+  family = Beta(),
+  data = dm_data,
+  chains = 4,
+  cores = 4,
+  backend = 'cmdstanr'
+)
 ```
 
 ```{r echo=FALSE}
@@ -1876,10 +1924,19 @@ A GP specifying time-varying effects of `ndvi`
 .panelset[
 .panel[.panel-name[Code]
 
-```{r ndvi_time_brm,fig.show='hide', fig.height=4.25, fig.width=1.9*4, warning=FALSE, message=FALSE}
+```{r ndvi_time_brm,fig.show='hide', fig.height=6.2, fig.width=1.9*6.2, warning=FALSE, message=FALSE, dev = 'svg'}
 
 # use brms' conditional_effects to view predictions
-plot(conditional_effects(brm_beta_dyn, effects = c('time:ndvi')),
+plot(conditional_effects(brm_beta_dyn, effects = c('time:mintemp')),
+                    theme = theme_classic(base_size = 17, base_family = 'serif'),
+                    mean = FALSE,
+                    rug = TRUE)
+```
+
+```{r eval=FALSE}
+
+# use brms' conditional_effects to view predictions
+plot(conditional_effects(brm_beta_dyn, effects = c('time:mintemp')),
                     theme = theme_classic(),
                     mean = FALSE,
                     rug = TRUE)
