@@ -900,7 +900,7 @@ Compare ELPDs for the two models using all nonmissing evaluation timepoints by p
 ```{r}
 # determine which timepoints were not missing in the evaluation set
 nonmiss_evalpoints <- which(
-  !is.na(model_data$recruits[26:NROW(model_data)])
+  !is.na(model_data$recruits[22:NROW(model_data)])
 )
 
 # plot the PW ELPD values minus the AR ELPD values
@@ -908,14 +908,16 @@ nonmiss_evalpoints <- which(
 # (ELPD is better when larger)
 pw_minus_ar <- lfo_pw$elpds[nonmiss_evalpoints] - 
   lfo_ar$elpds[nonmiss_evalpoints]
-plot(pw_minus_ar,
-     ylab = 'PW - AR ELPD',
-     xlab = 'Time point',
-     pch = 16, 
-     bty = 'l',
-     cex = 1,
-     col = 'white',
-     xaxt = 'n')
+plot(
+  pw_minus_ar,
+  ylab = 'PW - AR ELPD',
+  xlab = 'Time point',
+  pch = 16, 
+  bty = 'l',
+  cex = 1,
+  col = 'white',
+  xaxt = 'n'
+)
 axis(
   side = 1, 
   at = nonmiss_evalpoints,
@@ -931,14 +933,14 @@ abline(
 points(
   pw_minus_ar, 
   pch = 16, 
-  cex = 0.85
+  cex = 0.95
 )
 
 # highlight the comparisons for when the PW predictions were better
 points(
   ifelse(pw_minus_ar > 0, pw_minus_ar, NA), 
   pch = 16, 
-  cex = 0.85, 
+  cex = 0.95, 
   col = 'darkred'
 )
 ```
@@ -1034,6 +1036,11 @@ p <- abs(
 
 # take the mean of the absolute percentage errors
 mean(p)
+```
+
+As I always recommend, it is so helpful to the developers that dedicate much of their time to bringing us this software if we acknowledge them through appropriate citations. The piecewise models in particular deserve to be properly cited because they build on contributions from a number of helpful sources. Use `how_to_cite()` to make this task easier:
+```{r}
+how_to_cite(model3)
 ```
 
 ### Exercises
