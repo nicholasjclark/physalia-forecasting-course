@@ -142,6 +142,7 @@ This tutorial relates to content covered in [Lecture 4](https://nicholasjclark.g
 ```{r include = FALSE}
 library(dplyr)
 library(mvgam) 
+library(rstan)
 library(marginaleffects)
 library(tidybayes)
 library(ggplot2); theme_set(theme_classic())
