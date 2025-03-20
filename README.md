@@ -87,9 +87,11 @@ The exact version you have installed can be checked using `cmdstanr::cmdstan_ver
 ```r
 library(mvgam)
 simdat <- sim_mvgam()
-mod <- mvgam(y ~ s(season, bs = 'cc', k = 5) +
-               s(time, series, bs = 'fs', k = 8),
-             data = simdat$data_train)
+mod <- mvgam(
+  y ~ s(season, bs = 'cc', k = 5) +
+    s(time, series, bs = 'fs', k = 8),
+  data = simdat$data_train
+)
 ```
 
 But issues can sometimes occur when:

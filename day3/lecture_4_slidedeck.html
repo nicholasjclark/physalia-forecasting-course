@@ -3424,67 +3424,73 @@ background-size: contain
 .small[modified from [Heiss 2022](https://www.andrewheiss.com/blog/2022/09/26/guide-visualizing-types-posteriors/)]
 
 ---
+
+## `mvgam` and `brms` 📦's
+&lt;br&gt;
+
+|  Type   | `mvgam` | `brms` |
+|--------------------|----------------|------------------------------|
+| link         | `predict(type = 'link')` | `posterior_linpred()` |
+| expected          | `predict(type = 'expected')`       | `posterior_epred()` |
+| response         | `predict(type = 'response')` | `posterior_predict()`  |
+
+For all `mvgam` predictions, whether to include error in the dynamic process can be controlled using `process_error = TRUE` or `process_error = FALSE`
+
+---
+class: middle center
+### How should *you* use these predictions?
+&lt;br&gt;
+### 1. Don't interpret coefficients. Rather, use predictions on both the link and expectation scale to understand the model better
+&lt;br&gt;
+### 2. Compare predictions on the response scale to the observed data using posterior predictive checks and `loo()` to diagnose problems
+&lt;br&gt;
+### 3. Make out-of-sample predictions and evaluate with proper scoring rules
+---
+
+## Don't interpret coefficients
+
+``` r
+coef(model)
+```
+
+```
+##                   2.5%        50%       97.5% Rhat n_eff
+## (Intercept)  0.4244452  0.9973625  1.87272150 1.01   377
+## s(season).1 -0.6285627 -0.3477210 -0.06202533 1.00  1661
+## s(season).2 -0.7338488 -0.3920205 -0.05727605 1.00  1993
+## s(season).3 -0.4865379 -0.1625075  0.13829287 1.00  2374
+## s(season).4 -0.1564071  0.1396100  0.42328822 1.00  2229
+## s(season).5  0.2798351  0.5486395  0.82546612 1.00  2148
+## s(season).6  0.1263498  0.3864325  0.63401010 1.00  2116
+```
+
+---
+## Don't interpret coefficients
+These coefficients are acting on the .emphasize[*link scale*]
+- Often result in nonlinear relationships on response scale
+- Very often, the coefficients are .emphasize[*correlated somehow*]
+- This is especially the case in GAMs!
+- Don't worry about *p*-values or intervals, use .emphasize[*posterior predictions*] instead
+
+Start with .emphasize[*partial effects*] on link scale
+- These are conditional on all other effects being zero
+- negative values &amp;#8680; covariate reduces the response
+- positive values &amp;#8680; covariate increases the response
+
+---
+`draw(model)`
+&lt;img src="lecture_4_slidedeck_files/figure-html/unnamed-chunk-23-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+## `link` predictions
 `predict(object, type = 'link')`
 
 Gives the real-valued, unconstrained linear predictor
 - Takes into account uncertainty in GAM regression coefficients
 - Can include uncertainty in any dynamic trend components
-- Can be extracted from the fitted model as parameter `mus`
-
-
-``` r
-range(predict(model, type = 'link', process_error = FALSE))
-```
-
-
-```
-## [1] -0.02145857  2.22647337
-```
-
-
-``` r
-range(predict(model, type = 'link', process_error = TRUE))
-```
-
-
-```
-## [1] -3.801796  5.165899
-```
-
-
-``` r
-range(as.matrix(model, variable = 'mus', regex = TRUE))
-```
-
-```
-## [1] -1.82269  3.92661
-```
----
-## Hang on. Why do these differ?
-
-``` r
-range(predict(model, type = 'link', process_error = TRUE))
-```
-
-
-```
-## [1] -3.801796  5.165899
-```
-
-
-``` r
-range(as.matrix(model, variable = 'mus', regex = TRUE))
-```
-
-```
-## [1] -1.82269  3.92661
-```
-
-`predict()` does not know the estimates of the latent states; rather it tells what we might expect if we see these same covariate values .emphasize[*sometime in the future*]
-
-`mus` includes actual state estimates .emphasize[*at each point in the training data*] (hindcasts), so it is has less uncertainty
 
 ---
+
 ## `link` predictions
 .panelset[
 .panel[.panel-name[Code]
@@ -3507,126 +3513,6 @@ plot(fc)
 
 ]
 ]
-
----
-
-`predict(object, type = 'expected')`
-
-Gives the .emphasize[*average*] prediction on the observation (response) scale
-- Useful as we often want to get a sense of long-term averages for guiding scenario analyses
-- .emphasize[*Usually*] it is just the inverse link function applied to a prediction from `type = link`
-- But not always!
-
-This is probably the most confusing type of prediction
-
----
-
-## `expected` predictions
-.panelset[
-.panel[.panel-name[Code]
-
-
-
-
-``` r
-# extract expectation-scale forecasts from the model
-fc &lt;- forecast(model, type = 'expected')
-
-# plot using the available S3 plotting function
-plot(fc)
-```
-
-]
-
-.panel[.panel-name[Plot]
-.center[![](lecture_4_slidedeck_files/figure-html/exppreds-1.svg)]
-
-]
-]
-
----
-`predict(object, type = 'response')`
-
-Gives the predictions on the observation (response) scale
-- Includes uncertainty in the linear predictor .emphasize[*and*] any uncertainty arising from the observation process
-- Some distributions only depend on the inverse link of the linear predictor (i.e. `\(Poisson(\lambda)\)` or `\(Bernoulli(\pi)\)`))
-- Others depend on additional shape / scale parameters (i.e. `\(Normal(\mu,\sigma)\)` or `\(StudentT(\nu,\mu,\sigma)\)`)
-
-These are the most often used type of predictions for evaluating forecasts
-
----
-
-## `response` predictions
-.panelset[
-.panel[.panel-name[Code]
-
-
-
-
-``` r
-# extract response-scale forecasts from the model
-fc &lt;- forecast(model, type = 'response')
-
-# plot using the available S3 plotting function
-plot(fc)
-```
-
-]
-
-.panel[.panel-name[Plot]
-.center[![](lecture_4_slidedeck_files/figure-html/resppreds-1.svg)]
-
-]
-]
-
----
-
-## `mvgam` and `brms` 📦's
-&lt;br&gt;
-
-|  Type   | `mvgam` | `brms` |
-|--------------------|----------------|------------------------------|
-| link         | `predict(type = 'link')` | `posterior_linpred()` |
-| expected          | `predict(type = 'expected')`       | `posterior_epred()` |
-| response         | `predict(type = 'response')` | `posterior_predict()`  |
-
-For all `mvgam` predictions, whether to include error in the dynamic process can be controlled using `process_error = TRUE` or `process_error = FALSE`
-
----
-
-## Fitted models yield coefficients
-
-``` r
-coef(model)
-```
-
-```
-##                   2.5%        50%       97.5% Rhat n_eff
-## (Intercept)  0.4244452  0.9973625  1.87272150 1.01   377
-## s(season).1 -0.6285627 -0.3477210 -0.06202533 1.00  1661
-## s(season).2 -0.7338488 -0.3920205 -0.05727605 1.00  1993
-## s(season).3 -0.4865379 -0.1625075  0.13829287 1.00  2374
-## s(season).4 -0.1564071  0.1396100  0.42328822 1.00  2229
-## s(season).5  0.2798351  0.5486395  0.82546612 1.00  2148
-## s(season).6  0.1263498  0.3864325  0.63401010 1.00  2116
-```
-
----
-## Interpret coefficients?
-These coefficients are acting on the .emphasize[*link scale*]
-- Often result in nonlinear relationships on response scale
-- Very often, the coefficients are .emphasize[*correlated somehow*]
-- This is especially the case in GAMs!
-- Don't worry about *p*-values or intervals, use .emphasize[*posterior predictions*] instead
-
-Start with .emphasize[*partial effects*] on link scale
-- These are conditional on all other effects being zero
-- negative values &amp;#8680; covariate reduces the response
-- positive values &amp;#8680; covariate increases the response
-
----
-`draw(model)`
-&lt;img src="lecture_4_slidedeck_files/figure-html/unnamed-chunk-34-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -3655,6 +3541,53 @@ class: black-inverse
 .small[[Credit @stephenjwild](https://twitter.com/stephenjwild/status/1687499914794643456?s=20)]
 
 ---
+## `expected` predictions
+`predict(object, type = 'expected')`
+
+Gives the .emphasize[*average*] prediction on the observation (response) scale
+- Useful as we often want to get a sense of long-term averages for guiding scenario analyses
+- .emphasize[*Usually*] it is just the inverse link function applied to a prediction from `type = link`
+
+This is the most confusing type of prediction, as using `predict(model, type = 'response')` for models fitted in `gam()` or `glm()` actually return .emphasize[*expectations*]
+
+---
+
+## `expected` predictions
+.panelset[
+.panel[.panel-name[Code]
+
+
+
+
+``` r
+# extract expectation-scale forecasts from the model
+fc &lt;- forecast(model, type = 'expected')
+
+# plot using the available S3 plotting function
+plot(fc)
+```
+
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_4_slidedeck_files/figure-html/exppreds-1.svg)]
+
+]
+]
+
+---
+## `response` predictions
+`predict(object, type = 'response')`
+
+Gives the predictions on the observation (response) scale
+- Includes uncertainty in the linear predictor .emphasize[*and*] any uncertainty arising from the observation process
+- Some distributions only depend on the inverse link of the linear predictor (i.e. `\(Poisson(\lambda)\)` or `\(Bernoulli(\pi)\)`))
+- Others depend on additional shape / scale parameters (i.e. `\(Normal(\mu,\sigma)\)` or `\(StudentT(\nu,\mu,\sigma)\)`)
+
+These are the most often used for evaluating forecasts
+
+
+---
 ## Interpreting on the *response* scale
 
 Some key questions you should ask of a fitted model
@@ -3663,6 +3596,31 @@ Some key questions you should ask of a fitted model
 - What criteria would you use to determine whether one model is more suitable than another?
 
 Very often, these questions can only be answered by looking at what kinds of predictions a model makes .emphasize[*on the response scale*]
+
+---
+
+## `response` predictions
+.panelset[
+.panel[.panel-name[Code]
+
+
+
+
+``` r
+# extract response-scale forecasts from the model
+fc &lt;- forecast(model, type = 'response')
+
+# plot using the available S3 plotting function
+plot(fc)
+```
+
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_4_slidedeck_files/figure-html/resppreds-1.svg)]
+
+]
+]
 
 ---
 
@@ -3777,26 +3735,36 @@ model_bad &lt;- mvgam(
 )
 ```
 
-A RW with no seasonality will fit the data *very well*, but gives *bad* predictions
+A RW with no seasonality will fit the data *very well*, but will not *generalize* well
 ---
 `plot(hindcast(model_good))`
-&lt;img src="lecture_4_slidedeck_files/figure-html/unnamed-chunk-40-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_4_slidedeck_files/figure-html/unnamed-chunk-32-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 `plot(hindcast(model_bad))`
-&lt;img src="lecture_4_slidedeck_files/figure-html/unnamed-chunk-41-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_4_slidedeck_files/figure-html/unnamed-chunk-33-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+`plot_predictions(model_good, by = 'time')`
+&lt;img src="lecture_4_slidedeck_files/figure-html/unnamed-chunk-34-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
+`plot_predictions(model_bad, by = 'time')`
+&lt;img src="lecture_4_slidedeck_files/figure-html/unnamed-chunk-35-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+## Comparing fits with `loo()`
 `loo_compare(model_good, model_bad)`
 
 ```
 ##            elpd_diff se_diff
-## model_bad   0.0       0.0   
-## model_good -2.0       4.6
+## model_good    0.0       0.0 
+## model_bad  -300.4      33.8
 ```
 
+A much lower Expected Log Predictive Density (ELPD) for `model_bad` suggests that this model would not do as well when tasked with predicting against a *new* set of observations
 ---
 class: middle center
 ### PPCs and `loo()` using training covariates are a great first step to check model validity and begin comparing models
@@ -3840,7 +3808,7 @@ Users can implement the wonderful `datagrid()` function from `marginaleffects` �
 
 
 ``` r
-# use plot_predictions to visualise conditional effects 
+# use plot_predictions() to visualise conditional effects 
 # on the scale of the response
 plot_predictions(model, condition = 'season',
                  points = 0.5, process_error = FALSE)
@@ -3853,6 +3821,60 @@ plot_predictions(model, condition = 'season',
 
 ]
 ]
+
+---
+
+## Rates of change
+.panelset[
+.panel[.panel-name[Code]
+
+
+
+
+``` r
+# use plot_slopes() to visualise rates of change 
+# on the expectation scale of the response
+plot_slopes(model, variables = 'season',
+            by = 'season', type = 'expected',
+            process_error = FALSE) +
+  geom_hline(yintercept = 0, linetype = 'dashed')
+```
+
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_4_slidedeck_files/figure-html/derivsmooth-1.svg)]
+
+]
+]
+
+---
+
+## Finding peak growth
+
+``` r
+# estimate when the `season` smooth grows at its fastest rate
+max_growth = function(hi, lo, x) {
+  dydx &lt;- (hi - lo) / 1e-6; x[dydx == max(dydx)][1]
+}
+
+comparisons(
+  model, type = 'link',
+  newdata = datagrid(season = seq(0, 12, length.out = 200)),
+  variables = list("season" = 1e-6), comparison = max_growth
+)
+```
+
+```
+## 
+##  Estimate 2.5 % 97.5 %
+##       7.6  4.34   8.26
+## 
+## Term: season
+## Type:  link 
+## Comparison: +1e-06
+```
+
 
 ---
 
@@ -3989,7 +4011,7 @@ Where:
 ---
 ## Penalize *overly precise* forecasts
 
-&lt;img src="lecture_4_slidedeck_files/figure-html/unnamed-chunk-45-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_4_slidedeck_files/figure-html/unnamed-chunk-41-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -4056,7 +4078,7 @@ SIS converges to CRPS when evaluating an increasing number of equally spaced int
 
 ---
 ## CRPS
-&lt;img src="lecture_4_slidedeck_files/figure-html/unnamed-chunk-46-1.png" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_4_slidedeck_files/figure-html/unnamed-chunk-42-1.png" style="display: block; margin: auto;" /&gt;
 ---
 
 class: middle center
@@ -4073,6 +4095,7 @@ Similar to CRPS, the discrete version (DRPS) can be used to evaluate a forecast 
 Uses an approximation of the forecast and true CDFs at a range of possible count values
 
 Interpretation is similar
+
 
 ---
 ## `score.mvgam_forecast()`
@@ -4132,8 +4155,80 @@ sc$series_1[1:10,]
 ```
 
 Calculating the SIS using the previously generated forecasts; values outside interval are more heavily penalized
+
 ---
 
+## How does `model_good` perform?
+.panelset[
+.panel[.panel-name[Code]
+
+
+
+
+``` r
+fc_good &lt;- forecast(
+  model_good,
+  newdata = data_test
+)
+plot(fc_good)
+```
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_4_slidedeck_files/figure-html/fc_good-1.svg)]
+
+]
+]
+
+---
+
+## How does `model_bad` perform?
+.panelset[
+.panel[.panel-name[Code]
+
+
+
+
+``` r
+fc_bad &lt;- forecast(
+  model_bad,
+  newdata = data_test
+)
+plot(fc_bad)
+```
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_4_slidedeck_files/figure-html/fc_bad-1.svg)]
+
+]
+]
+
+---
+
+## How would an *ensemble* perform?
+.panelset[
+.panel[.panel-name[Code]
+
+
+
+
+``` r
+ens &lt;- ensemble(
+  fc_good, 
+  fc_bad
+)
+plot(ens)
+```
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_4_slidedeck_files/figure-html/fc_ens-1.svg)]
+
+]
+]
+
+---
 class: middle center
 ### We have seen how to produce out-of-sample forecasts from `mvgam` models and evaluate them against new observations
 &lt;br&gt;

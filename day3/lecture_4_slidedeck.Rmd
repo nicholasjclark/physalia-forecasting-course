@@ -680,51 +680,64 @@ background-size: contain
 .small[modified from [Heiss 2022](https://www.andrewheiss.com/blog/2022/09/26/guide-visualizing-types-posteriors/)]
 
 ---
+
+## `mvgam` and `brms` 📦's
+<br>
+
+|  Type   | `mvgam` | `brms` |
+|--------------------|----------------|------------------------------|
+| link         | `predict(type = 'link')` | `posterior_linpred()` |
+| expected          | `predict(type = 'expected')`       | `posterior_epred()` |
+| response         | `predict(type = 'response')` | `posterior_predict()`  |
+
+For all `mvgam` predictions, whether to include error in the dynamic process can be controlled using `process_error = TRUE` or `process_error = FALSE`
+
+---
+class: middle center
+### How should *you* use these predictions?
+<br>
+### 1. Don't interpret coefficients. Rather, use predictions on both the link and expectation scale to understand the model better
+<br>
+### 2. Compare predictions on the response scale to the observed data using posterior predictive checks and `loo()` to diagnose problems
+<br>
+### 3. Make out-of-sample predictions and evaluate with proper scoring rules
+---
+
+## Don't interpret coefficients
+```{r}
+coef(model)
+```
+
+---
+## Don't interpret coefficients
+These coefficients are acting on the .emphasize[*link scale*]
+- Often result in nonlinear relationships on response scale
+- Very often, the coefficients are .emphasize[*correlated somehow*]
+- This is especially the case in GAMs!
+- Don't worry about *p*-values or intervals, use .emphasize[*posterior predictions*] instead
+
+Start with .emphasize[*partial effects*] on link scale
+- These are conditional on all other effects being zero
+- negative values &#8680; covariate reduces the response
+- positive values &#8680; covariate increases the response
+
+---
+`draw(model)`
+```{r echo=FALSE}
+gratia::draw(model) &
+  theme_classic(base_size = 18, base_family = 'serif')
+```
+
+---
+## `link` predictions
 `predict(object, type = 'link')`
 
 Gives the real-valued, unconstrained linear predictor
 - Takes into account uncertainty in GAM regression coefficients
 - Can include uncertainty in any dynamic trend components
-- Can be extracted from the fitted model as parameter `mus`
-
-```{r eval = FALSE}
-range(predict(model, type = 'link', process_error = FALSE))
-```
-
-```{r echo = FALSE}
-c(-0.02145857, 2.22647337)
-```
-
-```{r eval = FALSE}
-range(predict(model, type = 'link', process_error = TRUE))
-```
-
-```{r echo = FALSE}
-c(-3.801796, 5.165899)
-```
-
-```{r}
-range(as.matrix(model, variable = 'mus', regex = TRUE))
-```
----
-## Hang on. Why do these differ?
-```{r eval = FALSE}
-range(predict(model, type = 'link', process_error = TRUE))
-```
-
-```{r echo = FALSE}
-c(-3.801796, 5.165899)
-```
-
-```{r}
-range(as.matrix(model, variable = 'mus', regex = TRUE))
-```
-
-`predict()` does not know the estimates of the latent states; rather it tells what we might expect if we see these same covariate values .emphasize[*sometime in the future*]
-
-`mus` includes actual state estimates .emphasize[*at each point in the training data*] (hindcasts), so it is has less uncertainty
 
 ---
+
 ## `link` predictions
 .panelset[
 .panel[.panel-name[Code]
@@ -753,14 +766,39 @@ plot(fc)
 
 ---
 
+class: middle center
+### Ok. but what do these things actually, really *mean*?
+
+---
+
+class: black-inverse
+<img src="resources/marginaleffects_need.jpg" style="position:fixed; right:40%; top:1%; width:233px; height:658px; border:none;"/>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+.small[[Credit @stephenjwild](https://twitter.com/stephenjwild/status/1687499914794643456?s=20)]
+
+---
+## `expected` predictions
 `predict(object, type = 'expected')`
 
 Gives the .emphasize[*average*] prediction on the observation (response) scale
 - Useful as we often want to get a sense of long-term averages for guiding scenario analyses
 - .emphasize[*Usually*] it is just the inverse link function applied to a prediction from `type = link`
-- But not always!
 
-This is probably the most confusing type of prediction
+This is the most confusing type of prediction, as using `predict(model, type = 'response')` for models fitted in `gam()` or `glm()` actually return .emphasize[*expectations*]
 
 ---
 
@@ -791,6 +829,7 @@ plot(fc)
 ]
 
 ---
+## `response` predictions
 `predict(object, type = 'response')`
 
 Gives the predictions on the observation (response) scale
@@ -798,7 +837,18 @@ Gives the predictions on the observation (response) scale
 - Some distributions only depend on the inverse link of the linear predictor (i.e. $Poisson(\lambda)$ or $Bernoulli(\pi)$))
 - Others depend on additional shape / scale parameters (i.e. $Normal(\mu,\sigma)$ or $StudentT(\nu,\mu,\sigma)$)
 
-These are the most often used type of predictions for evaluating forecasts
+These are the most often used for evaluating forecasts
+
+
+---
+## Interpreting on the *response* scale
+
+Some key questions you should ask of a fitted model
+- Can the model simulate realistic data?
+- Does the model capture salient features of the data that you'd like to predict?
+- What criteria would you use to determine whether one model is more suitable than another?
+
+Very often, these questions can only be answered by looking at what kinds of predictions a model makes .emphasize[*on the response scale*]
 
 ---
 
@@ -827,82 +877,6 @@ plot(fc)
 
 ]
 ]
-
----
-
-## `mvgam` and `brms` 📦's
-<br>
-
-|  Type   | `mvgam` | `brms` |
-|--------------------|----------------|------------------------------|
-| link         | `predict(type = 'link')` | `posterior_linpred()` |
-| expected          | `predict(type = 'expected')`       | `posterior_epred()` |
-| response         | `predict(type = 'response')` | `posterior_predict()`  |
-
-For all `mvgam` predictions, whether to include error in the dynamic process can be controlled using `process_error = TRUE` or `process_error = FALSE`
-
----
-
-## Fitted models yield coefficients
-```{r}
-coef(model)
-```
-
----
-## Interpret coefficients?
-These coefficients are acting on the .emphasize[*link scale*]
-- Often result in nonlinear relationships on response scale
-- Very often, the coefficients are .emphasize[*correlated somehow*]
-- This is especially the case in GAMs!
-- Don't worry about *p*-values or intervals, use .emphasize[*posterior predictions*] instead
-
-Start with .emphasize[*partial effects*] on link scale
-- These are conditional on all other effects being zero
-- negative values &#8680; covariate reduces the response
-- positive values &#8680; covariate increases the response
-
----
-`draw(model)`
-```{r echo=FALSE}
-gratia::draw(model) &
-  theme_classic(base_size = 18, base_family = 'serif')
-```
-
----
-
-class: middle center
-### Ok. but what do these things actually, really *mean*?
-
----
-
-class: black-inverse
-<img src="resources/marginaleffects_need.jpg" style="position:fixed; right:40%; top:1%; width:233px; height:658px; border:none;"/>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-.small[[Credit @stephenjwild](https://twitter.com/stephenjwild/status/1687499914794643456?s=20)]
-
----
-## Interpreting on the *response* scale
-
-Some key questions you should ask of a fitted model
-- Can the model simulate realistic data?
-- Does the model capture salient features of the data that you'd like to predict?
-- What criteria would you use to determine whether one model is more suitable than another?
-
-Very often, these questions can only be answered by looking at what kinds of predictions a model makes .emphasize[*on the response scale*]
 
 ---
 
@@ -1021,7 +995,7 @@ model_bad <- mvgam(
 )
 ```
 
-A RW with no seasonality will fit the data *very well*, but gives *bad* predictions
+A RW with no seasonality will fit the data *very well*, but will not *generalize* well
 ---
 `plot(hindcast(model_good))`
 ```{r echo=FALSE, message=FALSE}
@@ -1038,12 +1012,28 @@ plot(hindcast(model_bad)) +
 ```
 
 ---
+`plot_predictions(model_good, by = 'time')`
+```{r echo=FALSE, message=FALSE}
+plot_predictions(model_good, by = 'time', points = 0.6) +
+  theme_classic(base_size = 18, base_family = 'serif')
+```
 
+---
+
+`plot_predictions(model_bad, by = 'time')`
+```{r echo=FALSE, message=FALSE}
+plot_predictions(model_bad, by = 'time', points = 0.6) +
+  theme_classic(base_size = 18, base_family = 'serif')
+```
+
+---
+## Comparing fits with `loo()`
 `loo_compare(model_good, model_bad)`
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 loo_compare(model_good, model_bad)
 ```
 
+A much lower Expected Log Predictive Density (ELPD) for `model_bad` suggests that this model would not do as well when tasked with predicting against a *new* set of observations
 ---
 class: middle center
 ### PPCs and `loo()` using training covariates are a great first step to check model validity and begin comparing models
@@ -1092,7 +1082,7 @@ plot_predictions(model, condition = 'season',
 ```
 
 ```{r eval=FALSE}
-# use plot_predictions to visualise conditional effects 
+# use plot_predictions() to visualise conditional effects 
 # on the scale of the response
 plot_predictions(model, condition = 'season',
                  points = 0.5, process_error = FALSE)
@@ -1105,6 +1095,56 @@ plot_predictions(model, condition = 'season',
 
 ]
 ]
+
+---
+
+## Rates of change
+.panelset[
+.panel[.panel-name[Code]
+
+```{r derivsmooth, fig.show='hide',fig.height=6.2, fig.width=1.9*6.2,results='hide', dev='svg', echo=FALSE}
+# use plot_slopes() to visualise conditional effects 
+# on the scale of the response
+plot_slopes(model, variables = 'season',
+            by = 'season', type = 'expected',
+            process_error = FALSE) +
+  geom_hline(yintercept = 0, linetype = 'dashed') +
+  theme_classic(base_size = 17, base_family = 'serif')
+```
+
+```{r eval=FALSE}
+# use plot_slopes() to visualise rates of change 
+# on the expectation scale of the response
+plot_slopes(model, variables = 'season',
+            by = 'season', type = 'expected',
+            process_error = FALSE) +
+  geom_hline(yintercept = 0, linetype = 'dashed')
+```
+
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_4_slidedeck_files/figure-html/derivsmooth-1.svg)]
+
+]
+]
+
+---
+
+## Finding peak growth
+```{r}
+# estimate when the `season` smooth grows at its fastest rate
+max_growth = function(hi, lo, x) {
+  dydx <- (hi - lo) / 1e-6; x[dydx == max(dydx)][1]
+}
+
+comparisons(
+  model, type = 'link',
+  newdata = datagrid(season = seq(0, 12, length.out = 200)),
+  variables = list("season" = 1e-6), comparison = max_growth
+)
+```
+
 
 ---
 
@@ -1432,6 +1472,7 @@ Uses an approximation of the forecast and true CDFs at a range of possible count
 
 Interpretation is similar
 
+
 ---
 ## `score.mvgam_forecast()`
 Once forecasts are computed and stored in an object of class `mvgam_forecast`, scores can be directly applied
@@ -1460,8 +1501,112 @@ sc$series_1[1:10,]
 ```
 
 Calculating the SIS using the previously generated forecasts; values outside interval are more heavily penalized
+
 ---
 
+## How does `model_good` perform?
+.panelset[
+.panel[.panel-name[Code]
+
+```{r fc_good, fig.show='hide', fig.height=6.2, fig.width=1.9*6.2, dev = 'svg', echo=FALSE}
+fc_good <- forecast(
+  model_good,
+  newdata = poisdat$data_test
+)
+plot(fc_good) +
+  theme_classic(base_size = 17, base_family = 'serif') +
+  labs(subtitle = paste0('DRPS = ',
+                      round(sum(score(fc_good)$all_series$score),
+                            4)))
+```
+
+```{r, eval = FALSE}
+fc_good <- forecast(
+  model_good,
+  newdata = data_test
+)
+plot(fc_good)
+```
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_4_slidedeck_files/figure-html/fc_good-1.svg)]
+
+]
+]
+
+---
+
+## How does `model_bad` perform?
+.panelset[
+.panel[.panel-name[Code]
+
+```{r fc_bad, fig.show='hide', fig.height=6.2, fig.width=1.9*6.2, dev = 'svg', echo=FALSE}
+fc_bad <- forecast(
+  model_bad,
+  newdata = poisdat$data_test
+)
+plot(fc_bad) +
+  theme_classic(base_size = 17, base_family = 'serif') +
+  labs(subtitle = paste0('DRPS = ',
+                      round(sum(score(fc_bad)$all_series$score),
+                            4)))
+```
+
+```{r, eval = FALSE}
+fc_bad <- forecast(
+  model_bad,
+  newdata = data_test
+)
+plot(fc_bad)
+```
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_4_slidedeck_files/figure-html/fc_bad-1.svg)]
+
+]
+]
+
+---
+
+## How would an *ensemble* perform?
+.panelset[
+.panel[.panel-name[Code]
+
+```{r fc_ens, fig.show='hide', fig.height=6.2, fig.width=1.9*6.2, dev = 'svg', echo=FALSE}
+fc_good <- forecast(
+  model_good,
+  newdata = poisdat$data_test
+)
+fc_bad <- forecast(
+  model_bad,
+  newdata = poisdat$data_test
+)
+ens <- ensemble(fc_good, fc_bad)
+plot(ens) +
+  theme_classic(base_size = 17, base_family = 'serif') +
+  labs(subtitle = paste0('DRPS = ',
+                      round(sum(score(ens)$all_series$score),
+                            4)))
+```
+
+```{r, eval = FALSE}
+ens <- ensemble(
+  fc_good, 
+  fc_bad
+)
+plot(ens)
+```
+]
+
+.panel[.panel-name[Plot]
+.center[![](lecture_4_slidedeck_files/figure-html/fc_ens-1.svg)]
+
+]
+]
+
+---
 class: middle center
 ### We have seen how to produce out-of-sample forecasts from `mvgam` models and evaluate them against new observations
 <br>
