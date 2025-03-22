@@ -3,7 +3,7 @@ title: "Ecological forecasting in R"
 subtitle: "Lecture 4: evaluating dynamic models"
 institute: "School of Veterinary Science, University of Queensland"
 author: "Nicholas Clark"
-date: "0900&ndash;1200 CET Wednesday 26th March, 2024"
+date: "0900&ndash;1200 CET Wednesday 26th March, 2025"
 output:
   xaringan::moon_reader:
     css: ['default','https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css', 'slides.css']
