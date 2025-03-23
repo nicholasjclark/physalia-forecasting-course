@@ -41,31 +41,32 @@ for (i in 1:length(rho)) {
   # Fit models using a grid of possible AR1 parameters
   b <- bam(
     T ~ s(region, bs = "re") +
-      s(doy, k = 10, bs = "cr", by = region) +
-      s(doy, k = 20, bs = "cr", by = latitude),
+      s(doy, k = 8, bs = "cr", by = region) +
+      s(doy, k = 10, bs = "cr", by = latitude),
     data = CanWeather,
-
+    
     # Tell bam() where each time series begins
     AR.start = time == 1,
     rho = rho[i],
-
+    
     # Use discrete covariates for faster fitting
     discrete = TRUE
   )
-
+  
   # Extract AIC and -REML scores; we would like to 
   # minimise both of these
   aic[i] <- AIC(b)
   reml[i] <- b$gcv.ubre
 }
+rm(b); gc()
 plot(x = rho, y = reml, pch = 16)
 plot(x = rho, y = aic, pch = 16)
 
 # 0.97 seems optimal; refit this model
 mod1 <- bam(
   T ~ s(region, bs = "re") +
-    s(doy, k = 10, bs = "cr", by = region) +
-    s(doy, k = 20, bs = "cr", by = latitude),
+    s(doy, k = 8, bs = "cr", by = region) +
+    s(doy, k = 10, bs = "cr", by = latitude),
   data = CanWeather,
   AR.start = time == 1,
   rho = 0.97,
@@ -108,6 +109,7 @@ plot_predictions(
 # Check for any remaining autocorrelation in the residuals, 
 # using the standardized residuals
 acf(mod1$std)
+pacf(mod1$std)
 
 #### Bonus tasks ####
 # 1. Clearly there is still some autocorrelation left at lag 2. If you have
@@ -120,50 +122,41 @@ CanWeather %>%
   dplyr::mutate(T_scaled = as.vector(scale(T)),
                 series = place) -> CanWeather
 mod2 <- mvgam(
-  # Use a State-Space Gaussian model; no observation covariates
-  formula = T_scaled ~ -1,
+  # Hierarchical GAM with dynamic factor errors
+  formula = T_scaled ~ region +
+    s(doy, k = 8, by = region, bs = 'cr') +
+    s(doy, k = 10, by = latitude, bs = 'cr') - 1,
   
-  # Hierarchical smooths in the process model
-  trend_formula = ~
-    region +
-    s(doy, k = 10, by = region, bs = 'cr') +
-    s(doy, k = 20, by = latitude, bs = 'cr'),
-  
-  # AR(1) process with informative priors on 
-  # AR and sigma pars to speed up sampling
+  # 5 factors that evolve as AR(1) processes
+  # induce correlated temporal errors among the series
   trend_model = AR(p = 1),
+  use_lv = TRUE,
+  n_lv = 5,
   priors = c(
     prior(
-      beta(5, 1),
-      class = ar1,
-      lb = 0,
-      ub = 1,
-    ),
-    prior
-    (std_normal(),
+      std_normal(),
       class = b
     ),
     prior(
       std_normal(),
-      class = Intercept_trend
-    ),
-    prior(
-      beta(4, 4),
-      class = sigma,
-      lb = 0,
-      ub = 1
+      class = sigma_obs
     )
   ),
   
   # Shared Gaussian observation error for all series
   family = gaussian(),
   share_obs_params = TRUE,
+  
+  # Sampler settings to speed up the model fitting
+  # and reduce the size of the resulting object
   burnin = 250,
-  samples = 250,
+  samples = 125,
+  control = list(adapt_delta = 0.7,
+                 init = 0),
+  residuals = FALSE,
   
   # The data
-  data = CanWeather,
-  run_model = TRUE
+  data = CanWeather
 )
 
 # Interrogate the model
