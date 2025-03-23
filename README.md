@@ -137,7 +137,7 @@ Tutorial 2 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/
 ## Wednesday (day 3)
 Lecture 4 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day3/lecture_4_slidedeck) | [pdf](https://github.com/nicholasjclark/physalia-forecasting-course/raw/main/day3/lecture_4_slidedeck.pdf))
 <br>
-Live code examples ([Distributed lags](https://raw.githubusercontent.com/nicholasjclark/physalia-forecasting-course/main/day3/live_code_examples/live_4_distributedlags.R) | [Distributed MAs](https://raw.githubusercontent.com/nicholasjclark/physalia-forecasting-course/main/day3/live_code_examples/live_4_distributedmas.R))
+Live code example ([Distributed lags](https://raw.githubusercontent.com/nicholasjclark/physalia-forecasting-course/main/day3/live_code_examples/live_4_distributedlags.R))
 <br>
 Tutorial 3 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day3/tutorial_3_physalia))
 * Bayesian posterior predictive checks

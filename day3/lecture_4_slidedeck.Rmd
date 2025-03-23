@@ -1084,8 +1084,10 @@ plot_predictions(model, condition = 'season',
 ```{r eval=FALSE}
 # use plot_predictions() to visualise conditional effects 
 # on the scale of the response
-plot_predictions(model, condition = 'season',
-                 points = 0.5, process_error = FALSE)
+plot_predictions(model, 
+                 condition = 'season',
+                 points = 0.5, 
+                 process_error = FALSE)
 ```
 
 ]
@@ -1105,8 +1107,10 @@ plot_predictions(model, condition = 'season',
 ```{r derivsmooth, fig.show='hide',fig.height=6.2, fig.width=1.9*6.2,results='hide', dev='svg', echo=FALSE}
 # use plot_slopes() to visualise conditional effects 
 # on the scale of the response
-plot_slopes(model, variables = 'season',
-            by = 'season', type = 'expected',
+plot_slopes(model, 
+            variables = 'season',
+            by = 'season', 
+            type = 'expected',
             process_error = FALSE) +
   geom_hline(yintercept = 0, linetype = 'dashed') +
   theme_classic(base_size = 17, base_family = 'serif')
@@ -1115,8 +1119,10 @@ plot_slopes(model, variables = 'season',
 ```{r eval=FALSE}
 # use plot_slopes() to visualise rates of change 
 # on the expectation scale of the response
-plot_slopes(model, variables = 'season',
-            by = 'season', type = 'expected',
+plot_slopes(model, 
+            variables = 'season',
+            by = 'season', 
+            type = 'expected',
             process_error = FALSE) +
   geom_hline(yintercept = 0, linetype = 'dashed')
 ```
@@ -1269,13 +1275,6 @@ class: middle center
 ### Point-based measures ignore far too much information in the forecast distribution
 <br>
 ### It is better to evaluate the *entire forecast distribution*
----
-
-
-class: inverse middle center big-subsection
-
-# Live code example
-
 ---
 
 class: inverse middle center big-subsection
