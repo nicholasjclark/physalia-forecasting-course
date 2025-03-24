@@ -37,7 +37,7 @@ class: inverse, middle, left, my-title-slide, title-slide
 ### School of Veterinary Science, University of Queensland
 ]
 .date[
-### 0900–1200 CET Thursday 30th May, 2024
+### 0900–1200 CET Thursday 27th May, 2025
 ]
 
 ---
@@ -45,7 +45,7 @@ class: inverse, middle, left, my-title-slide, title-slide
 
 
 
-<style>.panelset{--panel-tab-foreground: #8F2727;--panel-tab-inactive-opacity: 0.8;}</style>
+<style>:root{--panel-tab-foreground:#8F2727;--panel-tab-inactive-opacity:0.8;}</style>
 
 
 
@@ -68,7 +68,7 @@ Access the [tutorial html here](https://nicholasjclark.github.io/physalia-foreca
 Relevant open-source materials include:
 - [GAMs for time series](https://youtu.be/Ukfvd8akfco?si=tlmSm2-51ZZ1wQf6)
 - [Smoothed dynamic factor analysis for identifying trends in multivariate time series](https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/2041-210X.13788)
-- [Multivariate State-Space models](https://youtu.be/4nrZZGMY1bc?si=VuKYtJVKKaMBliI6)
+- [State-Space Vector Autoregressions in `mvgam`](https://ecogambler.netlify.app/blog/vector-autoregressions/)
 
 ---
 
@@ -91,7 +91,7 @@ class: inverse middle center big-subsection
 ---
 
 ## We often measure *multiple* series
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-1-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-1-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Applicable for many situations
@@ -179,7 +179,7 @@ Our data may not be rich enough to estimate all effects individually; so what ca
 .panel[.panel-name[Code]
 
 
-```r
+``` r
 library(mvgam)
 
 # set a seed for reproducibility
@@ -187,10 +187,12 @@ set.seed(650)
 
 # simulate four time series with very little 
 # trend and with hierarchical seasonality
-simdat &lt;- sim_mvgam(seasonality = 'hierarchical',
-                   trend_rel = 0.05,
-                   n_series = 4, 
-                   mu = c(1, 1, 2, 1.2))
+simdat &lt;- sim_mvgam(
+  seasonality = 'hierarchical',
+  trend_rel = 0.05,
+  n_series = 4, 
+  mu = c(1, 1, 2, 1.2)
+)
 ```
 ]
 
@@ -228,7 +230,7 @@ simdat &lt;- sim_mvgam(seasonality = 'hierarchical',
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 8 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
    &lt;td style="text-align:left;"&gt; series_4 &lt;/td&gt;
@@ -256,11 +258,11 @@ simdat &lt;- sim_mvgam(seasonality = 'hierarchical',
 
 ---
 ## The series
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-4-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Similar seasonal patterns
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-5-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-5-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -272,19 +274,21 @@ class: middle center
 ---
 
 ## Decomposing seasonality
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-6-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-6-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## How did we model this?
 
 
-```r
-mod &lt;- mvgam(y ~ 
-               s(season, bs = 'cc', k = 12) +
-               s(season, series, k = 6, bs = 'fs'),
-             data = data, 
-             family = poisson())
+``` r
+mod &lt;- mvgam(
+  y ~ 
+    s(season, bs = 'cc', k = 12) +
+    s(season, series, k = 6, bs = 'fs'),
+  data = data, 
+  family = poisson()
+)
 ```
 
 ---
@@ -292,12 +296,14 @@ mod &lt;- mvgam(y ~
 ## How did we model this?
 
 
-```r
-mod &lt;- mvgam(y ~ 
-*              s(season, bs = 'cc', k = 12) +
-               s(season, series, k = 6, bs = 'fs'),
-             data = data, 
-             family = poisson())
+``` r
+mod &lt;- mvgam(
+  y ~ 
+*   s(season, bs = 'cc', k = 12) +
+    s(season, series, k = 6, bs = 'fs'),
+  data = data, 
+  family = poisson()
+)
 ```
 
 A .emphasize[*shared*] smooth of seasonality
@@ -308,23 +314,24 @@ This is a group-level smooth, similar to what we might expect the average season
 ## How did we model this?
 
 
-```r
-mod &lt;- mvgam(y ~ 
-               s(season, bs = 'cc', k = 12) + 
-*              s(season, series, k = 6, bs = 'fs'),
-             data = data, 
-             family = poisson())
+``` r
+mod &lt;- mvgam(
+  y ~ 
+    s(season, bs = 'cc', k = 12) +
+*   s(season, series, k = 6, bs = 'fs'),
+  data = data, 
+  family = poisson()
+)
 ```
 
 Series-level .emphasize[*deviation*] smooths of seasonality, which all share a common smoothing penalty
 
 These are individual-level smooths that capture how each series' seasonal pattern differs from the shared smooth
-- There are a number of ways to do this using splines
 - See [Pedersen et al 2019](https://peerj.com/articles/6876/) for useful guidance
 
 ---
 ## Conditional predictions
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-10-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-10-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -347,19 +354,21 @@ class: middle center
 ## Hierarchical smooth interactions
 
 
-```r
-mvgam(y ~ 
-*       te(temp, month, k = c(4, 4)) +
-*       te(temp, month, k = c(4, 4), by = series),
-      family = gaussian(),
-      data = plankton_train,
-      newdata = plankton_test,
-      trend_model = 'None')
+``` r
+mvgam(
+  y ~ 
+*   te(temp, month, k = c(4, 4)) +
+*   te(temp, month, k = c(4, 4), by = series),
+  family = gaussian(),
+  data = plankton_train,
+  newdata = plankton_test,
+  trend_model = 'None'
+)
 ```
 
 Here each series is given a [tensor product smooth](https://onlinelibrary.wiley.com/doi/10.1111/j.1541-0420.2006.00574.x) of two covariates
 
-But we learn the series-specific smooth as a deviation from the "shared" smooth
+Series-specific smooth is a deviation from a "shared" smooth
 
 More on this example in [Tutorial 4](https://nicholasjclark.github.io/physalia-forecasting-course/day4/tutorial_4_physalia)
 
@@ -368,14 +377,16 @@ More on this example in [Tutorial 4](https://nicholasjclark.github.io/physalia-f
 ## Hierarchical distributed lags
 
 
-```r
-mvgam(y ~  s(ndvi_ma12, trend, bs = 're') +
-*       te(mintemp, lag, k = c(3, 4), bs = c('tp', 'cr')) +
-*       te(mintemp, lag, by = weights_dm, k = c(3, 4), bs = c('tp', 'cr')) +
-*       te(mintemp, lag, by = weights_do, k = c(3, 4), bs = c('tp', 'cr')) +
-*       te(mintemp, lag, by = weights_ot, k = c(3, 4), bs = c('tp', 'cr')) +
-*       te(mintemp, lag, by = weights_pp, k = c(3, 4), bs = c('tp', 'cr')),
-      ...)
+``` r
+mvgam(
+  y ~  s(ndvi_ma12, trend, bs = 're') +
+*   te(mintemp, lag, k = c(3, 4), bs = c('tp', 'cr')) +
+*   te(mintemp, lag, by = weights_dm, k = c(3, 4), bs = c('tp', 'cr')) +
+*   te(mintemp, lag, by = weights_do, k = c(3, 4), bs = c('tp', 'cr')) +
+*   te(mintemp, lag, by = weights_ot, k = c(3, 4), bs = c('tp', 'cr')) +
+*   te(mintemp, lag, by = weights_pp, k = c(3, 4), bs = c('tp', 'cr')),
+  ...
+)
 ```
 
 Here the effect of minimum temperature changes smoothly over lags for each series, using the `by` argument with a set of series-specific weights for deviations
@@ -448,18 +459,20 @@ They allow us to identify which other responses are most influential in driving 
 ## Some simulated data
 
 
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-14-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Latent VAR1s in `mvgam` 📦
 
 
-```r
-varmod &lt;- mvgam(y ~ 1,
-*               trend_model = VAR(),
-                data = data_train,
-                newdata = data_test,
-                family = gaussian())
+``` r
+varmod &lt;- mvgam(
+  y ~ 1,
+* trend_model = VAR(),
+  data = data_train,
+  newdata = data_test,
+  family = gaussian()
+)
 ```
 
 If multiple series are included in the data, we can use a VAR1 to estimate latent dynamics
@@ -478,13 +491,17 @@ Not only will forecast variance increase indefinitely, but dynamics can become u
 
 ---
 ## Trend estimates
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-16-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-16-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 ## Hindasts / forecasts
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-17-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-17-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
+## Interaction matrix `\(A\)`
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-18-1.png" style="display: block; margin: auto;" /&gt;
+---
+
 class: middle center
 ### VAR models give us a tool to capture complex multi-series dynamics while providing sensible forecasts
 &lt;br&gt;
@@ -529,14 +546,16 @@ class: middle center
 ## Dynamic factors in `mvgam` 📦
 
 
-```r
-dfmod &lt;- mvgam(y ~ 1,
-*               use_lv = TRUE,
-*               n_lv = 2,
-                trend_model = AR(), 
-                data = data_train,
-                newdata = data_test,
-                family = gaussian())
+``` r
+dfmod &lt;- mvgam(
+  y ~ 1,
+* use_lv = TRUE,
+* n_lv = 2,
+  trend_model = AR(), 
+  data = data_train,
+  newdata = data_test,
+  family = gaussian()
+)
 ```
 
 If multiple series are included in the data, we can use a dynamic factor model to estimate latent dynamics
@@ -547,27 +566,17 @@ If multiple series are included in the data, we can use a dynamic factor model t
 ---
 
 ## Trend estimates
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-19-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-20-1.png" style="display: block; margin: auto;" /&gt;
 ---
 
 ## Hindasts / forecasts
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-20-1.svg" style="display: block; margin: auto;" /&gt;
-
----
-
-`plot_mvgam_factors(dfmod)`
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-21-1.svg" style="display: block; margin: auto;" /&gt;
-
----
-
-`mcmc_hist(dfmod$model_output, regex_pars = 'lv_coefs')`
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-22-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-21-1.png" style="display: block; margin: auto;" /&gt;
 
 ---
 
 ## Induced correlations
 
-```r
+``` r
 mean_corrs &lt;- lv_correlations(object = dfmod)$mean_correlations
 mean_corrs
 ```
@@ -586,41 +595,51 @@ mean_corrs
   &lt;tr&gt;
    &lt;td style="text-align:left;"&gt; series_1 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1.00 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; -0.92 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1.00 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; -0.97 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.93 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.91 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.50 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:left;"&gt; series_2 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; -0.92 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.93 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1.00 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; -0.92 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.83 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.87 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.44 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:left;"&gt; series_3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.91 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.87 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1.00 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; -0.92 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1.00 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; -0.96 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.47 &lt;/td&gt;
   &lt;/tr&gt;
   &lt;tr&gt;
    &lt;td style="text-align:left;"&gt; series_4 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; -0.97 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.83 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; -0.96 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.50 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.44 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.47 &lt;/td&gt;
    &lt;td style="text-align:right;"&gt; 1.00 &lt;/td&gt;
   &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 
 ---
+## In-sample LOO comparison
 
-`heatmap(mean_corrs, distfun = function(c) as.dist(1 - c))`
+``` r
+loo_compare(
+  varmod,
+  dfmod
+)
+```
 
-&lt;img src="lecture_5_slidedeck_files/figure-html/unnamed-chunk-25-1.svg" style="display: block; margin: auto;" /&gt;
-
+```
+##        elpd_diff se_diff
+## varmod   0.0       0.0  
+## dfmod  -13.5       3.6
+```
 ---
+
 class: middle center
 ### We have many ways to estimate multivariate dynamic components in the `mvgam` framework
 &lt;br&gt;
@@ -663,7 +682,7 @@ Essentially a weighted distance between the forecast distribution and distributi
 
 
 
-```r
+``` r
 # score forecasts from each model and 
 # compute differences (VAR scores - DF scores)
 fc_var &lt;- forecast(varmod); fc_df &lt;- forecast(dfmod)
@@ -719,7 +738,7 @@ Penalizes forecasts whose variograms don't match the observed variogram
 
 
 
-```r
+``` r
 # score forecasts from each model and 
 # compute differences (VAR scores - DF scores)
 fc_var &lt;- forecast(varmod); fc_df &lt;- forecast(dfmod)
@@ -763,13 +782,13 @@ Review and open discussion
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script src="macros.js"></script>
 <script>var slideshow = remark.create({
-"navigation": {
-"scroll": false
-},
-"highlightStyle": "github",
-"highlightLines": true,
-"countIncrementalSlides": false,
-"ratio": "16:9"
+  "navigation": {
+    "scroll": false
+  },
+  "highlightStyle": "github",
+  "highlightLines": true,
+  "countIncrementalSlides": false,
+  "ratio": "16:9"
 });
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   window.dispatchEvent(new Event('resize'));

@@ -3,7 +3,7 @@ title: "Ecological forecasting in R"
 subtitle: "Lecture 4: multivariate ecological timeseries"
 institute: "School of Veterinary Science, University of Queensland"
 author: "Nicholas Clark"
-date: "0900&ndash;1200 CET Thursday 30th May, 2024"
+date: "0900&ndash;1200 CET Thursday 27th May, 2025"
 output:
   xaringan::moon_reader:
     css: ['default','https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css', 'slides.css']
@@ -23,7 +23,8 @@ output:
 
 ```{r setup, include=FALSE, cache=FALSE}
 options(htmltools.dir.version = FALSE)
-knitr::opts_chunk$set(cache = FALSE, dev = 'svg', echo = TRUE,
+knitr::opts_chunk$set(cache = FALSE, dev = 'png', echo = TRUE,
+                      dpi = 550,
                       message = FALSE, warning = FALSE,
                       fig.align = 'center',
                       fig.height = 5.1, fig.width = 1.9 * 5.1)
@@ -64,7 +65,7 @@ c_mid_highlight <- c("#A25050")
 c_dark <- c("#8F2727")
 c_dark_highlight <- c("#7C0000")
 
-theme_set(theme_bw(base_size = 12, base_family = 'serif'))
+theme_set(theme_bw(base_size = 15, base_family = 'serif'))
 options(ggplot2.discrete.colour = c("#B97C7C",
                               "#A25050",
                               "#8F2727",
@@ -233,7 +234,7 @@ Access the [tutorial html here](https://nicholasjclark.github.io/physalia-foreca
 Relevant open-source materials include:
 - [GAMs for time series](https://youtu.be/Ukfvd8akfco?si=tlmSm2-51ZZ1wQf6)
 - [Smoothed dynamic factor analysis for identifying trends in multivariate time series](https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/2041-210X.13788)
-- [Multivariate State-Space models](https://youtu.be/4nrZZGMY1bc?si=VuKYtJVKKaMBliI6)
+- [State-Space Vector Autoregressions in `mvgam`](https://ecogambler.netlify.app/blog/vector-autoregressions/)
 
 ---
 
@@ -256,7 +257,7 @@ class: inverse middle center big-subsection
 ---
 
 ## We often measure *multiple* series
-```{r,fig.height = 6, fig.width = 2.2 * 6, echo=FALSE}
+```{r,echo=FALSE}
 set.seed(55)
 N = 50
 par(family = "serif", 
@@ -283,11 +284,10 @@ beta_temp$data_train %>%
   dplyr::mutate(series = gsub('series_', 'Species ', series)) -> beta_temp$data_train 
 beta_temp$data_train$series <- as.factor(beta_temp$data_train$series)
 
-mvgam::plot_mvgam_series(data = beta_temp$data_train, series = 'all',
-                         y = 'Count')
-par(las = 0)
-mtext('Time', outer = TRUE, side = 1, line = -1.5, cex = 1.5)
-mtext('Count', outer = TRUE, side = 2, line = -1.5, cex = 1.5)
+mvgam::plot_mvgam_series(data = beta_temp$data_train, 
+                         series = 'all',
+                         y = 'Count') +
+  theme_bw(base_size = 18, base_family = 'serif')
 ```
 
 ---
@@ -383,10 +383,12 @@ set.seed(650)
 
 # simulate four time series with very little 
 # trend and with hierarchical seasonality
-simdat <- sim_mvgam(seasonality = 'hierarchical',
-                   trend_rel = 0.05,
-                   n_series = 4, 
-                   mu = c(1, 1, 2, 1.2))
+simdat <- sim_mvgam(
+  seasonality = 'hierarchical',
+  trend_rel = 0.05,
+  n_series = 4, 
+  mu = c(1, 1, 2, 1.2)
+)
 ```
 ]
 
@@ -404,8 +406,8 @@ head(simdat$data_train, 6) %>%
 ---
 ## The series
 ```{r echo=FALSE}
-multipar()
-plot_mvgam_series(data = simdat$data_train, series = 'all')
+plot_mvgam_series(data = simdat$data_train, series = 'all') +
+  theme_bw(base_size = 18, base_family = 'serif')
 ```
 
 ---
@@ -428,7 +430,7 @@ ggplot(simdat$data_train, aes(x = season, y = y, col = series,
         panel.grid.minor = element_blank(),
         panel.border = element_blank(),
         panel.background = element_blank(),
-        strip.text.x = element_text(size = 14, face = 'bold'),
+        strip.text.x = element_text(size = 15, face = 'bold'),
         axis.ticks = element_line(colour = "black", size = 1))
 ```
 
@@ -533,11 +535,13 @@ mtext(outer = TRUE, side = 2, 'Series 1 counts', line = -1.5)
 ## How did we model this?
 
 ```{r eval=FALSE}
-mod <- mvgam(y ~ 
-               s(season, bs = 'cc', k = 12) +
-               s(season, series, k = 6, bs = 'fs'),
-             data = data, 
-             family = poisson())
+mod <- mvgam(
+  y ~ 
+    s(season, bs = 'cc', k = 12) +
+    s(season, series, k = 6, bs = 'fs'),
+  data = data, 
+  family = poisson()
+)
 ```
 
 ---
@@ -545,11 +549,13 @@ mod <- mvgam(y ~
 ## How did we model this?
 
 ```{r eval=FALSE}
-mod <- mvgam(y ~ 
-               s(season, bs = 'cc', k = 12) + #<<
-               s(season, series, k = 6, bs = 'fs'),
-             data = data, 
-             family = poisson())
+mod <- mvgam(
+  y ~ 
+    s(season, bs = 'cc', k = 12) + #<<
+    s(season, series, k = 6, bs = 'fs'),
+  data = data, 
+  family = poisson()
+)
 ```
 
 A .emphasize[*shared*] smooth of seasonality
@@ -560,17 +566,18 @@ This is a group-level smooth, similar to what we might expect the average season
 ## How did we model this?
 
 ```{r eval=FALSE}
-mod <- mvgam(y ~ 
-               s(season, bs = 'cc', k = 12) + 
-               s(season, series, k = 6, bs = 'fs'), #<<
-             data = data, 
-             family = poisson())
+mod <- mvgam(
+  y ~ 
+    s(season, bs = 'cc', k = 12) +
+    s(season, series, k = 6, bs = 'fs'), #<<
+  data = data, 
+  family = poisson()
+)
 ```
 
 Series-level .emphasize[*deviation*] smooths of seasonality, which all share a common smoothing penalty
 
 These are individual-level smooths that capture how each series' seasonal pattern differs from the shared smooth
-- There are a number of ways to do this using splines
 - See [Pedersen et al 2019](https://peerj.com/articles/6876/) for useful guidance
 
 ---
@@ -590,7 +597,7 @@ plot_predictions(hiermod,
         panel.grid.minor = element_blank(),
         panel.border = element_blank(),
         panel.background = element_blank(),
-        strip.text.x = element_text(size = 14, face = 'bold'),
+        strip.text.x = element_text(size = 15, face = 'bold'),
         axis.ticks = element_line(colour = "black", size = 1))
 ```
 
@@ -615,18 +622,20 @@ class: middle center
 ## Hierarchical smooth interactions
 
 ```{r eval=FALSE}
-mvgam(y ~ 
-        te(temp, month, k = c(4, 4)) + #<<
-        te(temp, month, k = c(4, 4), by = series), #<<
-      family = gaussian(),
-      data = plankton_train,
-      newdata = plankton_test,
-      trend_model = 'None')
+mvgam(
+  y ~ 
+    te(temp, month, k = c(4, 4)) + #<<
+    te(temp, month, k = c(4, 4), by = series), #<<
+  family = gaussian(),
+  data = plankton_train,
+  newdata = plankton_test,
+  trend_model = 'None'
+)
 ```
 
 Here each series is given a [tensor product smooth](https://onlinelibrary.wiley.com/doi/10.1111/j.1541-0420.2006.00574.x) of two covariates
 
-But we learn the series-specific smooth as a deviation from the "shared" smooth
+Series-specific smooth is a deviation from a "shared" smooth
 
 More on this example in [Tutorial 4](https://nicholasjclark.github.io/physalia-forecasting-course/day4/tutorial_4_physalia)
 
@@ -635,13 +644,15 @@ More on this example in [Tutorial 4](https://nicholasjclark.github.io/physalia-f
 ## Hierarchical distributed lags
 
 ```{r eval=FALSE}
-mvgam(y ~  s(ndvi_ma12, trend, bs = 're') +
-        te(mintemp, lag, k = c(3, 4), bs = c('tp', 'cr')) + #<<
-        te(mintemp, lag, by = weights_dm, k = c(3, 4), bs = c('tp', 'cr')) + #<<
-        te(mintemp, lag, by = weights_do, k = c(3, 4), bs = c('tp', 'cr')) + #<<
-        te(mintemp, lag, by = weights_ot, k = c(3, 4), bs = c('tp', 'cr')) + #<<
-        te(mintemp, lag, by = weights_pp, k = c(3, 4), bs = c('tp', 'cr')), #<<
-      ...)
+mvgam(
+  y ~  s(ndvi_ma12, trend, bs = 're') +
+    te(mintemp, lag, k = c(3, 4), bs = c('tp', 'cr')) + #<<
+    te(mintemp, lag, by = weights_dm, k = c(3, 4), bs = c('tp', 'cr')) + #<<
+    te(mintemp, lag, by = weights_do, k = c(3, 4), bs = c('tp', 'cr')) + #<<
+    te(mintemp, lag, by = weights_ot, k = c(3, 4), bs = c('tp', 'cr')) + #<<
+    te(mintemp, lag, by = weights_pp, k = c(3, 4), bs = c('tp', 'cr')), #<<
+  ...
+)
 ```
 
 Here the effect of minimum temperature changes smoothly over lags for each series, using the `by` argument with a set of series-specific weights for deviations
@@ -717,19 +728,21 @@ load('cache_not_for_upload/vardat.rda')
 ```
 
 ```{r echo=FALSE}
-multipar()
-plot_mvgam_series(data = vardat$data_train, series = 'all')
+plot_mvgam_series(data = vardat$data_train, series = 'all') +
+  theme_bw(base_size = 18, base_family = 'serif')
 ```
 
 ---
 ## Latent VAR1s in `mvgam` 📦
 
 ```{r eval = FALSE}
-varmod <- mvgam(y ~ 1,
-                trend_model = VAR(), #<<
-                data = data_train,
-                newdata = data_test,
-                family = gaussian())
+varmod <- mvgam(
+  y ~ 1,
+  trend_model = VAR(), #<<
+  data = data_train,
+  newdata = data_test,
+  family = gaussian()
+)
 ```
 
 If multiple series are included in the data, we can use a VAR1 to estimate latent dynamics
@@ -749,49 +762,79 @@ Not only will forecast variance increase indefinitely, but dynamics can become u
 ---
 ## Trend estimates
 ```{r echo=FALSE}
-par(family = "serif", 
-    mar=c(4,4,1,1),
-    mgp = c(2,0.5,0),
-    bty = "l", 
-    xaxs = 'r',
-    yaxs = 'r',
-    pch = 16)
-layout(matrix(1:4, nrow = 2, byrow = TRUE))
-for(i in 1:4){
-  plot(varmod, type = 'trend', series = i,
+plot(varmod, type = 'trend', series = 1,
+     newdata = vardat$data_test,
+     ylab = '', 
+     xlab = '') + 
+  theme_bw(base_size = 15, base_family = 'serif') +
+  labs(subtitle = 'Series 1') +
+  plot(varmod, type = 'trend', series = 2,
        newdata = vardat$data_test,
-       main = paste0('Series ', i),
        ylab = '', 
-       xlab = '')
-}
-mtext(outer = TRUE, side = 1, 'Time', line = -1.5)
-mtext(outer = TRUE, side = 2, 'Posterior trend estimates', line = -1.5)
+       xlab = '') + 
+  theme_bw(base_size = 15, base_family = 'serif') +
+  labs(subtitle = 'Series 2') +
+  plot(varmod, type = 'trend', series = 3,
+       newdata = vardat$data_test,
+       ylab = '', 
+       xlab = '') + 
+  theme_bw(base_size = 15, base_family = 'serif') +
+  labs(subtitle = 'Series 3') +
+  plot(varmod, type = 'trend', series = 4,
+       newdata = vardat$data_test,
+       ylab = '', 
+       xlab = '') + 
+  theme_bw(base_size = 15, base_family = 'serif') +
+  labs(subtitle = 'Series 4')
 ```
 
 ---
 ## Hindasts / forecasts
 ```{r echo=FALSE, results='hide'}
-par(family = "serif", 
-    mar=c(4,4,1,1),
-    mgp = c(2,0.5,0),
-    bty = "l", 
-    xaxs = 'r',
-    yaxs = 'r',
-    pch = 16)
-layout(matrix(1:4, nrow = 2, byrow = TRUE))
-for(i in 1:4){
-  plot(varmod, type = 'forecast', series = i,
-       newdata = vardat$data_test,
-       main = paste0('Series ', i),
+fcs <- forecast(varmod)
+plot(fcs, series = 1,
+     ylab = '', 
+     xlab = '') + 
+  theme_bw(base_size = 15, base_family = 'serif') +
+  labs(subtitle = 'Series 1') +
+  plot(fcs, series = 2,
        ylab = '', 
-       xlab = '')
-}
-mtext(outer = TRUE, side = 1, 'Time', line = -1.5)
-mtext(outer = TRUE, side = 2, 'Posterior predictions', line = -1.5)
-
+       xlab = '') + 
+  theme_bw(base_size = 15, base_family = 'serif') +
+  labs(subtitle = 'Series 2') +
+  plot(fcs, series = 3,
+       ylab = '', 
+       xlab = '') + 
+  theme_bw(base_size = 15, base_family = 'serif') +
+  labs(subtitle = 'Series 3') +
+  plot(fcs, series = 4,
+       ylab = '', 
+       xlab = '') + 
+  theme_bw(base_size = 15, base_family = 'serif') +
+  labs(subtitle = 'Series 4')
 ```
 
 ---
+## Interaction matrix $A$
+```{r, echo = FALSE}
+A_pars <- matrix(NA, nrow = 4, ncol = 4)
+for(i in 1:4){
+  for(j in 1:4){
+    A_pars[i, j] <- paste0('A[', i, ',', j, ']')
+  }
+}
+mcmc_plot(
+  varmod, 
+  variable = as.vector(t(A_pars)), 
+  type = 'hist'
+) +
+  geom_vline(xintercept = 0,
+             linewidth = 1.25,
+             linetype = 'dashed') +
+  theme_bw(base_size = 12, base_family = 'serif')
+```
+---
+
 class: middle center
 ### VAR models give us a tool to capture complex multi-series dynamics while providing sensible forecasts
 <br>
@@ -836,13 +879,15 @@ class: middle center
 ## Dynamic factors in `mvgam` 📦
 
 ```{r eval = FALSE}
-dfmod <- mvgam(y ~ 1,
-                use_lv = TRUE,#<<
-                n_lv = 2,#<<
-                trend_model = AR(), 
-                data = data_train,
-                newdata = data_test,
-                family = gaussian())
+dfmod <- mvgam(
+  y ~ 1,
+  use_lv = TRUE,#<<
+  n_lv = 2,#<<
+  trend_model = AR(), 
+  data = data_train,
+  newdata = data_test,
+  family = gaussian()
+)
 ```
 
 If multiple series are included in the data, we can use a dynamic factor model to estimate latent dynamics
@@ -854,61 +899,56 @@ If multiple series are included in the data, we can use a dynamic factor model t
 
 ## Trend estimates
 ```{r echo=FALSE}
-par(family = "serif", 
-    mar=c(4,4,1,1),
-    mgp = c(2,0.5,0),
-    bty = "l", 
-    xaxs = 'r',
-    yaxs = 'r',
-    pch = 16)
-layout(matrix(1:4, nrow = 2, byrow = TRUE))
-for(i in 1:4){
-  plot(dfmod, type = 'trend', series = i,
+plot(dfmod, type = 'trend', series = 1,
+     newdata = vardat$data_test,
+     ylab = '', 
+     xlab = '') + 
+  theme_bw(base_size = 15, base_family = 'serif') +
+  labs(subtitle = 'Series 1') +
+  plot(dfmod, type = 'trend', series = 2,
        newdata = vardat$data_test,
-       main = paste0('Series ', i),
        ylab = '', 
-       xlab = '')
-}
-mtext(outer = TRUE, side = 1, 'Time', line = -1.5)
-mtext(outer = TRUE, side = 2, 'Posterior trend estimates', line = -1.5)
+       xlab = '') + 
+  theme_bw(base_size = 15, base_family = 'serif') +
+  labs(subtitle = 'Series 2') +
+  plot(dfmod, type = 'trend', series = 3,
+       newdata = vardat$data_test,
+       ylab = '', 
+       xlab = '') + 
+  theme_bw(base_size = 15, base_family = 'serif') +
+  labs(subtitle = 'Series 3') +
+  plot(dfmod, type = 'trend', series = 4,
+       newdata = vardat$data_test,
+       ylab = '', 
+       xlab = '') + 
+  theme_bw(base_size = 15, base_family = 'serif') +
+  labs(subtitle = 'Series 4')
 ```
 ---
 
 ## Hindasts / forecasts
 ```{r echo=FALSE, results='hide'}
-par(family = "serif", 
-    mar=c(4,4,1,1),
-    mgp = c(2,0.5,0),
-    bty = "l", 
-    xaxs = 'r',
-    yaxs = 'r',
-    pch = 16)
-layout(matrix(1:4, nrow = 2, byrow = TRUE))
-for(i in 1:4){
-  plot(dfmod, type = 'forecast', series = i,
-       newdata = vardat$data_test,
-       main = paste0('Series ', i),
+fcs <- forecast(dfmod)
+plot(fcs, series = 1,
+     ylab = '', 
+     xlab = '') + 
+  theme_bw(base_size = 15, base_family = 'serif') +
+  labs(subtitle = 'Series 1') +
+  plot(fcs, series = 2,
        ylab = '', 
-       xlab = '')
-}
-mtext(outer = TRUE, side = 1, 'Time', line = -1.5)
-mtext(outer = TRUE, side = 2, 'Posterior predictions', line = -1.5)
-```
-
----
-
-`plot_mvgam_factors(dfmod)`
-```{r echo = FALSE, results='hide'}
-plot_mvgam_factors(dfmod)
-```
-
----
-
-`mcmc_hist(dfmod$model_output, regex_pars = 'lv_coefs')`
-```{r echo = FALSE, message=FALSE,warning=FALSE}
-library(bayesplot)
-bayesplot::color_scheme_set('red')
-mcmc_hist(dfmod$model_output, regex_pars = 'lv_coefs')
+       xlab = '') + 
+  theme_bw(base_size = 15, base_family = 'serif') +
+  labs(subtitle = 'Series 2') +
+  plot(fcs, series = 3,
+       ylab = '', 
+       xlab = '') + 
+  theme_bw(base_size = 15, base_family = 'serif') +
+  labs(subtitle = 'Series 3') +
+  plot(fcs, series = 4,
+       ylab = '', 
+       xlab = '') + 
+  theme_bw(base_size = 15, base_family = 'serif') +
+  labs(subtitle = 'Series 4')
 ```
 
 ---
@@ -927,17 +967,15 @@ round(correlations$mean_correlations, 2) %>%
 ```
 
 ---
-
-`heatmap(mean_corrs, distfun = function(c) as.dist(1 - c))`
-
-```{r echo=FALSE}
-heatmap(correlations$mean_correlations, 
-        Colv = NA, Rowv = NA,
-        cexRow = 1, cexCol = 1, symm = TRUE,
-        distfun = function(c) as.dist(1 - c))
+## In-sample LOO comparison
+```{r, warning=FALSE}
+loo_compare(
+  varmod,
+  dfmod
+)
 ```
-
 ---
+
 class: middle center
 ### We have many ways to estimate multivariate dynamic components in the `mvgam` framework
 <br>
