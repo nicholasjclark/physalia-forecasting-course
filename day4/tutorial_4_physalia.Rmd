@@ -113,7 +113,7 @@ Users who wish to complete the exercises can download a small template `R` scrip
 ```{r echo=FALSE}
 download_file(
   path = 'Tutorial4_exercises.R',
-  output_name = "Tutorial4_exercises.R",
+  output_name = "Tutorial4_exercises",
   button_label = "Click here to download the exercise R script",
   button_type = "success",
   has_icon = TRUE,
@@ -127,7 +127,6 @@ download_file(
 This tutorial relates to content covered in [Lecture 5](https://nicholasjclark.github.io/physalia-forecasting-course/day4/lecture_5_slidedeck){target="_blank"}, and relies on the following packages for manipulating data, shaping time series, fitting dynamic regression models and plotting:
 ```{r include = FALSE}
 library(dplyr)
-#remotes::install_github('nicholasjclark/mvgam',force = TRUE)
 library(mvgam) 
 library(tidybayes)
 library(bayesplot)
@@ -153,7 +152,7 @@ This tutorial will focus on one of `mvgam`'s more advanced features: the ability
 
 <br>
 
-Briefly, these models allow us to separately make inferences about the underlying dynamic *process model* that we are interested in (i.e. the evolution of a time series or a collection of time series) and the *observation model* (i.e. the way that we survey / measure this underlying process). This is extremely useful in ecology because our observations are always imperfect / noisy measurements of the thing we are interested in measuring. It is also helpful because we often know that some covariates will impact our ability to measure accurately (i.e. we cannot take accurate counts of rodents if there is a thunderstorm happening) while other covariate impact the underlying process (it is highly unlikely that rodent abundance responds to one storm, but instead probably responds to longer-term weather and climate variation). A State-Space model allows us to model both components in a single unified modelling framework. A major advantage of `mvgam` is that it can include nonlinear effects and random effects in BOTH model components while also capturing dynamic processes. I am not aware of any other packages that can easily do this, but of course there may be some.
+Briefly, these models allow us to separately make inferences about the underlying dynamic *process model* that we are interested in (i.e. the evolution of a time series, or of a collection of time series) and the *observation model* (i.e. the way that we survey / measure this underlying process). This is extremely useful in ecology because our observations are always imperfect / noisy measurements of the thing we are interested in measuring. It is also helpful because we often know that some covariates will impact our ability to measure accurately (i.e. we cannot take accurate counts of rodents if there is a thunderstorm happening) while other covariates impact the underlying process (it is highly unlikely that rodent abundance responds to one storm, but instead probably responds to longer-term weather and climate variation). A State-Space model allows us to model both components in a single unified modelling framework. A major advantage of `mvgam` is that it can include nonlinear and random effects in BOTH model components while also capturing dynamic processes. I am not aware of any other packages that can easily do this, but of course there may be some.
 
 ### Lake Washington plankton data
 The data we will use to illustrate how we can fit State-Space models in `mvgam` are from a long-term monitoring study of plankton counts (cells per mL) taken from Lake Washington in Washington, USA. The data are available as part of the `MARSS` package and can be downloaded using the following: 
@@ -163,7 +162,13 @@ load(url('https://github.com/atsa-es/MARSS/raw/master/data/lakeWAplankton.rda'))
 
 We will work with five different groups of plankton:
 ```{r}
-outcomes <- c('Greens', 'Bluegreens', 'Diatoms', 'Unicells', 'Other.algae')
+outcomes <- c(
+  'Greens', 
+  'Bluegreens', 
+  'Diatoms', 
+  'Unicells', 
+  'Other.algae'
+)
 ```
 
 As usual, preparing the data into the correct format for `mvgam` modelling takes a little bit of wrangling in `dplyr`:
@@ -196,21 +201,25 @@ plankton_data <- xfun::cache_rds(do.call(rbind, lapply(outcomes, function(x){
 
 ```{r eval=FALSE}
 # loop across each plankton group to create the long datframe
-plankton_data <- do.call(rbind, lapply(outcomes, function(x){
-  
-  # create a group-specific dataframe with counts labelled 'y'
-  # and the group name in the 'series' variable
-  data.frame(year = lakeWAplanktonTrans[, 'Year'],
-             month = lakeWAplanktonTrans[, 'Month'],
-             y = lakeWAplanktonTrans[, x],
-             series = x,
-             temp = lakeWAplanktonTrans[, 'Temp'])})) %>%
+plankton_data <- do.call(
+  rbind, 
+  lapply(outcomes, function(x){
+    
+    # create a group-specific dataframe with counts labelled 'y'
+    # and the group name in the 'series' variable
+    data.frame(year = lakeWAplanktonTrans[, 'Year'],
+               month = lakeWAplanktonTrans[, 'Month'],
+               y = lakeWAplanktonTrans[, x],
+               series = x,
+               temp = lakeWAplanktonTrans[, 'Temp'])})
+) %>%
   
   # change the 'series' label to a factor
   dplyr::mutate(series = factor(series)) %>%
   
   # filter to only include some years in the data
-  dplyr::filter(year >= 1965 & year < 1975) %>%
+  dplyr::filter(year >= 1965 & 
+                  year < 1975) %>%
   dplyr::arrange(year, month) %>%
   dplyr::group_by(series) %>%
   
@@ -231,17 +240,26 @@ head(plankton_data)
 dplyr::glimpse(plankton_data)
 ```
 
-Note that we have z-scored the counts in this example as that will make it easier to specify priors for this simple example (though note that this is not completely necessary; it is often better to build a model that respects the properties of the actual outcome variables)
+Note that we have z-scored the counts in this example as that will make it easier to specify priors
 ```{r}
-plot_mvgam_series(data = plankton_data, series = 'all')
+plot_mvgam_series(
+  data = plankton_data, 
+  series = 'all'
+)
 ```
 
 As usual, check the data for `NA`s:
 ```{r}
-image(is.na(t(plankton_data)), axes = F,
-      col = c('grey80', 'darkred'))
-axis(3, at = seq(0,1, len = NCOL(plankton_data)), 
-     labels = colnames(plankton_data))
+image(
+  is.na(t(plankton_data)), 
+  axes = F,
+  col = c('grey80', 'darkred')
+)
+axis(
+  3, 
+  at = seq(0,1, len = NCOL(plankton_data)), 
+  labels = colnames(plankton_data)
+)
 ```
 
 ### Manipulate data for modeling
@@ -312,9 +330,9 @@ plankton_test <- plankton_data %>%
 1. Calculate the number of timepoints in the training data that have non-missing observations for all five time series.
 
 ## Capturing seasonality
-Now time to fit some models. This requires a bit of thinking about how we can best tackle the seasonal variation and the likely dependence structure in the data. These algae are interacting as part of a complex system within the same lake, so we certainly expect there to be some lagged cross-dependencies underling their dynamics. But if we do not capture the seasonal variation, our multivariate dynamic model will be forced to try and capture it, which could lead to poor convergence and unstable results (we could feasibly capture cyclic dynamics with a more complex multi-species Lotka-Volterra model, but ordinary differential equation approaches are beyond the scope of this workshop). 
+Now time to fit some models. This requires a bit of thinking about how we can best tackle the seasonal variation and the likely dependence structure in the data. These algae are interacting as part of a complex system within the same lake, so we certainly expect there to be some lagged cross-dependencies underling their dynamics. But if we do not model the seasonal variation with covariates, our multivariate dynamic model will be forced to try and capture it, which could lead to poor convergence and unstable results (we could feasibly capture cyclic dynamics with a more complex multi-species Lotka-Volterra model, but ordinary differential equation approaches are beyond the scope of this workshop). 
 
-First we will fit a model that does not include a dynamic component, just to see if it can reproduce the seasonal variation in the observations. This model builds from our hierarchical GAMs above by introducing hierarchical multidimensional smooths. It includes a "global" tensor product of the `month` and `temp` variables, capturing our expectation that algal seasonality responds to temperature variation. But this response should depend on when in the year these temperatures are recorded (i.e. a response to warm temperatures in Spring should be different to a response to warm temperatures in Autumn). The model also fits series-specific deviation smooths (i.e. one tensor product per series) to capture how each algal group's seasonality differs from the overall "global" seasonality. Note that we do not include series-specific intercepts in this model because each series was z-scored to have a mean of 0.
+First we will fit a model that does not include a dynamic component, just to see if it can reproduce the seasonal variation in the observations. This model capitalizes on hierarchical multidimensional smooths. It includes a "global" tensor product of the `month` and `temp` variables, capturing our expectation that algal seasonality responds to temperature variation. But this response should depend on when in the year these temperatures are recorded (i.e. a response to warm temperatures in Spring should be different to a response to warm temperatures in Autumn). The model also fits series-specific deviation smooths (i.e. one tensor product per series) to describe how each algal group's seasonality differs from the overall "global" seasonality. Note that we do not include series-specific intercepts in this model because each series was z-scored to have a mean of 0.
 ```{r notrend_mod, include = FALSE}
 notrend_mod <- xfun::cache_rds(mvgam(y ~ 
                        te(temp, month, k = c(4, 4)) +
@@ -327,87 +345,97 @@ notrend_mod <- xfun::cache_rds(mvgam(y ~
 ```
 
 ```{r eval=FALSE}
-notrend_mod <- mvgam(y ~ 
-                       # tensor of temp and month to capture
-                       # "global" seasonality
-                       te(temp, month, k = c(4, 4)) +
-                       
-                       # series-specific deviation tensor products
-                       te(temp, month, k = c(4, 4), by = series),
-                     family = gaussian(),
-                     data = plankton_train,
-                     newdata = plankton_test,
-                     trend_model = 'None')
-
+notrend_mod <- mvgam(
+  y ~ 
+    # tensor of temp and month to capture
+    # "global" seasonality
+    te(temp, month, k = c(4, 4)) +
+    
+    # series-specific deviation tensor products
+    te(temp, month, k = c(4, 4), by = series),
+  family = gaussian(),
+  data = plankton_train,
+  newdata = plankton_test,
+  trend_model = 'None'
+)
 ```
 
 The "global" tensor product smooth function can be quickly visualized using `gratia`:
 ```{r}
-gratia::draw(notrend_mod$mgcv_model, select = 1)
+gratia::draw(
+  notrend_mod$mgcv_model, 
+  select = 1
+)
 ```
 
 We can then plot the deviation smooths for each algal group to see how they vary from the "global" pattern:
 ```{r}
-gratia::draw(notrend_mod$mgcv_model, select = 2)
+gratia::draw(
+  notrend_mod$mgcv_model, 
+  select = 2
+)
 ```
 
 ```{r}
-gratia::draw(notrend_mod$mgcv_model, select = 3)
+gratia::draw(
+  notrend_mod$mgcv_model, 
+  select = 3
+)
 ```
 
 ```{r}
-gratia::draw(notrend_mod$mgcv_model, select = 4)
+gratia::draw(
+  notrend_mod$mgcv_model, 
+  select = 4
+)
 ```
 
 ```{r}
-gratia::draw(notrend_mod$mgcv_model, select = 5)
+gratia::draw(
+  notrend_mod$mgcv_model, 
+  select = 5
+)
 ```
 
 ```{r}
-gratia::draw(notrend_mod$mgcv_model, select = 6)
+gratia::draw(
+  notrend_mod$mgcv_model, 
+  select = 6
+)
 ```
 
 These multidimensional smooths have done a good job of capturing the seasonal variation in our observations:
-```{r}
-plot(notrend_mod, type = 'forecast', series = 1)
+```{r, warning=FALSE}
+fcs <- forecast(notrend_mod)
+plot(fcs, series = 1)
 ```
 
-```{r}
-plot(notrend_mod, type = 'forecast', series = 2)
+```{r, warning=FALSE}
+plot(fcs, series = 2)
 ```
 
-```{r}
-plot(notrend_mod, type = 'forecast', series = 3)
+```{r, warning=FALSE}
+plot(fcs, series = 3)
 ```
 
-```{r}
-plot(notrend_mod, type = 'forecast', series = 4)
+```{r, warning=FALSE}
+plot(fcs, series = 4)
 ```
 
-```{r}
-plot(notrend_mod, type = 'forecast', series = 5)
+```{r, warning=FALSE}
+plot(fcs, series = 5)
 ```
 
 ## Multiseries dynamics
-The basic model gives us confidence that we can capture the seasonal variation in the observations. But the model has not captured the remaining temporal dynamics, which is obvious when we inspect Dunn-Smyth residuals for each series:
-```{r}
-plot(notrend_mod, type = 'residuals', series = 1)
-```
-
-```{r}
-plot(notrend_mod, type = 'residuals', series = 2)
-```
-
-```{r}
-plot(notrend_mod, type = 'residuals', series = 3)
-```
-
-```{r}
-plot(notrend_mod, type = 'residuals', series = 4)
-```
-
-```{r}
-plot(notrend_mod, type = 'residuals', series = 5)
+The basic model gives us confidence that we can capture the seasonal variation in the observations. But the model has not captured the remaining temporal dynamics, which is obvious when we inspect Dunn-Smyth residuals for each series using `pp_check()`:
+```{r, warning=FALSE}
+pp_check(
+  notrend_mod,
+  type = 'resid_ribbon_grouped',
+  x = 'time',
+  group = 'series',
+  ndraws = 200
+)
 ```
 
 Now it is time to get into multivariate State-Space models. We will fit two models that can both incorporate lagged cross-dependencies in the latent process models. The first model assumes that the process errors operate independently from one another, while the second assumes that there may be contemporaneous correlations in the process errors. Both models include a Vector Autoregressive component for the process means, and so both can model complex community dynamics. The models can be described mathematically as follows:
@@ -433,10 +461,11 @@ priors <- get_mvgam_priors(
   trend_formula = ~ te(temp, month, k = c(4, 4)) +
     te(temp, month, k = c(4, 4), by = trend),
   
-  # VAR1 model with uncorrelated process errors
-  trend_model = 'VAR1',
+  # VAR1 model with correlated process errors
+  trend_model = VAR(cor = TRUE),
   family = gaussian(),
-  data = plankton_train)
+  data = plankton_train
+)
 ```
 
 Get names of all parameters whose priors can be modified:
@@ -449,15 +478,17 @@ And their default prior distributions:
 priors[, 4]
 ```
 
-Setting priors is easy in `mvgam` as you can use `brms` routines. Here we use more informative Normal priors for both error components, but we impose a lower bound of 0.2 for the observation errors:
+Setting priors is easy in `mvgam` as you can use `brms` routines. Here we use a more informative Beta prior for the process error variation:
 ```{r}
-priors <- c(prior(normal(0.5, 0.1), class = sigma_obs, lb = 0.2),
-            prior(normal(0.5, 0.25), class = sigma))
+priors <- prior(
+  beta(5, 5),
+  class = sigma,
+  lb = 0,
+  ub = 1
+)
 ```
 
-You may have noticed something else unique about this model: there is no intercept term in the observation formula. This is because a shared intercept parameter can sometimes be unidentifiable with respect to the latent VAR process, particularly if our series have similar long-run averages (which they do in this case because they were z-scored). We will often get better convergence in these State-Space models if we drop this parameter. `mvgam` accomplishes this by fixing the coefficient for the intercept to zero. Now we can fit the first model, which assumes that process errors are contemporaneously uncorrelated
-
-Now we can fit the first model, which assumes that process errors are contemporaneously uncorrelated
+You may have noticed something else unique about this model: there is no intercept term in the observation formula. This is because a shared intercept parameter can sometimes be unidentifiable with respect to the latent VAR process, particularly if our series have similar long-run averages (which they do in this case because they were z-scored). We will often get better convergence in these State-Space models if we drop this parameter. `mvgam` accomplishes this by fixing the coefficient for the intercept to zero. We also assume that all series share the same observation variance, which makes sense given that we z-scored the series. Now we can fit the first model, which assumes that process errors may be contemporaneously correlated.
 ```{r var_mod, include = FALSE}
 var_mod <- xfun::cache_rds(mvgam(y ~ -1,
                  trend_formula = ~
@@ -468,11 +499,13 @@ var_mod <- xfun::cache_rds(mvgam(y ~ -1,
                    # here
                    te(temp, month, k = c(4, 4), by = trend),
                  family = gaussian(),
+                 share_obs_params = TRUE,
                  data = plankton_train,
                  newdata = plankton_test,
-                 trend_model = 'VAR1',
+                 trend_model = VAR(cor = TRUE),
                  priors = priors, 
-                 burnin = 1000),
+                 burnin = 1000,
+                 control = list(adapt_delta = 0.9)),
                 dir = 'cache_not_for_upload/')
 ```
 
@@ -485,35 +518,42 @@ var_mod <- mvgam(
   trend_formula = ~ te(temp, month, k = c(4, 4)) +
     te(temp, month, k = c(4, 4), by = trend),
   
-  # VAR1 model with uncorrelated process errors
-  trend_model = 'VAR1',
+  # VAR1 model with correlated process errors
+  trend_model = VAR(cor = TRUE),
   family = gaussian(),
   data = plankton_train,
   newdata = plankton_test,
   
   # include the updated priors
-  priors = priors)
+  priors = priors
+)
 ```
 
 ### Inspecting SS models
 This model's summary is a bit different to other `mvgam` summaries. It separates parameters based on whether they belong to the observation model or to the latent process model. This is because we may often have covariates that impact the observations but not the latent process, so we can have fairly complex models for each component. You will notice that some parameters have not fully converged, particularly for the VAR coefficients (called `A` in the output) and for the process errors (`Sigma`). Note that we set `include_betas = FALSE` to stop the summary from printing output for all of the spline coefficients, which can be dense and hard to interpret:
 ```{r, class.output="scroll-300"}
-summary(var_mod, include_betas = FALSE)
+summary(
+  var_mod, 
+  include_betas = FALSE
+)
 ```
 
 We can again plot the smooth functions, which this time operate on the process model. The coefficients for this model are now accessible through the `trend_mgcv_model` slot in the model object:
 ```{r}
-gratia::draw(var_mod$trend_mgcv_model, select = 1)
-```
-
-We can see the same plot using the `mvgam` version by using `trend_effects = TRUE` in the plotting functions:
-```{r}
-plot(var_mod, 'smooths', trend_effects = TRUE)
+gratia::draw(
+  var_mod$trend_mgcv_model, 
+  select = 1
+)
 ```
 
 The VAR matrix is of particular interest here, as it captures lagged dependencies and cross-dependencies in the latent process model:
 ```{r warning=FALSE, message=FALSE}
-mcmc_plot(var_mod, variable = 'A', regex = TRUE, type = 'hist')
+mcmc_plot(
+  var_mod, 
+  variable = 'A', 
+  regex = TRUE, 
+  type = 'hist'
+)
 ```
 
 Unfortunately bayesplot doesn’t know this is a matrix of parameters so what we see is actually the transpose of the VAR matrix. A little bit of wrangling gives us these histograms in the correct order:
@@ -524,21 +564,31 @@ for(i in 1:5){
     A_pars[i, j] <- paste0('A[', i, ',', j, ']')
   }
 }
-mcmc_plot(var_mod, 
-          variable = as.vector(t(A_pars)), 
-          type = 'hist')
+mcmc_plot(
+  var_mod, 
+  variable = as.vector(t(A_pars)), 
+  type = 'hist'
+)
 ```
 
-There is a lot happening in this matrix. Each cell captures the lagged effect of the process in the column on the process in the row in the next timestep. So for example, the effect in cell [5,2], which is quite strongly negative, means that an *increase* in the process for series 5 (Unicells) at time $t$ is expected to lead to a subsequent *decrease* in the process for series 2 (Diatoms) at time $t+1$. The latent process model is now capturing these effects and the smooth seasonal effects, so the trend plot shows our best estimate of what the *true* count should have been at each time point:
+There is a lot happening in this matrix. Each cell captures the lagged effect of the process in the column on the process in the row in the next timestep. So for example, the effect in cell [5,1], which is quite strongly positive, means that an *increase* in the process for series 5 (Unicells) at time $t$ is expected to lead to a subsequent *increase* in the process for series 1 (Bluegreens) at time $t+1$. The latent process model is now capturing these effects and the smooth seasonal effects, so the trend plot shows our best estimate of what the *true* count should have been at each time point:
 ```{r}
-plot(var_mod, type = 'trend', series = 1)
+plot(
+  var_mod, 
+  type = 'trend', 
+  series = 1
+)
 ```
 
 ```{r}
-plot(var_mod, type = 'trend', series = 3)
+plot(
+  var_mod, 
+  type = 'trend', 
+  series = 3
+)
 ```
 
-The process error $(\Sigma)$ captures unmodelled variation in the process models. Again, we fixed the off-diagonals to 0, so the histograms for these will look like flat boxes:
+The process error $(\Sigma)$ captures unmodelled variation in the process models, together with any possible correlations among these errors:
 ```{r warning=FALSE, message=FALSE}
 Sigma_pars <- matrix(NA, nrow = 5, ncol = 5)
 for(i in 1:5){
@@ -546,36 +596,69 @@ for(i in 1:5){
     Sigma_pars[i, j] <- paste0('Sigma[', i, ',', j, ']')
   }
 }
-mcmc_plot(var_mod, 
-          variable = as.vector(t(Sigma_pars)), 
-          type = 'hist')
+mcmc_plot(
+  var_mod, 
+  variable = as.vector(t(Sigma_pars)), 
+  type = 'hist'
+)
 ```
 
-The observation error estimates $(\sigma_{obs})$ represent how much the model thinks we might miss the true count when we take our imperfect measurements: 
+The observation error estimate $(\sigma_{obs})$ represents how much the model thinks we might miss the true count when we take our imperfect measurements: 
 ```{r warning=FALSE, message=FALSE}
-mcmc_plot(var_mod, variable = 'sigma_obs', regex = TRUE, type = 'hist')
+mcmc_plot(
+  var_mod, 
+  variable = 'sigma_obs', 
+  regex = TRUE, 
+  type = 'hist'
+)
 ```
+
+### Impulse response functions
+Because Vector Autoregressions can capture complex lagged dependencies, it is often difficult to understand how the member time series are thought to interact with one another. A method that is commonly used to directly test for possible interactions is to compute an [Impulse Response Function](https://en.wikipedia.org/wiki/Impulse_response) (IRF). If $h$ represents the simulated forecast horizon, an IRF asks how each of the remaining series might respond over times $(t+1):h$ if a focal series is given an innovation "shock" at time $t = 0$. `mvgam` can compute Generalized and Orthogonalized IRFs from models that included latent VAR dynamics. We simply feed the fitted model to the `irf()` function and then use the S3 `plot()` function to view the estimated responses. By default, `irf()` will compute IRFs by separately imposing positive shocks of one standard deviation to each series in the VAR process. Here we compute Generalized IRFs over a horizon of 12 timesteps:
+```{r}
+irfs <- irf(
+  var_mod, 
+  h = 12
+)
+```
+
+A summary of the IRFs can be computed using the `summary()` function:
+```{r}
+summary(irfs)
+```
+
+But it is easier to understand these responses using plots. For example, we can plot the expected responses of the remaining series to a positive shock for series 3 (Greens) using the `plot()` function:
+```{r}
+plot(irfs, series = 3)
+```
+
+This series of plots makes it clear that some of the other series would be expected to show both instantaneous responses to a shock for the Greens (due to their correlated process errors) as well as delayed and nonlinear responses over time (due to the complex lagged dependence structure captured by the $A$ matrix). This hopefully makes it clear why IRFs are an important tool in the analysis of multivariate autoregressive models. You can also use these IRFs to calculate a relative contribution from each shock to the forecast error variance for a focal series. This method, known as a [Forecast Error Variance Decomposition](https://en.wikipedia.org/wiki/Variance_decomposition_of_forecast_errors) (FEVD), is useful to get an idea about the amount of information that each series contributes to the evolution of all other series in a Vector Autoregression:
+```{r}
+fevds <- fevd(
+  var_mod, 
+  h = 12
+)
+plot(fevds)
+```
+
+The plot above shows the median contribution to forecast error variance for each series.
 
 ## Dynamic factor trends
 
-Let's see how a dynamic factor model compares. Recall from the lecture that dynamic factor models can induce correlations among the time series using a reduced rank "factor" model. We effectively estimate fewer dynamic factors than we have series, but let each series depend on these factors to form it's series-specific trend. Priors for this model are simpler because the variances of the factors are fixed, so we don't need a prior for those.
-```{r}
-priors <- prior(normal(0.5, 0.1), class = sigma_obs, lb = 0.2)
-```
-
-And now we can fit the dynamic factor model, using three AR1 factors for the five series. Note that I am using fewer posterior samples for this model so it is easier to work with for completing the exercises:
+Let's see how a dynamic factor model compares. Recall from the lecture that dynamic factor models can induce correlations among the time series using a reduced rank "factor" model. We effectively estimate fewer dynamic factors than we have series, but let each series depend on these factors to form it's series-specific trend. Priors for this model are simpler because the variances of the factors are fixed, so we don't need a prior for those. We can fit the dynamic factor model, using three AR1 factors for the five series. Note that I am using fewer posterior samples for this model so it is easier to work with for completing the exercises:
 ```{r df_mod_full, include = FALSE}
 df_mod_full <- xfun::cache_rds(mvgam(y ~ 
                                        te(temp, month, k = c(4, 4)) +
                    te(temp, month, k = c(4, 4), by = series),
                  family = gaussian(),
+                 share_obs_params = TRUE,
                  data = plankton_train,
                  newdata = plankton_test,
                  trend_model = AR(p = 1),
                  use_lv = TRUE,
                  n_lv = 3,
                  burnin = 1000,
-                 priors = priors),
+                 control = list(adapt_delta = 0.95)),
                 dir = 'cache_not_for_upload/')
 ```
 
@@ -584,14 +667,14 @@ df_mod <- xfun::cache_rds(mvgam(y ~
                                   te(temp, month, k = c(4, 4)) +
                    te(temp, month, k = c(4, 4), by = series),
                  family = gaussian(),
+                 share_obs_params = TRUE,
                  data = plankton_train,
                  newdata = plankton_test,
                  trend_model = AR(p = 1),
                  use_lv = TRUE,
                  n_lv = 3,
                  burnin = 1000,
-                 samples = 100,
-                 priors = priors))
+                 samples = 100))
 ```
 
 ```{r eval=FALSE}
@@ -605,45 +688,57 @@ df_mod <- mvgam(
   use_lv = TRUE,
   n_lv = 3,
   family = gaussian(),
+  share_obs_params = TRUE,
   data = plankton_train,
   newdata = plankton_test,
   
-  # include the updated priors
-  priors = priors,
-  
   # use reduced samples for inclusion in tutorial data
-  samples = 100)
+  samples = 100
+)
 ```
 
 The summary now contains less information as we don't get details about the factor variances:
 ```{r, class.output="scroll-300"}
-summary(df_mod, include_betas = FALSE)
+summary(
+  df_mod, 
+  include_betas = FALSE
+)
 ```
 
 Plot estimates for the three factors, which shows that all three have captured important temporal dynamics
 ```{r}
-plot(df_mod, type = 'factors')
+plot(
+  df_mod, 
+  type = 'factors'
+)
 ```
 
 The loading matrix, which determines how each series depends on the set of factors, can be used to calculate correlations among the series. 
 ```{r}
-mean_corrs <- lv_correlations(object = df_mod)$mean_correlations
+mean_corrs <- lv_correlations(
+  object = df_mod
+)$mean_correlations
 mean_corrs
 ```
 
 Here we can see some very strong patterns, i.e. strong positive correlations between Unicells and Bluegreens for example, and a strong negative correlation between Diatoms and Bluegreens. Plotting these as a heatmap, where blue colours show negative correlations and red colours show positive correlations, makes these relationships easier to visualise
 ```{r}
-heatmap(mean_corrs,
-        Colv = NA, Rowv = NA,
-        cexRow = 1, cexCol = 1, symm = TRUE,
-        distfun = function(c) as.dist(1 - c),
-        col = hcl.colors(n = 12, palette = 'Blue-Red'))
+heatmap(
+  mean_corrs,
+  Colv = NA, 
+  Rowv = NA,
+  cexRow = 1, 
+  cexCol = 1, 
+  symm = TRUE,
+  distfun = function(c) as.dist(1 - c),
+  col = hcl.colors(n = 12, palette = 'Blue-Red')
+)
 ```
 
 But which model is better? We can compute the variogram score for out of sample forecasts to get a sense of which model does a better job of capturing the dependence structure in the true evaluation set:
 ```{r echo=FALSE}
 # read in the full model that has all posterior samples
-df_mod <- readRDS('./cache_not_for_upload/df_mod_full_0a9898e943842f27cee1fe37ebbaf078.rds')
+df_mod <- readRDS('./cache_not_for_upload/df_mod_full_aedb8bf6b5a0267f6eee580c1de6d64e.rds')
 ```
 
 ```{r}
@@ -654,12 +749,16 @@ fcdf <- forecast(df_mod)
 # plot the difference in variogram scores; a negative value means the DF model is better, while a positive value means the VAR1 model is better
 diff_scores <- score(fcdf, score = 'variogram')$all_series$score -
   score(fcvar, score = 'variogram')$all_series$score
-plot(diff_scores, pch = 16, col = 'darkred', 
-     ylim = c(-1*max(abs(diff_scores), na.rm = TRUE),
-              max(abs(diff_scores), na.rm = TRUE)),
-     bty = 'l',
-     xlab = 'Forecast horizon',
-     ylab = expression(variogram[DF]~-~variogram[VAR1]))
+plot(
+  diff_scores, 
+  pch = 16, 
+  col = 'darkred', 
+  ylim = c(-1*max(abs(diff_scores), na.rm = TRUE),
+           max(abs(diff_scores), na.rm = TRUE)),
+  bty = 'l',
+  xlab = 'Forecast horizon',
+  ylab = expression(variogram[DF]~-~variogram[VAR1])
+)
 abline(h = 0, lty = 'dashed')
 ```
 
