@@ -1916,7 +1916,7 @@ brm_beta_dyn <- brm(
 library(brms)
 ```
 
-A GP specifying time-varying effects of `ndvi`
+A GP specifying time-varying effects of `mintemp`
 
 ---
 
@@ -1924,7 +1924,7 @@ A GP specifying time-varying effects of `ndvi`
 .panelset[
 .panel[.panel-name[Code]
 
-```{r ndvi_time_brm,fig.show='hide', fig.height=6.2, fig.width=1.9*6.2, warning=FALSE, message=FALSE, dev = 'svg'}
+```{r ndvi_time_brm,fig.show='hide', fig.height=6.2, fig.width=1.9*6.2, warning=FALSE, message=FALSE, dev = 'svg', echo=FALSE}
 
 # use brms' conditional_effects to view predictions
 plot(conditional_effects(brm_beta_dyn, effects = c('time:mintemp')),

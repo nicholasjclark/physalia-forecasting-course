@@ -1293,7 +1293,7 @@ brm_beta_dyn &lt;- brm(
 
 
 
-A GP specifying time-varying effects of `ndvi`
+A GP specifying time-varying effects of `mintemp`
 
 ---
 
@@ -1302,13 +1302,6 @@ A GP specifying time-varying effects of `ndvi`
 .panel[.panel-name[Code]
 
 
-``` r
-# use brms' conditional_effects to view predictions
-plot(conditional_effects(brm_beta_dyn, effects = c('time:mintemp')),
-                    theme = theme_classic(base_size = 17, base_family = 'serif'),
-                    mean = FALSE,
-                    rug = TRUE)
-```
 
 
 ``` r
