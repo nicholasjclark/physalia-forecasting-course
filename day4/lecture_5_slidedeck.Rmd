@@ -984,13 +984,6 @@ class: middle center
 ### But how do we go about *evaluating* forecasts to choose among models?
 ---
 
-
-class: inverse middle center big-subsection
-
-# Live code example
-
----
-
 class: inverse middle center big-subsection
 
 # Multivariate forecast evaluation

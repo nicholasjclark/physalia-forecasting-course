@@ -1,16 +1,17 @@
-library(mvgam)
 library(forecast)
+library(mvgam)
 library(janitor)
 library(gratia)
 library(marginaleffects)
 library(ggplot2)
-theme_set(theme_bw())
+theme_set(theme_bw(base_size = 12))
 library(patchwork)
 
 # Load the AirPassengers dataset and plot the time series
 data("AirPassengers")
 plot(AirPassengers,
-  bty = "l", lwd = 1.5,
+  bty = "l", 
+  lwd = 2,
   col = "darkred"
 )
 
@@ -21,7 +22,10 @@ stl(AirPassengers, s.window = 9) %>%
 # This plot suggests that the seasonal pattern changes over time,
 # not just in magnitude but also perhaps a bit in shape. Convert
 # to a data.frame() object that is suitable for mgcv / mvgam modeling
-airdat <- series_to_mvgam(AirPassengers, freq = frequency(AirPassengers))
+airdat <- series_to_mvgam(
+  AirPassengers, 
+  freq = frequency(AirPassengers)
+)
 dplyr::glimpse(airdat$data_train)
 
 # Plot features of the series
@@ -46,7 +50,8 @@ mod1 <- mvgam(
 
 # Predictions aren't too bad here, but perhaps the uncertainty
 # is a bit too wide
-plot(mod1, type = "forecast")
+plot(forecast(mod1)) +
+  theme_bw(base_size = 12)
 
 # We can conveniently use gratia::draw() to view the time * season
 # smooth function
@@ -63,24 +68,30 @@ draw(mod1$mgcv_model)
 # There is another way we can model time-varying seasonality, in this
 # case using a fourier transform. First compute sine and cosine functions
 # using the forecast::fourier() function
-data.frame(forecast::fourier(AirPassengers, K = 4)) %>%
+data.frame(
+  forecast::fourier(AirPassengers, K = 4)
+) %>%
   # Use clean_names as fourier() gives terrible name types
   janitor::clean_names() -> fourier_terms
 dplyr::glimpse(fourier_terms)
 
 # Now add these new predictors to the training and testing sets
 airdat$data_train <- airdat$data_train %>%
-  dplyr::bind_cols(fourier_terms[1:NROW(airdat$data_train), ])
+  dplyr::bind_cols(
+    fourier_terms[1:NROW(airdat$data_train), ]
+  )
 airdat$data_test <- airdat$data_test %>%
-  dplyr::bind_cols(fourier_terms[(NROW(airdat$data_train) + 1):
-  NROW(fourier_terms), ])
+  dplyr::bind_cols(
+    fourier_terms[(NROW(airdat$data_train) + 1):
+                    NROW(fourier_terms), ]
+  )
 
 # Next we can fit an mvgam model that includes a smooth nonlinear
 # temporal trend and time-varying seasonality. This is done by first
 # using a monotonic smooth of time that ensures the temporal trend never
 # declines, which seems appropriate here. The time-varying seasonality
 # is captured by allowing the coefficients on the fourier terms to vary
-# over time using separate Gaussian Processes
+# over time using separate smooths
 mod2 <- mvgam(
   y ~
     # Monotonic smooth of time to ensure the trend
@@ -109,21 +120,24 @@ mod2 <- mvgam(
 loo_compare(mod1, mod2)
 
 # But what about forecasts? Second model is again slightly preferred
-layout(matrix(1:2, nrow = 2))
-plot(mod1, type = "forecast")
-plot(mod2, type = "forecast")
-layout(1)
+patchwork::wrap_plots(
+  plot(forecast(mod1)) +
+    labs(title = 'Tensor product'),
+  plot(forecast(mod2)) +
+    labs(title = 'Fourier terms'),
+  ncol = 1
+) &
+  theme_bw(base_size = 12)
 
 # Look at the smooths to see how the fourier coefficients change
 # over time
-plot(mod2, type = "smooths")
-summary(mod2, include_betas = FALSE)
+draw(mod2)
 
-# Plotting this model takes a bit more work, as we need to use predictions
-# to visualise the effects
+# Use predictions to visualise the effects of seasonality and trend
 
 # First the trend, using the condition argument in plot_predictions()
-p1 <- plot_predictions(mod2,
+p1 <- plot_predictions(
+  mod2,
   condition = "time",
   type = "expected"
 ) +
@@ -134,11 +148,13 @@ p1 <- plot_predictions(mod2,
 
 # And the time-varying seasonal pattern, which requires subtracting
 # the conditional trend predictions from the total predictions
-with_season <- predict(mod2,
+with_season <- predict(
+  mod2,
   summary = FALSE,
   type = "expected"
 )
-agg_over_season <- predict(mod2,
+agg_over_season <- predict(
+  mod2,
   newdata = datagrid(
     model = mod2,
     time = unique
@@ -184,43 +200,30 @@ p1 + p2
 # 2. Extract median residuals from both models and plot these against 'season'.
 #    Does our model contain enough complexity to capture seasonal patterns well?
 ?residuals.mvgam
+?pp_check.mvgam
 
 # 3. Since we might not still be comfortable forecasting from a monotonic
-#    spline, fit a competing model that uses a piecewise logistic trend
+#    spline, fit a competing model that uses a GP trend
 #    instead
-
-#    This requires a 'cap' variable in the data, which specifies the
-#    maximum value we'd expect the series to take
-airdat$data_train$cap <- 700
-airdat$data_test$cap <- 700
 mod3 <- mvgam(
   y ~
     # Time-varying fourier coefficients to capture
     # possibly changing seasonality
+    time +
     s(time, by = s1_12, k = 5) +
     s(time, by = c1_12, k = 5) +
     s(time, by = s2_12, k = 5) +
     s(time, by = c2_12, k = 5) +
     s(time, by = s3_12, k = 5) +
     s(time, by = c3_12, k = 5) - 1,
-
-  # Specify a piecewise logistic growth model;
-  # note how we suppressed the intercept in the formula,
-  # which is usually necessary in piecewise trend models
-  trend_model = PW(
-    growth = "logistic",
-    n_changepoints = 5
-  ),
+  trend_model = GP(),
   family = poisson(),
-  data = airdat$data_train
+  data = airdat$data_train,
+  newdata = airdat$data_test
 )
 
-#    Plot the trend estimates
-plot(mod3, type = "trend")
-
 #    Compute and plot the forecasts from this model
-fc <- mvgam::forecast(object = mod3, newdata = airdat$data_test)
-plot(fc)
+plot(forecast(mod3))
 
 #    Look at estimates of key logistic growth parameters
 summary(mod3, include_betas = FALSE)

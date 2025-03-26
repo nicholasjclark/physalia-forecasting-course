@@ -149,7 +149,7 @@ Tutorial 3 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/
 ## Thursday (day 4)
 Lecture 5 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day4/lecture_5_slidedeck) | [pdf](https://github.com/nicholasjclark/physalia-forecasting-course/raw/main/day4/lecture_5_slidedeck.pdf))
 <br>
-Live code examples ([Functionals](https://raw.githubusercontent.com/nicholasjclark/physalia-forecasting-course/main/day4/live_code_examples/live_5_functional.R) | [Time-varying seasonality](https://raw.githubusercontent.com/nicholasjclark/physalia-forecasting-course/main/day4/live_code_examples/live_6_timevaryingseason.R))
+Live code examples ([Time-varying seasonality](https://raw.githubusercontent.com/nicholasjclark/physalia-forecasting-course/main/day4/live_code_examples/live_6_timevaryingseason.R))
 <br>
 Tutorial 4 ([html](https://nicholasjclark.github.io/physalia-forecasting-course/day4/tutorial_4_physalia))
 * Multivariate ecological time series
