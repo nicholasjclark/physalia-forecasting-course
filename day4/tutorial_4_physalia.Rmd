@@ -172,7 +172,7 @@ outcomes <- c(
 ```
 
 As usual, preparing the data into the correct format for `mvgam` modelling takes a little bit of wrangling in `dplyr`:
-```{r plankton_data}
+```{r plankton_data, echo=FALSE, results='hide'}
 plankton_data <- xfun::cache_rds(do.call(rbind, lapply(outcomes, function(x){
   
   # create a group-specific dataframe with counts labelled 'y'

@@ -39,9 +39,8 @@ plot_mvgam_series(
 # where 'season' is modeled with a cyclic spline
 mod1 <- mvgam(
   y ~ te(season, time,
-    bs = c("cc", "tp"),
-    k = c(6, 15)
-  ),
+         bs = c("cc", "tp"),
+         k = c(6, 15)),
   knots = list(season = c(0.5, 12.5)),
   family = nb(),
   data = airdat$data_train,
