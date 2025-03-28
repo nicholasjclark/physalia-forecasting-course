@@ -2,16 +2,10 @@ library(dplyr)
 library(mvgam)
 library(marginaleffects)
 library(ggplot2); theme_set(theme_bw())
+library(mgcv)
 
 # Read the annual Texas measles data
 measles <- read.csv("measles.csv")
-
-# Inspect the data, which contains numbers of measles cases per year
-# as well as log(population) and vaccine conditions per year in Texas
-dplyr::glimpse(measles)
-
-# Plot features of the incidence time series
-plot_mvgam_series(data = measles, y = 'cases')
 
 # A different plot using the date as the correct x-axis
 plot(x = 1:max(measles$time),
@@ -116,29 +110,36 @@ plot_predictions(mod0, by = 'vaccine_era')
 # spline is then used to capture how the trend declined after vaccine
 # rollout
 measles %>%
-  dplyr::mutate(prevacc_time = ifelse(time <= 597, time, 597),
-                year_since_vaccine = as.numeric(year_since_vaccine)) -> measles
+  dplyr::mutate(
+    prevacc_time = ifelse(time <= 597, time, 597),
+    year_since_vaccine = as.numeric(year_since_vaccine)
+  ) -> measles
 
 # There will be some divergences because the alpha parameter of the GP,
 # and the intercept and overdispersion parameters, are all competing a
 # bit to capture the variability in the data
-mvgam_test <- mvgam(cases ~ offset(population),
-                    trend_formula = ~
-                      s(week, bs = 'cc', k = 10) +
-                      gp(prevacc_time, k = 50, scale = FALSE, cov = 'exponential') +
-                      s(year_since_vaccine, bs = 'mod', k = 8) - 1,
-                    trend_model = 'None',
-                    noncentred = TRUE,
-                    trend_knots = list(week = c(0.5, 52.5)),
-                    family = nb(),
-                    data = measles)
+mvgam_test <- mvgam(
+  cases ~ offset(population) +
+    s(week, bs = 'cc', k = 5) +
+    gp(prevacc_time, 
+       k = 20, 
+       scale = FALSE,
+       cov = 'exponential') +
+    s(year_since_vaccine, bs = 'mod', k = 8),
+  trend_knots = list(week = c(0.5, 52.5)),
+  family = nb(),
+  data = measles,
+  algorithm = 'meanfield'
+)
 summary(mvgam_test, include_betas = FALSE)
-plot(mvgam_test, type = 'forecast')
+
+plot(hindcast(mvgam_test))
 
 # Ensure predictions look reasonable
 pp_check(mvgam_test, type = 'ribbon')
 
 # Look at the estimated nonlinear effects
+gratia::draw(mvgam_test)
 plot(mvgam_test, type = 'smooths', trend_effects = TRUE)
 conditional_effects(mvgam_test, type = 'link')
 
