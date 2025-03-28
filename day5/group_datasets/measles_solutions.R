@@ -125,14 +125,13 @@ measles %>%
 mvgam_test <- mvgam(cases ~ offset(population),
                     trend_formula = ~
                       s(week, bs = 'cc', k = 10) +
-                      gp(prevacc_time, c = 5/4, k = 50, scale = FALSE) +
-                      s(year_since_vaccine, bs = 'mod', k = 8),
+                      gp(prevacc_time, k = 50, scale = FALSE, cov = 'exponential') +
+                      s(year_since_vaccine, bs = 'mod', k = 8) - 1,
                     trend_model = 'None',
                     noncentred = TRUE,
                     trend_knots = list(week = c(0.5, 52.5)),
                     family = nb(),
-                    data = measles,
-                    algorithm = 'sampling')
+                    data = measles)
 summary(mvgam_test, include_betas = FALSE)
 plot(mvgam_test, type = 'forecast')
 
@@ -163,7 +162,7 @@ plot_slopes(mvgam_test,
 
 # Another approach: use a counterfactual forecast that extrapolates
 # the GP into the vaccine period but that 'pretends' that the rollout
-# of the vaccine never happened. This is possible becuase the GP is a 
+# of the vaccine never happened. This is possible because the GP is a 
 # proper time series model and won't give wacky extrapolations
 newdata <- measles
 newdata$prevacc_time <- newdata$time
